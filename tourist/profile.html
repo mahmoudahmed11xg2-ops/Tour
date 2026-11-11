@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Guide Profile — TourGuide</title>
+  <link rel="stylesheet" href="/css/global.css">
+  <link rel="stylesheet" href="/css/tourist.css">
+</head>
+<body>
+
+  <!-- Top Header Navigation -->
+  <header class="site-header">
+    <div class="app-container header-inner">
+      <a href="/" class="brand-logo">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
+          </svg>
+        </div>
+        <span>TourGuide</span>
+      </a>
+
+      <nav class="nav-links">
+        <a href="/tourist/index.html" class="nav-link" data-i18n="nav.home">Home</a>
+        <a href="/tourist/explore.html" class="nav-link active" data-i18n="nav.explore">Explore</a>
+        <a href="/tourist/bookings.html" class="nav-link" data-i18n="nav.bookings">Bookings</a>
+        <a href="/guide/index.html" class="nav-link" data-i18n="nav.guidePortal">Guide Portal</a>
+      </nav>
+
+      <div class="header-actions"></div>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="app-container">
+
+      <!-- Breadcrumbs -->
+      <div style="margin-bottom: var(--space-4); font-size: 0.8rem; color: var(--text-muted);">
+        <a href="/tourist/index.html" style="color: var(--text-secondary);" data-i18n="nav.home">Home</a> / 
+        <a href="/tourist/explore.html" style="color: var(--text-secondary);" data-i18n="explore.guidesTitle">Guides</a> / 
+        <span id="breadcrumbGuideName">Ahmed Hassan</span>
+      </div>
+
+      <!-- Profile 2-Column Layout (Desktop Sidebar + Mobile Sticky CTA) -->
+      <div class="profile-layout">
+        
+        <!-- Main Column -->
+        <div class="profile-main-card">
+          
+          <!-- Top Header Strip -->
+          <div class="profile-header-strip">
+            <img id="guideAvatar" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80" alt="Guide" class="profile-avatar-lg">
+            <div style="flex: 1; min-width: 0;">
+              <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 4px;">
+                <h1 id="guideName" style="font-size: 1.5rem; font-weight: 800; color: var(--text-primary);">Ahmed Hassan</h1>
+                <span class="badge badge-verified" data-i18n="guide.verifiedGuide">✓ Verified Guide</span>
+                <span id="guideOnlineBadge" class="badge badge-online" data-i18n="explore.availableNow">● Available Now</span>
+              </div>
+
+              <div style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; margin-bottom: 8px;">
+                <span class="rating-pill">
+                  <span class="rating-star">★</span>
+                  <span id="guideRating">4.9</span>
+                  <span style="font-weight: 400; color: var(--text-muted);"> (<span id="guideReviewsCount">127</span> <span data-i18n="guide.reviews">reviews</span>)</span>
+                </span>
+                <span>·</span>
+                <span id="guideExp" style="color: var(--text-secondary); font-weight: 500;">8 years experience</span>
+                <span>·</span>
+                <span id="guideLocation" style="color: var(--text-secondary); font-weight: 500;">Giza Plateau</span>
+              </div>
+
+              <div id="guideLanguages" style="font-size: 0.85rem; color: var(--text-secondary);">
+                Arabic · English · German
+              </div>
+            </div>
+          </div>
+
+          <!-- About Section -->
+          <div style="margin-bottom: var(--space-6);">
+            <h2 style="font-size: 1.1rem; font-weight: 700; margin-bottom: var(--space-2);" data-i18n="guide.about">About the Guide</h2>
+            <p id="guideAbout" style="font-size: 0.95rem; color: var(--text-secondary); line-height: 1.6;">
+              Certified Egyptologist and graduate of Faculty of Archaeology. Over 8 years guiding travelers through the pyramids, Sphinx, and the Grand Egyptian Museum with focus on ancient architectural techniques.
+            </p>
+          </div>
+
+          <!-- Specialties Section -->
+          <div style="margin-bottom: var(--space-6);">
+            <h2 style="font-size: 1.1rem; font-weight: 700; margin-bottom: var(--space-3);" data-i18n="guide.specialties">Specialties & Focus Areas</h2>
+            <div id="guideSpecialties" style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <span class="badge badge-gray" style="padding: 6px 12px; font-size: 0.8rem;">History</span>
+              <span class="badge badge-gray" style="padding: 6px 12px; font-size: 0.8rem;">Architecture</span>
+              <span class="badge badge-gray" style="padding: 6px 12px; font-size: 0.8rem;">Museum</span>
+            </div>
+          </div>
+
+          <!-- Tour Packages Section -->
+          <div style="margin-bottom: var(--space-6);">
+            <h2 style="font-size: 1.1rem; font-weight: 700; margin-bottom: var(--space-3);" data-i18n="guide.availablePackages">Available Tour Packages</h2>
+            <div id="packagesContainer" style="display: grid; gap: var(--space-3);">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+
+          <!-- Reviews Section -->
+          <div>
+            <h2 style="font-size: 1.1rem; font-weight: 700; margin-bottom: var(--space-3);" data-i18n="guide.verifiedReviews">Verified Traveler Reviews</h2>
+            <div style="display: grid; gap: var(--space-3);">
+              <div style="background: var(--bg-subtle); padding: 14px; border-radius: var(--radius-md);">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                  <span style="font-weight: 700; font-size: 0.875rem;">Markus & Julia (Germany)</span>
+                  <span style="color: #f59e0b; font-size: 0.8rem;">★★★★★</span>
+                </div>
+                <p style="font-size: 0.85rem; color: var(--text-secondary);">
+                  Ahmed made our visit to the Pyramids seamless. Having a licensed Egyptologist fluent in German was invaluable. Highly recommended!
+                </p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Sticky Sidebar Booking Card (Desktop) -->
+        <div class="profile-sidebar-card">
+          <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: var(--space-4); padding-bottom: var(--space-3); border-bottom: 1px solid var(--border-color);">
+            <div>
+              <span style="font-size: 1.5rem; font-weight: 800; color: var(--text-primary);">$<span id="sidebarRate">25</span></span>
+              <span style="font-size: 0.85rem; color: var(--text-muted);" data-i18n="search.perHour">/hour</span>
+            </div>
+            <span class="rating-pill">
+              <span class="rating-star">★</span>
+              <span id="sidebarRating">4.9</span>
+            </span>
+          </div>
+
+          <form id="bookingConfirmForm">
+            <div class="form-group">
+              <label class="form-label" data-i18n="booking.selectService">Select Service</label>
+              <select id="bookingService" class="form-select">
+                <option value="Standard Walking Tour (2 hrs)">Standard Walking Tour (2 hrs)</option>
+                <option value="Half Day Deep Exploration (4 hrs)">Half Day Deep Exploration (4 hrs)</option>
+                <option value="Full Day Expedition (8 hrs)">Full Day Expedition (8 hrs)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" data-i18n="booking.meetingLocation">Meeting Location</label>
+              <input type="text" id="bookingLocation" class="form-input" value="Pyramids of Giza Gate 1">
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2);" class="form-group">
+              <div>
+                <label class="form-label" data-i18n="booking.date">Date</label>
+                <input type="date" id="bookingDate" class="form-input">
+              </div>
+              <div>
+                <label class="form-label" data-i18n="booking.guests">Guests</label>
+                <select id="bookingGuests" class="form-select">
+                  <option value="1">1</option>
+                  <option value="2" selected>2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Price Breakdown Calculation (Section 12) -->
+            <div style="background: var(--bg-subtle); padding: 12px; border-radius: var(--radius-md); margin-bottom: var(--space-4); font-size: 0.825rem;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                <span style="color: var(--text-secondary);" data-i18n="booking.tourPrice">Tour Price (2 hrs)</span>
+                <span id="breakdownSubtotal" style="font-weight: 600;">$50.00</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                <span style="color: var(--text-secondary);" data-i18n="booking.platformFee">Platform Fee (15%)</span>
+                <span id="breakdownFee" style="font-weight: 600;">$7.50</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding-top: 6px; border-top: 1px solid var(--border-color); font-weight: 700; font-size: 0.95rem;">
+                <span data-i18n="booking.totalAmount">Total</span>
+                <span id="breakdownTotal" style="color: var(--primary); font-variant-numeric: tabular-nums;">$57.50</span>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block btn-lg" data-i18n="booking.confirmAndPay">
+              Confirm & Pay
+            </button>
+          </form>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Mobile Sticky Bottom CTA -->
+  <div class="mobile-sticky-cta">
+    <div>
+      <span style="font-size: 1.15rem; font-weight: 800; color: var(--text-primary);">$<span id="mobileRate">25</span></span>
+      <span style="font-size: 0.75rem; color: var(--text-muted);" data-i18n="search.perHour">/hr</span>
+      <span style="display: block; font-size: 0.75rem; color: var(--text-secondary);">★ <span id="mobileRating">4.9</span></span>
+    </div>
+    <button id="mobileBookBtn" class="btn btn-primary btn-md" data-i18n="booking.bookThisGuide">
+      Book this Guide
+    </button>
+  </div>
+
+  <script type="module">
+    import { getGuideById } from '/js/guides.js';
+    import { createBooking } from '/js/booking.js';
+    import { getCurrentUser, logout, onAuthReady } from '/js/auth.js';
+    import { getUrlParam, showToast, t } from '/js/utils.js';
+
+    const guideId = getUrlParam('id');
+    let currentGuide = null;
+    let authUser = null;
+
+    // Set today's date
+    const dateInput = document.getElementById('bookingDate');
+    if (dateInput) dateInput.value = new Date().toISOString().split('T')[0];
+
+    async function loadProfile(authenticatedUser) {
+      const user = authenticatedUser || authUser || getCurrentUser();
+      authUser = user;
+
+      // If no ?id= param is passed, show the Tourist's own Profile card!
+      if (!guideId) {
+        document.title = `${t('touristProfile.myProfile')} — TourGuide`;
+        document.getElementById('breadcrumbGuideName').textContent = t('touristProfile.myProfile');
+        
+        const mainCard = document.querySelector('.profile-main-card');
+        const sidebar = document.querySelector('.profile-sidebar-card');
+        const mobileCta = document.querySelector('.mobile-sticky-cta');
+        if (sidebar) sidebar.style.display = 'none';
+        if (mobileCta) mobileCta.style.display = 'none';
+
+        if (mainCard) {
+          mainCard.innerHTML = `
+            <div style="display: flex; align-items: center; gap: var(--space-4); margin-bottom: var(--space-6); padding-bottom: var(--space-4); border-bottom: 1px solid var(--border-color);">
+              <div style="width: 72px; height: 72px; border-radius: var(--radius-full); background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 800;">
+                ${(user?.firstName?.[0] || 'T').toUpperCase()}
+              </div>
+              <div>
+                <h1 style="font-size: 1.5rem; font-weight: 800;">${user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() : 'Guest Traveler'}</h1>
+                <span class="badge badge-verified">${t('touristProfile.touristMember')}</span>
+              </div>
+            </div>
+
+            <div style="display: grid; gap: var(--space-4); max-width: 480px; margin-bottom: var(--space-6);">
+              <div>
+                <span class="form-label">${t('touristProfile.emailAddress')}</span>
+                <p style="font-size: 0.95rem; font-weight: 600;">${user?.email || 'guest@example.com'}</p>
+              </div>
+              <div>
+                <span class="form-label">${t('touristProfile.homeCountry')}</span>
+                <p style="font-size: 0.95rem; font-weight: 600;">${user?.country || 'International'}</p>
+              </div>
+              <div>
+                <span class="form-label">${t('touristProfile.preferredLanguage')}</span>
+                <p style="font-size: 0.95rem; font-weight: 600;">${user?.preferredLanguage || 'English'}</p>
+              </div>
+            </div>
+
+            <div style="display: flex; gap: var(--space-3);">
+              <a href="/tourist/bookings.html" class="btn btn-outline btn-sm">${t('touristProfile.viewMyBookings')}</a>
+              <button id="logoutSelfBtn" class="btn btn-outline btn-sm" style="color: var(--error); border-color: var(--error-border);">${t('touristProfile.logOut')}</button>
+            </div>
+          `;
+
+          const logoutBtn = document.getElementById('logoutSelfBtn');
+          if (logoutBtn) {
+            logoutBtn.addEventListener('click', () => {
+              logout();
+            });
+          }
+        }
+        return;
+      }
+
+      currentGuide = await getGuideById(guideId);
+      if (!currentGuide) {
+        showToast(t('booking.noBookingFound') || 'Guide not found', 'error');
+        return;
+      }
+
+      document.title = `${currentGuide.name} — TourGuide`;
+      document.getElementById('breadcrumbGuideName').textContent = currentGuide.name;
+      document.getElementById('guideAvatar').src = currentGuide.avatar;
+      document.getElementById('guideName').textContent = currentGuide.name;
+      document.getElementById('guideRating').textContent = currentGuide.rating.toFixed(1);
+      document.getElementById('sidebarRating').textContent = currentGuide.rating.toFixed(1);
+      document.getElementById('mobileRating').textContent = currentGuide.rating.toFixed(1);
+      document.getElementById('guideReviewsCount').textContent = currentGuide.reviewsCount;
+      document.getElementById('guideExp').textContent = `${currentGuide.experienceYears} ${t('search.yearsExp')}`;
+      document.getElementById('guideLocation').textContent = currentGuide.currentLocationName || currentGuide.city;
+      document.getElementById('guideLanguages').textContent = currentGuide.languages.map(l => t('languages.' + l.toLowerCase()) || l).join(' · ');
+      document.getElementById('guideAbout').textContent = currentGuide.about;
+      document.getElementById('sidebarRate').textContent = currentGuide.hourlyRate;
+      document.getElementById('mobileRate').textContent = currentGuide.hourlyRate;
+
+      if (!currentGuide.isOnline) {
+        document.getElementById('guideOnlineBadge').style.display = 'none';
+      }
+
+      // Render specialties
+      document.getElementById('guideSpecialties').innerHTML = currentGuide.specialties.map(s => `
+        <span class="badge badge-gray" style="padding: 6px 12px; font-size: 0.8rem;">${s}</span>
+      `).join('');
+
+      // Render tour packages
+      const pkgContainer = document.getElementById('packagesContainer');
+      if (currentGuide.packages && currentGuide.packages.length > 0) {
+        pkgContainer.innerHTML = currentGuide.packages.map(p => `
+          <div style="background: var(--bg-surface); border: 1px solid var(--border-color); padding: 14px; border-radius: var(--radius-md); display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <span style="font-weight: 700; font-size: 0.95rem; color: var(--text-primary); display: block;">${p.title}</span>
+              <span style="font-size: 0.8rem; color: var(--text-muted);">${p.duration}</span>
+            </div>
+            <span style="font-weight: 800; font-size: 1.05rem; color: var(--text-primary);">$${p.price}</span>
+          </div>
+        `).join('');
+      } else {
+        pkgContainer.innerHTML = `<span style="font-size: 0.85rem; color: var(--text-muted);">${t('search.hourlyRate') || 'Custom private hourly rates available.'}</span>`;
+      }
+
+      updateCalculation();
+    }
+
+    function updateCalculation() {
+      if (!currentGuide) return;
+      const serviceVal = document.getElementById('bookingService').value;
+      let hours = 2;
+      if (serviceVal.includes('4 hrs')) hours = 4;
+      if (serviceVal.includes('8 hrs')) hours = 8;
+
+      const subtotal = currentGuide.hourlyRate * hours;
+      const fee = Math.round(subtotal * 0.15 * 10) / 10;
+      const total = subtotal + fee;
+
+      document.getElementById('breakdownSubtotal').textContent = `$${subtotal.toFixed(2)}`;
+      document.getElementById('breakdownFee').textContent = `$${fee.toFixed(2)}`;
+      document.getElementById('breakdownTotal').textContent = `$${total.toFixed(2)}`;
+    }
+
+    document.getElementById('bookingService').addEventListener('change', updateCalculation);
+
+    // Confirm Booking Submission
+    document.getElementById('bookingConfirmForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const user = getCurrentUser();
+      if (!user) {
+        showToast(t('toasts.loginRequired'), 'info');
+        setTimeout(() => {
+          window.location.href = `/login.html?redirect=${encodeURIComponent(window.location.href)}`;
+        }, 500);
+        return;
+      }
+
+      const serviceVal = document.getElementById('bookingService').value;
+      let hours = 2;
+      if (serviceVal.includes('4 hrs')) hours = 4;
+      if (serviceVal.includes('8 hrs')) hours = 8;
+
+      const booking = await createBooking({
+        guideId: currentGuide.id,
+        guideName: currentGuide.name,
+        touristId: user.uid,
+        touristName: `${user.firstName || 'Guest'} ${user.lastName || ''}`.trim(),
+        location: document.getElementById('bookingLocation').value,
+        date: document.getElementById('bookingDate').value,
+        durationHours: hours,
+        guests: document.getElementById('bookingGuests').value,
+        service: serviceVal,
+        hourlyRate: currentGuide.hourlyRate,
+        type: 'scheduled'
+      });
+
+      showToast(t('booking.bookingConfirmedToast'), 'success');
+      setTimeout(() => {
+        window.location.href = `/tourist/booking.html?id=${booking.id}`;
+      }, 400);
+    });
+
+    document.getElementById('mobileBookBtn').addEventListener('click', () => {
+      document.querySelector('.profile-sidebar-card').scrollIntoView({ behavior: 'smooth' });
+    });
+
+    document.addEventListener('tourguide:langchange', () => {
+      loadProfile(authUser);
+    });
+
+    onAuthReady((user) => {
+      loadProfile(user);
+    });
+  </script>
+</body>
+</html>

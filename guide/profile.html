@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Guide Profile & Verification — TourGuide</title>
+  <link rel="stylesheet" href="/css/global.css">
+  <link rel="stylesheet" href="/css/guide.css">
+</head>
+<body>
+
+  <!-- Top Header Navigation -->
+  <header class="site-header">
+    <div class="app-container header-inner">
+      <a href="/guide/index.html" class="brand-logo">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
+          </svg>
+        </div>
+        <span>TourGuide</span>
+        <span class="brand-badge">CAPTAIN</span>
+      </a>
+
+      <nav class="nav-links">
+        <a href="/guide/index.html" class="nav-link" data-i18n="nav.overview">Overview</a>
+        <a href="/guide/requests.html" class="nav-link" data-i18n="nav.requests">Requests</a>
+        <a href="/guide/calendar.html" class="nav-link" data-i18n="nav.calendar">Calendar</a>
+        <a href="/guide/earnings.html" class="nav-link" data-i18n="nav.earnings">Earnings</a>
+        <a href="/guide/profile.html" class="nav-link active" data-i18n="nav.profile">Profile</a>
+      </nav>
+
+      <div class="header-actions"></div>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="app-container" style="max-width: 800px;">
+      
+      <h1 style="font-size: 1.5rem; font-weight: 800; margin-bottom: var(--space-6);" data-i18n="guide.profileTitle">Guide Profile & Government License</h1>
+
+      <!-- Verification Status Box -->
+      <div class="card" style="margin-bottom: var(--space-6);">
+        <div class="card-header">
+          <h2 class="card-title" data-i18n="guide.syndicateVerification">Ministry License Verification</h2>
+          <span class="badge badge-verified" id="verificationBadge" data-i18n="guide.verifiedApprovedBadge">✓ Approved & Verified</span>
+        </div>
+        <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: var(--space-4);" data-i18n="guide.licenseNotice">
+          All guides must hold a valid tourist guiding syndicate membership and Ministry of Tourism and Antiquities license.
+        </p>
+
+        <div style="background: var(--bg-subtle); padding: 12px 16px; border-radius: var(--radius-md); display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-primary); display: block;" data-i18n="guide.activeSyndicate">Syndicate License #EGY-2018-4421</span>
+            <span style="font-size: 0.75rem; color: var(--text-muted);" data-i18n="guide.validThrough">Verified on Jan 14, 2026 · Valid through Dec 2028</span>
+          </div>
+          <span class="badge badge-online" data-i18n="guide.activeStatus">Active</span>
+        </div>
+      </div>
+
+      <!-- Profile Form -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title" data-i18n="guide.publicMarketplaceInfo">Public Marketplace Information</h2>
+        </div>
+
+        <form id="guideProfileForm">
+          <div class="form-group">
+            <label class="form-label" data-i18n="guide.fullNameLabel">Full Name</label>
+            <input type="text" class="form-input" id="profName" value="Ahmed Hassan">
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3);" class="form-group">
+            <div>
+              <label class="form-label" data-i18n="guide.hourlyRateUSD">Hourly Rate ($ USD)</label>
+              <input type="number" class="form-input" id="profRate" value="25">
+            </div>
+            <div>
+              <label class="form-label" data-i18n="guide.primaryAreaLabel">Primary Area</label>
+              <input type="text" class="form-input" id="profCity" value="Giza">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" data-i18n="auth.languagesSpoken">Languages (comma-separated)</label>
+            <input type="text" class="form-input" id="profLangs" value="Arabic, English, German">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" data-i18n="guide.aboutBioLabel">About / Bio</label>
+            <textarea class="form-textarea" rows="4" id="profAbout">Certified Egyptologist and graduate of Faculty of Archaeology. Over 8 years guiding travelers through the pyramids, Sphinx, and the Grand Egyptian Museum with focus on ancient architectural techniques.</textarea>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block" data-i18n="guide.saveChanges">Save Changes</button>
+        </form>
+      </div>
+
+    </div>
+  </main>
+
+  <script type="module">
+    import { onAuthReady, enforceRouteProtection } from '/js/auth.js';
+    import { getGuideById } from '/js/guides.js';
+    import { db, COLLECTIONS } from '/js/firebase.js';
+    import { doc, updateDoc } from 'firebase/firestore';
+    import { showToast, t } from '/js/utils.js';
+
+    enforceRouteProtection({ allowedRoles: ['guide', 'admin'] });
+
+    let currentUid = null;
+
+    onAuthReady(async (user, profile) => {
+      if (!user) return;
+      currentUid = user.uid;
+
+      const guide = await getGuideById(currentUid);
+      if (guide) {
+        if (guide.name) document.getElementById('profName').value = guide.name;
+        if (guide.hourlyRate) document.getElementById('profRate').value = guide.hourlyRate;
+        if (guide.city) document.getElementById('profCity').value = guide.city;
+        if (guide.languages) document.getElementById('profLangs').value = Array.isArray(guide.languages) ? guide.languages.join(', ') : guide.languages;
+        if (guide.about) document.getElementById('profAbout').value = guide.about;
+
+        const badge = document.getElementById('verificationBadge');
+        if (guide.verificationStatus === 'approved') {
+          badge.className = 'badge badge-verified';
+          badge.textContent = t('guide.verifiedApprovedBadge');
+        } else if (guide.verificationStatus === 'rejected') {
+          badge.className = 'badge badge-gray';
+          badge.textContent = t('guide.rejectedBadge');
+        } else {
+          badge.className = 'badge badge-online';
+          badge.style.background = '#fef3c7';
+          badge.style.color = '#92400e';
+          badge.textContent = t('guide.pendingVerificationBadge');
+        }
+      } else if (profile) {
+        document.getElementById('profName').value = `${profile.firstName || ''} ${profile.lastName || ''}`.trim();
+      }
+    });
+
+    document.getElementById('guideProfileForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!currentUid) {
+        showToast(t('toasts.authPending'), 'error');
+        return;
+      }
+
+      const name = document.getElementById('profName').value.trim();
+      const hourlyRate = Number(document.getElementById('profRate').value) || 25;
+      const city = document.getElementById('profCity').value.trim();
+      const languages = document.getElementById('profLangs').value.split(',').map(s => s.trim()).filter(Boolean);
+      const about = document.getElementById('profAbout').value.trim();
+
+      try {
+        await updateDoc(doc(db, COLLECTIONS.GUIDES, currentUid), {
+          name,
+          hourlyRate,
+          city,
+          languages,
+          about,
+          updatedAt: new Date().toISOString()
+        });
+        showToast(t('toasts.profileSaved'), 'success');
+      } catch (err) {
+        console.error('Update guide profile error:', err);
+        showToast(err.message || 'Failed to update profile.', 'error');
+      }
+    });
+  </script>
+</body>
+</html>

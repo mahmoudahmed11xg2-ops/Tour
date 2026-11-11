@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Guide Portal — TourGuide</title>
+  <link rel="stylesheet" href="/css/global.css">
+  <link rel="stylesheet" href="/css/guide.css">
+</head>
+<body>
+
+  <!-- Top Header Navigation -->
+  <header class="site-header">
+    <div class="app-container header-inner">
+      <a href="/guide/index.html" class="brand-logo">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
+          </svg>
+        </div>
+        <span>TourGuide</span>
+        <span class="brand-badge">CAPTAIN</span>
+      </a>
+
+      <nav class="nav-links">
+        <a href="/guide/index.html" class="nav-link active" data-i18n="nav.overview">Overview</a>
+        <a href="/guide/requests.html" class="nav-link" data-i18n="nav.requests">Requests</a>
+        <a href="/guide/calendar.html" class="nav-link" data-i18n="nav.calendar">Calendar</a>
+        <a href="/guide/earnings.html" class="nav-link" data-i18n="nav.earnings">Earnings</a>
+        <a href="/guide/profile.html" class="nav-link" data-i18n="nav.profile">Profile</a>
+        <a href="/tourist/index.html" class="nav-link" style="color: var(--accent);" data-i18n="nav.touristView">Tourist View</a>
+      </nav>
+
+      <div class="header-actions"></div>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="app-container">
+
+      <!-- Guide Welcome & Online / Offline Toggle Bar (Uber driver style) -->
+      <section class="guide-welcome-bar">
+        <div>
+          <span style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase;" data-i18n="guide.consoleTitle">Captain Console</span>
+          <h1 id="greetingHeading" style="font-size: 1.5rem; font-weight: 800; color: var(--text-primary); margin-top: 2px;">
+            Good morning, Ahmed
+          </h1>
+          <p id="onlineStatusText" style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 2px;" data-i18n="guide.onlineStateTitle">
+            You are Online · Ready to receive instant nearby booking requests.
+          </p>
+        </div>
+
+        <!-- Big Go Online Toggle -->
+        <div class="guide-status-toggle">
+          <span id="toggleLabel" style="font-size: 0.85rem; font-weight: 700; color: var(--success);" data-i18n="guide.online">Online</span>
+          <label class="toggle-switch">
+            <input type="checkbox" id="onlineCheckbox" checked>
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </section>
+
+      <!-- High-Priority Incoming Request Banner (Section 16) -->
+      <section id="incomingRequestSection" class="incoming-request-card">
+        <div class="request-title">
+          <span style="width: 10px; height: 10px; border-radius: 50%; background: #f59e0b; display: inline-block;"></span>
+          <span data-i18n="guide.incomingRequestTitle">New Instant Guide Request!</span>
+        </div>
+
+        <div class="request-details-grid">
+          <div class="request-detail-item">
+            <span class="request-detail-label" data-i18n="guide.location">Location</span>
+            <span class="request-detail-val" id="reqLocation">Giza Plateau</span>
+          </div>
+          <div class="request-detail-item">
+            <span class="request-detail-label" data-i18n="guide.dateTime">Date & Time</span>
+            <span class="request-detail-val" data-i18n="guide.todayNow">Today · Now</span>
+          </div>
+          <div class="request-detail-item">
+            <span class="request-detail-label" data-i18n="guide.duration">Duration</span>
+            <span class="request-detail-val" data-i18n="guide.twoHours">2 hours</span>
+          </div>
+          <div class="request-detail-item">
+            <span class="request-detail-label" data-i18n="guide.language">Language</span>
+            <span class="request-detail-val">German</span>
+          </div>
+          <div class="request-detail-item">
+            <span class="request-detail-label" data-i18n="guide.guests">Guests</span>
+            <span class="request-detail-val">3 Guests</span>
+          </div>
+          <div class="request-detail-item">
+            <span class="request-detail-label" data-i18n="guide.estimatedEarnings">Estimated Earnings</span>
+            <span class="request-detail-val" style="color: var(--success);">$45.00</span>
+          </div>
+        </div>
+
+        <div class="request-actions">
+          <button id="acceptRequestBtn" class="btn btn-accept btn-lg" data-i18n="guide.acceptTour">
+            Accept Tour
+          </button>
+          <button id="declineRequestBtn" class="btn btn-decline btn-lg" data-i18n="guide.decline">
+            Decline
+          </button>
+        </div>
+      </section>
+
+      <!-- KPI Overview Grid -->
+      <section class="kpi-grid">
+        <div class="kpi-card">
+          <span class="kpi-label" data-i18n="guide.todayBookings">Today's Bookings</span>
+          <div class="kpi-value" id="kpiTodayBookings">1</div>
+          <span class="kpi-subtext" style="color: var(--success);" data-i18n="guide.activeOngoing">● Active Tour ongoing</span>
+        </div>
+
+        <div class="kpi-card">
+          <span class="kpi-label" data-i18n="guide.upcomingScheduled">Upcoming Scheduled</span>
+          <div class="kpi-value">3</div>
+          <span class="kpi-subtext" data-i18n="guide.thisWeek">This week</span>
+        </div>
+
+        <div class="kpi-card">
+          <span class="kpi-label" data-i18n="guide.totalEarnings">Total Earnings</span>
+          <div class="kpi-value">$1,420</div>
+          <span class="kpi-subtext" data-i18n="guide.afterFee">After 15% platform fee</span>
+        </div>
+
+        <div class="kpi-card">
+          <span class="kpi-label" data-i18n="guide.rating">Rating</span>
+          <div class="kpi-value">4.9 ★</div>
+          <span class="kpi-subtext">127 verified reviews</span>
+        </div>
+      </section>
+
+      <!-- Today's Schedule & Active Assignment -->
+      <section class="card" style="margin-bottom: var(--space-6);">
+        <div class="card-header">
+          <h2 class="card-title" data-i18n="guide.activeAssignmentTitle">Today's Active Assignment</h2>
+          <span class="badge badge-online" data-i18n="guide.inProgress">In Progress</span>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-4);">
+          <div>
+            <h3 style="font-size: 1.05rem; font-weight: 700;">Giza Plateau - Great Pyramid Entrance</h3>
+            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 2px;">
+              Tourist: Elena Rostova · 2 Guests · English · 2 hours
+            </p>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn btn-outline btn-sm" id="contactTouristBtn" data-i18n="guide.contactTourist">Contact Tourist</button>
+            <a href="/tourist/booking.html?id=BK-9021" class="btn btn-primary btn-sm" data-i18n="guide.openTracking">Open Live Tracking</a>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <script type="module">
+    import { updateGuideOnlineStatus, getGuideById } from '/js/guides.js';
+    import { onAuthReady, enforceRouteProtection } from '/js/auth.js';
+    import { getBookingsForGuide } from '/js/booking.js';
+    import { showToast, t } from '/js/utils.js';
+
+    // 1. Enforce route protection
+    enforceRouteProtection({ allowedRoles: ['guide', 'admin'] });
+
+    let currentGuideId = null;
+    let currentProfile = null;
+    const checkbox = document.getElementById('onlineCheckbox');
+    const toggleLabel = document.getElementById('toggleLabel');
+    const statusText = document.getElementById('onlineStatusText');
+
+    function refreshStatusText(isOnline) {
+      toggleLabel.textContent = isOnline ? t('guide.online') : t('guide.offline');
+      toggleLabel.style.color = isOnline ? 'var(--success)' : 'var(--text-muted)';
+      statusText.textContent = isOnline 
+        ? t('guide.onlineStateTitle')
+        : t('guide.offlineStateTitle');
+    }
+
+    onAuthReady(async (firebaseUser, profile) => {
+      if (!firebaseUser) return;
+      currentGuideId = firebaseUser.uid;
+      currentProfile = profile;
+
+      if (profile && profile.firstName) {
+        document.getElementById('greetingHeading').textContent = t('guide.goodDay', { name: profile.firstName });
+      }
+
+      // Sync status from Firestore
+      const guideData = await getGuideById(currentGuideId);
+      if (guideData) {
+        checkbox.checked = !!guideData.isOnline;
+        refreshStatusText(checkbox.checked);
+      }
+
+      // Fetch real bookings
+      try {
+        const bookings = await getBookingsForGuide(currentGuideId);
+        const activeBookings = bookings.filter(b => b.status !== 'Tour Completed' && b.status !== 'Cancelled');
+        document.getElementById('kpiTodayBookings').textContent = activeBookings.length;
+      } catch (err) {
+        console.warn('Guide bookings load:', err);
+      }
+    });
+
+    // Toggle Online / Offline
+    checkbox.addEventListener('change', async () => {
+      if (!currentGuideId) {
+        showToast(t('toasts.authPending'), 'info');
+        return;
+      }
+      const isOnline = checkbox.checked;
+      refreshStatusText(isOnline);
+
+      await updateGuideOnlineStatus(currentGuideId, isOnline);
+      showToast(isOnline ? t('toasts.nowOnline') : t('toasts.nowOffline'), isOnline ? 'success' : 'info');
+    });
+
+    // Accept / Decline Incoming Request
+    const requestCard = document.getElementById('incomingRequestSection');
+    
+    document.getElementById('acceptRequestBtn').addEventListener('click', () => {
+      showToast(t('toasts.tourAccepted'), 'success');
+      requestCard.style.display = 'none';
+      const kpi = document.getElementById('kpiTodayBookings');
+      kpi.textContent = String(Number(kpi.textContent || 0) + 1);
+    });
+
+    document.getElementById('declineRequestBtn').addEventListener('click', () => {
+      showToast(t('toasts.tourDeclined'), 'info');
+      requestCard.style.display = 'none';
+    });
+
+    document.getElementById('contactTouristBtn').addEventListener('click', () => {
+      showToast(`${t('guide.contactTourist')}: Elena Rostova`, 'info');
+    });
+
+    document.addEventListener('tourguide:langchange', () => {
+      if (currentProfile && currentProfile.firstName) {
+        document.getElementById('greetingHeading').textContent = t('guide.goodDay', { name: currentProfile.firstName });
+      }
+      refreshStatusText(checkbox.checked);
+    });
+  </script>
+</body>
+</html>

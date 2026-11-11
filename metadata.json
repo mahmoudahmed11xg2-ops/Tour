@@ -1,0 +1,6 @@
+{
+  "name": "TourGuide | Uber for Tour Guides",
+  "description": "منصة حجز مرشدين سياحيين معتمدين فورياً وبمواعيد مسبقة - Your City. Your Guide. Your Experience.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

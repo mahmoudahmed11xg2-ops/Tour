@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Create Account — TourGuide</title>
+  <link rel="stylesheet" href="/css/global.css">
+  <link rel="stylesheet" href="/css/auth.css">
+</head>
+<body>
+
+  <!-- Top Header Navigation -->
+  <header class="site-header">
+    <div class="app-container header-inner">
+      <a href="/" class="brand-logo">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
+          </svg>
+        </div>
+        <span>TourGuide</span>
+      </a>
+
+      <div class="header-actions">
+        <a href="/login.html" class="btn btn-outline btn-sm" data-i18n="nav.login">Log in</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Registration Wrapper -->
+  <div class="auth-wrapper">
+    <div class="auth-card" style="max-width: 520px;">
+      <div class="auth-header">
+        <h1 class="auth-title" data-i18n="auth.createTitle">Create your account</h1>
+        <p class="auth-subtitle" data-i18n="auth.createSubtitle">Join the marketplace for certified tour guides</p>
+      </div>
+
+      <!-- Role Selector -->
+      <div class="role-selector">
+        <button type="button" id="touristRoleTab" class="role-tab active" data-role="tourist" data-i18n="auth.touristTab">
+          I'm a Tourist
+        </button>
+        <button type="button" id="guideRoleTab" class="role-tab" data-role="guide" data-i18n="auth.guideTab">
+          I'm a Tour Guide
+        </button>
+      </div>
+
+      <!-- Alert Box -->
+      <div id="registerAlert" style="display: none; padding: 10px 14px; border-radius: var(--radius-md); font-size: 0.85rem; margin-bottom: var(--space-4);"></div>
+
+      <!-- Tourist Registration Form -->
+      <form id="touristForm">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3);">
+          <div class="form-group">
+            <label class="form-label" for="tFirstName" data-i18n="auth.firstName">First name</label>
+            <input type="text" id="tFirstName" class="form-input" required placeholder="Elena">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="tLastName" data-i18n="auth.lastName">Last name</label>
+            <input type="text" id="tLastName" class="form-input" required placeholder="Rostova">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="tEmail" data-i18n="auth.emailLabel">Email address</label>
+          <input type="email" id="tEmail" class="form-input" required placeholder="elena@example.com" data-i18n-placeholder="auth.emailPlaceholder" autocomplete="email">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="tPassword" data-i18n="auth.passwordLabel">Password</label>
+          <input type="password" id="tPassword" class="form-input" required minlength="6" placeholder="At least 6 characters" autocomplete="new-password">
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3);">
+          <div class="form-group">
+            <label class="form-label" for="tCountry" data-i18n="auth.homeCountry">Country</label>
+            <input type="text" id="tCountry" class="form-input" placeholder="Germany" value="Germany">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="tPhone" data-i18n="auth.phone">Phone</label>
+            <input type="tel" id="tPhone" class="form-input" placeholder="+49 171 ...">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="tLanguage" data-i18n="auth.preferredLang">Preferred language</label>
+          <select id="tLanguage" class="form-select">
+            <option value="English">English</option>
+            <option value="Arabic">Arabic</option>
+            <option value="German">German</option>
+            <option value="French">French</option>
+            <option value="Spanish">Spanish</option>
+            <option value="Italian">Italian</option>
+          </select>
+        </div>
+
+        <button type="submit" id="tSubmitBtn" class="btn btn-primary btn-block btn-lg" style="margin-top: var(--space-2);">
+          <span id="tBtnText" data-i18n="auth.createTouristBtn">Create Tourist Account</span>
+          <span id="tBtnSpinner" class="spinner" style="display: none; width: 18px; height: 18px; border-width: 2px; border-top-color: white;"></span>
+        </button>
+      </form>
+
+      <!-- Guide Registration Form (Hidden by default) -->
+      <form id="guideForm" style="display: none;">
+        <div class="form-group">
+          <label class="form-label" for="gName" data-i18n="auth.fullName">Full name</label>
+          <input type="text" id="gName" class="form-input" required placeholder="Ahmed Hassan">
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3);">
+          <div class="form-group">
+            <label class="form-label" for="gEmail" data-i18n="auth.emailLabel">Email address</label>
+            <input type="email" id="gEmail" class="form-input" required placeholder="ahmed@example.com" data-i18n-placeholder="auth.emailPlaceholder" autocomplete="email">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="gPassword" data-i18n="auth.passwordLabel">Password</label>
+            <input type="password" id="gPassword" class="form-input" required minlength="6" placeholder="At least 6 characters" autocomplete="new-password">
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3);">
+          <div class="form-group">
+            <label class="form-label" for="gPhone" data-i18n="auth.phone">Phone number</label>
+            <input type="tel" id="gPhone" class="form-input" required placeholder="+20 100 000 0000">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="gCountry" data-i18n="auth.homeCountry">Country</label>
+            <input type="text" id="gCountry" class="form-input" required value="Egypt">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="gLanguages" data-i18n="auth.languagesSpoken">Languages spoken (comma-separated)</label>
+          <input type="text" id="gLanguages" class="form-input" required placeholder="Arabic, English, German" data-i18n-placeholder="auth.languagesPlaceholder" value="Arabic, English">
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3);">
+          <div class="form-group">
+            <label class="form-label" for="gAreas" data-i18n="auth.primaryAreas">Guiding Areas / City</label>
+            <select id="gAreas" class="form-select">
+              <option value="Giza">Giza (Pyramids & Saqqara)</option>
+              <option value="Cairo">Cairo (Historic & Museums)</option>
+              <option value="Luxor">Luxor (Karnak & Thebes)</option>
+              <option value="Aswan">Aswan (Philae & Nile)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="gExperience" data-i18n="auth.experienceYears">Years of Experience</label>
+            <input type="number" id="gExperience" class="form-input" min="1" max="40" value="5">
+          </div>
+        </div>
+
+        <button type="submit" id="gSubmitBtn" class="btn btn-primary btn-block btn-lg" style="margin-top: var(--space-2);">
+          <span id="gBtnText" data-i18n="auth.submitGuideBtn">Submit Guide Application</span>
+          <span id="gBtnSpinner" class="spinner" style="display: none; width: 18px; height: 18px; border-width: 2px; border-top-color: white;"></span>
+        </button>
+      </form>
+
+      <div class="auth-footer">
+        <span data-i18n="auth.alreadyHaveAccount">Already have an account?</span> <a href="/login.html" data-i18n="nav.login">Log in</a>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { registerTourist, registerGuide, redirectByRole } from '/js/auth.js';
+    import { showToast, t } from '/js/utils.js';
+
+    let currentRole = 'tourist';
+    const touristRoleTab = document.getElementById('touristRoleTab');
+    const guideRoleTab = document.getElementById('guideRoleTab');
+    const touristForm = document.getElementById('touristForm');
+    const guideForm = document.getElementById('guideForm');
+    const registerAlert = document.getElementById('registerAlert');
+
+    function showAlert(msg, isError = true) {
+      registerAlert.style.display = 'block';
+      registerAlert.style.background = isError ? 'var(--error-bg)' : 'var(--success-bg)';
+      registerAlert.style.color = isError ? 'var(--error)' : 'var(--success)';
+      registerAlert.style.border = `1px solid ${isError ? 'var(--error-border)' : 'var(--success-border)'}`;
+      registerAlert.textContent = msg;
+    }
+
+    function clearAlert() {
+      registerAlert.style.display = 'none';
+      registerAlert.textContent = '';
+    }
+
+    touristRoleTab.addEventListener('click', () => {
+      currentRole = 'tourist';
+      touristRoleTab.classList.add('active');
+      guideRoleTab.classList.remove('active');
+      touristForm.style.display = 'block';
+      guideForm.style.display = 'none';
+      clearAlert();
+    });
+
+    guideRoleTab.addEventListener('click', () => {
+      currentRole = 'guide';
+      guideRoleTab.classList.add('active');
+      touristRoleTab.classList.remove('active');
+      touristForm.style.display = 'none';
+      guideForm.style.display = 'block';
+      clearAlert();
+    });
+
+    // Tourist Submission
+    const tSubmitBtn = document.getElementById('tSubmitBtn');
+    const tBtnText = document.getElementById('tBtnText');
+    const tBtnSpinner = document.getElementById('tBtnSpinner');
+
+    touristForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      clearAlert();
+
+      tSubmitBtn.disabled = true;
+      tBtnText.style.display = 'none';
+      tBtnSpinner.style.display = 'inline-block';
+
+      try {
+        const { user, profile } = await registerTourist({
+          firstName: document.getElementById('tFirstName').value,
+          lastName: document.getElementById('tLastName').value,
+          email: document.getElementById('tEmail').value,
+          password: document.getElementById('tPassword').value,
+          country: document.getElementById('tCountry').value,
+          phone: document.getElementById('tPhone').value,
+          preferredLanguage: document.getElementById('tLanguage').value,
+        });
+
+        showToast(t('toasts.registrationSuccess'), 'success');
+        setTimeout(() => redirectByRole(profile), 600);
+      } catch (err) {
+        showAlert(err.message, true);
+        tSubmitBtn.disabled = false;
+        tBtnText.style.display = 'inline';
+        tBtnSpinner.style.display = 'none';
+      }
+    });
+
+    // Guide Submission
+    const gSubmitBtn = document.getElementById('gSubmitBtn');
+    const gBtnText = document.getElementById('gBtnText');
+    const gBtnSpinner = document.getElementById('gBtnSpinner');
+
+    guideForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      clearAlert();
+
+      gSubmitBtn.disabled = true;
+      gBtnText.style.display = 'none';
+      gBtnSpinner.style.display = 'inline-block';
+
+      try {
+        const rawLangs = document.getElementById('gLanguages').value;
+        const languages = rawLangs.split(',').map(s => s.trim()).filter(Boolean);
+
+        const { user, profile } = await registerGuide({
+          name: document.getElementById('gName').value,
+          email: document.getElementById('gEmail').value,
+          password: document.getElementById('gPassword').value,
+          phone: document.getElementById('gPhone').value,
+          country: document.getElementById('gCountry').value,
+          languages,
+          areas: document.getElementById('gAreas').value,
+          experience: document.getElementById('gExperience').value,
+        });
+
+        showToast(t('toasts.guideApplicationSuccess'), 'info');
+        setTimeout(() => redirectByRole(profile), 800);
+      } catch (err) {
+        showAlert(err.message, true);
+        gSubmitBtn.disabled = false;
+        gBtnText.style.display = 'inline';
+        gBtnSpinner.style.display = 'none';
+      }
+    });
+  </script>
+</body>
+</html>

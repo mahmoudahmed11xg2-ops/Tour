@@ -1,0 +1,140 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default deny all access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email == "ma1044853@gmail.com" ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin")
+      );
+    }
+
+    // 1. Users Collection
+    match /users/{userId} {
+      allow get: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+      allow list: if isAdmin();
+      
+      // Tourists & Guides can only create their own profile, cannot set role as admin
+      allow create: if isSignedIn() && 
+                    isValidId(userId) && 
+                    request.auth.uid == userId && 
+                    incoming().uid == userId &&
+                    (incoming().role == "tourist" || incoming().role == "guide" || isAdmin());
+
+      // Users cannot elevate their own role
+      allow update: if isSignedIn() && (
+        isAdmin() || 
+        (request.auth.uid == userId && 
+         incoming().uid == existing().uid && 
+         incoming().role == existing().role)
+      );
+
+      allow delete: if isAdmin();
+    }
+
+    // 2. Guides Marketplace Collection
+    match /guides/{guideId} {
+      allow get, list: if true;
+
+      // Guides can register with pending status only
+      allow create: if isSignedIn() && isValidId(guideId) && (
+        isAdmin() ||
+        (request.auth.uid == guideId && 
+         incoming().id == guideId && 
+         incoming().verificationStatus == "pending" &&
+         incoming().verified == false)
+      );
+
+      // Guides can update their online status, bio, rates, but CANNOT self-approve
+      allow update: if isSignedIn() && (
+        isAdmin() ||
+        (request.auth.uid == guideId && 
+         incoming().id == existing().id && 
+         incoming().verificationStatus == existing().verificationStatus && 
+         incoming().verified == existing().verified)
+      );
+
+      allow delete: if isAdmin();
+    }
+
+    // 3. Bookings Collection
+    match /bookings/{bookingId} {
+      allow get: if isSignedIn() && (
+        isAdmin() ||
+        resource.data.touristId == request.auth.uid ||
+        resource.data.guideId == request.auth.uid
+      );
+
+      allow list: if isSignedIn() && (
+        isAdmin() ||
+        resource.data.touristId == request.auth.uid ||
+        resource.data.guideId == request.auth.uid
+      );
+
+      allow create: if isSignedIn() && 
+                    isValidId(bookingId) && 
+                    (incoming().touristId == request.auth.uid || isAdmin());
+
+      allow update: if isSignedIn() && (
+        isAdmin() ||
+        resource.data.touristId == request.auth.uid ||
+        resource.data.guideId == request.auth.uid
+      );
+
+      allow delete: if isAdmin();
+    }
+
+    // 4. Reviews Collection
+    match /reviews/{reviewId} {
+      allow get, list: if true;
+      allow create: if isSignedIn() && isValidId(reviewId) && (incoming().touristId == request.auth.uid || isAdmin());
+      allow update, delete: if isAdmin();
+    }
+
+    // 5. Audit Logs Collection
+    match /auditLogs/{logId} {
+      allow read: if isAdmin();
+      allow create: if isSignedIn();
+      allow update, delete: if false; // Immutable audit trail
+    }
+
+    // 6. Notifications Collection
+    match /notifications/{notificationId} {
+      allow read: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow delete: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+    }
+
+    // 7. Payments Collection
+    match /payments/{paymentId} {
+      allow read: if isSignedIn() && (isAdmin() || resource.data.touristId == request.auth.uid);
+      allow create: if isSignedIn();
+      allow update, delete: if isAdmin();
+    }
+  }
+}
+

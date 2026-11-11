@@ -1,0 +1,135 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile document storing basic account and role data.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "maxLength": 128 },
+        "firstName": { "type": "string", "maxLength": 100 },
+        "lastName": { "type": "string", "maxLength": 100 },
+        "email": { "type": "string", "format": "email", "maxLength": 150 },
+        "phone": { "type": "string", "maxLength": 30 },
+        "country": { "type": "string", "maxLength": 80 },
+        "role": { "type": "string", "enum": ["tourist", "guide", "admin"] },
+        "status": { "type": "string", "enum": ["active", "suspended", "pending"] },
+        "preferredLanguage": { "type": "string", "maxLength": 50 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "Guide": {
+      "title": "Guide",
+      "description": "Tour guide marketplace profile document with verification and rates.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "name": { "type": "string", "maxLength": 150 },
+        "email": { "type": "string", "format": "email", "maxLength": 150 },
+        "phone": { "type": "string", "maxLength": 30 },
+        "country": { "type": "string", "maxLength": 80 },
+        "verified": { "type": "boolean" },
+        "verificationStatus": { "type": "string", "enum": ["pending", "under_review", "approved", "rejected", "suspended"] },
+        "verificationNotes": { "type": "string", "maxLength": 500 },
+        "rating": { "type": "number" },
+        "reviewsCount": { "type": "number" },
+        "languages": { "type": "array" },
+        "experienceYears": { "type": "number" },
+        "city": { "type": "string", "maxLength": 80 },
+        "currentLocationName": { "type": "string", "maxLength": 150 },
+        "isOnline": { "type": "boolean" },
+        "hourlyRate": { "type": "number" },
+        "currency": { "type": "string", "maxLength": 10 },
+        "avatar": { "type": "string", "maxLength": 500 },
+        "specialties": { "type": "array" },
+        "about": { "type": "string", "maxLength": 2000 },
+        "packages": { "type": "array" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "name", "email", "verificationStatus"]
+    },
+    "Booking": {
+      "title": "Booking",
+      "description": "Tour booking transaction record between tourist and guide.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 64 },
+        "guideId": { "type": "string", "maxLength": 128 },
+        "guideName": { "type": "string", "maxLength": 150 },
+        "touristId": { "type": "string", "maxLength": 128 },
+        "touristName": { "type": "string", "maxLength": 150 },
+        "location": { "type": "string", "maxLength": 200 },
+        "date": { "type": "string", "maxLength": 50 },
+        "time": { "type": "string", "maxLength": 50 },
+        "duration": { "type": "string", "maxLength": 50 },
+        "language": { "type": "string", "maxLength": 50 },
+        "guests": { "type": "number" },
+        "service": { "type": "string", "maxLength": 150 },
+        "price": { "type": "number" },
+        "platformFee": { "type": "number" },
+        "total": { "type": "number" },
+        "status": { "type": "string", "maxLength": 50 },
+        "type": { "type": "string", "enum": ["instant", "scheduled"] },
+        "cancelReason": { "type": "string", "maxLength": 500 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "guideId", "touristId", "status", "total"]
+    },
+    "Review": {
+      "title": "Review",
+      "description": "Tourist review and rating for completed tour.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 64 },
+        "bookingId": { "type": "string", "maxLength": 64 },
+        "guideId": { "type": "string", "maxLength": 128 },
+        "touristId": { "type": "string", "maxLength": 128 },
+        "touristName": { "type": "string", "maxLength": 150 },
+        "rating": { "type": "number" },
+        "comment": { "type": "string", "maxLength": 1000 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "bookingId", "guideId", "touristId", "rating"]
+    },
+    "AuditLog": {
+      "title": "AuditLog",
+      "description": "Security and administrative audit event.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 64 },
+        "action": { "type": "string", "maxLength": 100 },
+        "userId": { "type": "string", "maxLength": 128 },
+        "targetId": { "type": "string", "maxLength": 128 },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "details": { "type": "string", "maxLength": 500 },
+        "notes": { "type": "string", "maxLength": 500 }
+      },
+      "required": ["action", "timestamp"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "User profile collection."
+    },
+    "/guides/{guideId}": {
+      "schema": { "$ref": "#/entities/Guide" },
+      "description": "Public tour guide marketplace profiles."
+    },
+    "/bookings/{bookingId}": {
+      "schema": { "$ref": "#/entities/Booking" },
+      "description": "Marketplace bookings and ride-tracking status."
+    },
+    "/reviews/{reviewId}": {
+      "schema": { "$ref": "#/entities/Review" },
+      "description": "Guide reviews by tourists."
+    },
+    "/auditLogs/{logId}": {
+      "schema": { "$ref": "#/entities/AuditLog" },
+      "description": "Administrative audit trail."
+    }
+  }
+}

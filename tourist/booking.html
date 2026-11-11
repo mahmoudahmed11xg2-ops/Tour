@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Active Tour — TourGuide</title>
+  <link rel="stylesheet" href="/css/global.css">
+  <link rel="stylesheet" href="/css/tourist.css">
+</head>
+<body>
+
+  <!-- Top Header Navigation -->
+  <header class="site-header">
+    <div class="app-container header-inner">
+      <a href="/" class="brand-logo">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
+          </svg>
+        </div>
+        <span>TourGuide</span>
+      </a>
+
+      <nav class="nav-links">
+        <a href="/tourist/index.html" class="nav-link" data-i18n="nav.home">Home</a>
+        <a href="/tourist/explore.html" class="nav-link" data-i18n="nav.explore">Explore</a>
+        <a href="/tourist/bookings.html" class="nav-link active" data-i18n="nav.bookings">Bookings</a>
+        <a href="/guide/index.html" class="nav-link" data-i18n="nav.guidePortal">Guide Portal</a>
+      </nav>
+
+      <div class="header-actions">
+        <!-- Auth state injected by auth.js -->
+      </div>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="app-container" style="max-width: 800px;">
+
+      <!-- Active Ride Tracking Container -->
+      <div class="tracking-card">
+        
+        <!-- Map Simulation Area -->
+        <div class="map-simulation-area">
+          <div style="background: var(--bg-surface); padding: 8px 16px; border-radius: var(--radius-full); box-shadow: var(--shadow-card); display: flex; align-items: center; gap: 8px; border: 1px solid var(--border-color);">
+            <span style="width: 10px; height: 10px; border-radius: 50%; background: var(--success); display: inline-block;"></span>
+            <span style="font-size: 0.825rem; font-weight: 700;" id="etaDisplay">ETA: 8 mins away · Heading to Meeting Point</span>
+          </div>
+        </div>
+
+        <!-- 7-Stage State Timeline (Uber Ride Style) -->
+        <div class="status-timeline" id="statusTimeline">
+          <div class="timeline-step" data-step="Finding a Guide">
+            <div class="timeline-step-icon">1</div>
+            <span class="timeline-step-label" data-i18n="booking.timeline.finding">Finding Guide</span>
+          </div>
+          <div class="timeline-step" data-step="Guide Found">
+            <div class="timeline-step-icon">2</div>
+            <span class="timeline-step-label" data-i18n="booking.timeline.found">Guide Found</span>
+          </div>
+          <div class="timeline-step" data-step="Guide Confirmed">
+            <div class="timeline-step-icon">3</div>
+            <span class="timeline-step-label" data-i18n="booking.timeline.confirmed">Confirmed</span>
+          </div>
+          <div class="timeline-step" data-step="Guide Arriving">
+            <div class="timeline-step-icon">4</div>
+            <span class="timeline-step-label" data-i18n="booking.timeline.arriving">Arriving</span>
+          </div>
+          <div class="timeline-step" data-step="Meeting Started">
+            <div class="timeline-step-icon">5</div>
+            <span class="timeline-step-label" data-i18n="booking.timeline.met">Met</span>
+          </div>
+          <div class="timeline-step" data-step="Tour in Progress">
+            <div class="timeline-step-icon">6</div>
+            <span class="timeline-step-label" data-i18n="booking.timeline.inProgress">In Progress</span>
+          </div>
+          <div class="timeline-step" data-step="Tour Completed">
+            <div class="timeline-step-icon">7</div>
+            <span class="timeline-step-label" data-i18n="booking.timeline.completed">Completed</span>
+          </div>
+        </div>
+
+        <!-- Guide Information & Ride Details -->
+        <div style="padding: var(--space-6);">
+          
+          <!-- Guide Profile Quick Strip -->
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); margin-bottom: var(--space-6); padding-bottom: var(--space-5); border-bottom: 1px solid var(--border-color);">
+            <div style="display: flex; align-items: center; gap: var(--space-4);">
+              <img id="guideAvatar" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80" alt="Guide" style="width: 60px; height: 60px; border-radius: var(--radius-md); object-fit: cover;">
+              <div>
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <h3 id="guideName" style="font-size: 1.1rem; font-weight: 700; color: var(--text-primary);">Ahmed Hassan</h3>
+                  <span class="badge badge-verified" data-i18n="booking.verified">✓ Verified</span>
+                </div>
+                <span id="bookingStatusPill" class="badge badge-online" style="margin-top: 4px;">Tour in Progress</span>
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 8px;">
+              <button id="callGuideBtn" class="btn btn-outline btn-sm">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                <span data-i18n="booking.call">Call</span>
+              </button>
+              <button id="chatGuideBtn" class="btn btn-primary btn-sm">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                <span data-i18n="booking.chat">Chat</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Meeting Location & Trip Summary -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); margin-bottom: var(--space-6);">
+            <div>
+              <span class="form-label" data-i18n="booking.meetingLocation">Meeting Location</span>
+              <p id="meetingLocation" style="font-size: 0.95rem; font-weight: 600; color: var(--text-primary);">Giza Plateau - Great Pyramid Entrance</p>
+            </div>
+            <div>
+              <span class="form-label" data-i18n="booking.durationAndLang">Tour Duration & Language</span>
+              <p id="durationAndLang" style="font-size: 0.95rem; font-weight: 600; color: var(--text-primary);">2 hours · English</p>
+            </div>
+            <div>
+              <span class="form-label" data-i18n="booking.guestsCount">Guests Count</span>
+              <p id="guestsDisplay" style="font-size: 0.95rem; font-weight: 600; color: var(--text-primary);">2 Guests</p>
+            </div>
+            <div>
+              <span class="form-label" data-i18n="booking.totalAmount">Total Amount</span>
+              <p id="totalDisplay" style="font-size: 1.1rem; font-weight: 800; color: var(--text-primary); font-variant-numeric: tabular-nums;">$57.50</p>
+            </div>
+          </div>
+
+          <!-- Test / Simulation Stepper Bar -->
+          <div style="background: var(--bg-subtle); padding: 12px 16px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); margin-bottom: var(--space-5);">
+            <span style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);" data-i18n="booking.stateMachineControls">
+              Ride State Machine Controls:
+            </span>
+            <button id="advanceStateBtn" class="btn btn-primary btn-sm" data-i18n="booking.advanceNextState">
+              Advance Next State ⏩
+            </button>
+          </div>
+
+          <button id="cancelBookingBtn" class="btn btn-outline btn-block" style="color: var(--error); border-color: var(--error-border);" data-i18n="booking.cancelBooking">
+            Cancel Booking
+          </button>
+
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <script type="module">
+    import { db, COLLECTIONS } from '/js/firebase.js';
+    import { advanceBookingStatus, cancelBooking, BOOKING_STATES } from '/js/booking.js';
+    import { getUrlParam, showToast, t, getLocalizedStatus } from '/js/utils.js';
+    import { enforceRouteProtection } from '/js/auth.js';
+
+    enforceRouteProtection({ allowedRoles: ['tourist', 'guide', 'admin'] });
+
+    const bookingId = getUrlParam('id') || 'BK-9021';
+    let currentBooking = null;
+
+    async function loadBooking() {
+      currentBooking = await db.getDocument(COLLECTIONS.BOOKINGS, bookingId);
+      if (!currentBooking) {
+        // Fallback to latest
+        const all = await db.getCollection(COLLECTIONS.BOOKINGS);
+        currentBooking = all[all.length - 1] || null;
+      }
+
+      if (!currentBooking) {
+        showToast(t('booking.noBookingFound'), 'error');
+        return;
+      }
+
+      // Update UI
+      document.getElementById('guideName').textContent = currentBooking.guideName;
+      document.getElementById('bookingStatusPill').textContent = getLocalizedStatus(currentBooking.status);
+      document.getElementById('meetingLocation').textContent = currentBooking.location;
+      document.getElementById('durationAndLang').textContent = `${currentBooking.duration} · ${t('languages.' + (currentBooking.language || 'English').toLowerCase()) || currentBooking.language}`;
+      document.getElementById('guestsDisplay').textContent = `${currentBooking.guests} ${t('search.guests') || 'Guests'}`;
+      document.getElementById('totalDisplay').textContent = `$${currentBooking.total}`;
+
+      // Update ETA text according to state
+      const etaDisplay = document.getElementById('etaDisplay');
+      if (currentBooking.status === 'Finding a Guide') {
+        etaDisplay.textContent = t('booking.eta.finding');
+      } else if (currentBooking.status === 'Guide Found' || currentBooking.status === 'Guide Confirmed') {
+        etaDisplay.textContent = t('booking.eta.confirmed');
+      } else if (currentBooking.status === 'Guide Arriving') {
+        etaDisplay.textContent = t('booking.eta.arriving');
+      } else if (currentBooking.status === 'Meeting Started' || currentBooking.status === 'Tour in Progress') {
+        etaDisplay.textContent = t('booking.eta.inProgress');
+      } else if (currentBooking.status === 'Tour Completed') {
+        etaDisplay.textContent = t('booking.eta.completed');
+      }
+
+      // Update timeline
+      const currentIdx = BOOKING_STATES.indexOf(currentBooking.status);
+      document.querySelectorAll('.timeline-step').forEach((el, index) => {
+        el.classList.remove('completed', 'current');
+        if (index < currentIdx) {
+          el.classList.add('completed');
+        } else if (index === currentIdx) {
+          el.classList.add('current');
+        }
+      });
+    }
+
+    document.getElementById('advanceStateBtn').addEventListener('click', async () => {
+      if (!currentBooking) return;
+      const next = await advanceBookingStatus(currentBooking.id);
+      showToast(`${t('booking.advanceState')} ${getLocalizedStatus(next)}`, 'info');
+      await loadBooking();
+    });
+
+    document.getElementById('cancelBookingBtn').addEventListener('click', async () => {
+      if (confirm(t('booking.cancelConfirmPrompt') || 'Are you sure you want to cancel this booking?')) {
+        await cancelBooking(currentBooking.id);
+        showToast(t('booking.bookingCancelledToast'), 'error');
+        setTimeout(() => {
+          window.location.href = '/tourist/bookings.html';
+        }, 500);
+      }
+    });
+
+    document.getElementById('callGuideBtn').addEventListener('click', () => {
+      showToast(`${t('booking.call')} ${currentBooking?.guideName || ''}`, 'info');
+    });
+
+    document.getElementById('chatGuideBtn').addEventListener('click', () => {
+      showToast(`${t('booking.chat')} ${currentBooking?.guideName || ''}`, 'info');
+    });
+
+    document.addEventListener('tourguide:langchange', () => {
+      if (currentBooking) {
+        loadBooking();
+      }
+    });
+
+    loadBooking();
+  </script>
+</body>
+</html>

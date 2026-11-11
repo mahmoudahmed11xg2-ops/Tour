@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Manage Guides — Admin Console</title>
+  <link rel="stylesheet" href="/css/global.css">
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+
+  <!-- Top Header Navigation -->
+  <header class="site-header">
+    <div class="app-container header-inner">
+      <a href="/admin/index.html" class="brand-logo">
+        <div class="brand-icon" style="background: #1e40af;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+        </div>
+        <span>TourGuide</span>
+        <span class="brand-badge" style="color: #1e40af;">ADMIN</span>
+      </a>
+
+      <nav class="nav-links">
+        <a href="/admin/index.html" class="nav-link">Dashboard</a>
+        <a href="/admin/guides.html" class="nav-link active">Guides & Verification</a>
+        <a href="/admin/bookings.html" class="nav-link">Bookings</a>
+        <a href="/admin/payments.html" class="nav-link">Payments</a>
+        <a href="/admin/reports.html" class="nav-link">Reports</a>
+      </nav>
+
+      <div class="header-actions"></div>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="app-container">
+      
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-6);">
+        <h1 style="font-size: 1.5rem; font-weight: 800;">All Registered Tour Guides</h1>
+      </div>
+
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Guide</th>
+              <th>City / Location</th>
+              <th>Languages</th>
+              <th>Rating</th>
+              <th>Hourly Rate</th>
+              <th>Verification</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="allGuidesTbody"></tbody>
+        </table>
+      </div>
+
+    </div>
+  </main>
+
+  <script type="module">
+    import { db, COLLECTIONS } from '/js/firebase.js';
+    import { updateGuideVerification } from '/js/guides.js';
+    import { showToast } from '/js/utils.js';
+    import { enforceRouteProtection, onAuthReady } from '/js/auth.js';
+
+    enforceRouteProtection({ allowedRoles: ['admin'] });
+
+    async function loadAllGuides() {
+      const guides = await db.getCollection(COLLECTIONS.GUIDES);
+      const tbody = document.getElementById('allGuidesTbody');
+
+      tbody.innerHTML = guides.map(g => `
+        <tr>
+          <td>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <img src="${g.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=400&q=80'}" style="width: 36px; height: 36px; border-radius: var(--radius-sm); object-fit: cover;">
+              <span style="font-weight: 700;">${g.name}</span>
+            </div>
+          </td>
+          <td>${g.city || 'Cairo'}</td>
+          <td>${Array.isArray(g.languages) ? g.languages.join(', ') : g.languages}</td>
+          <td>★ ${g.rating ? g.rating.toFixed(1) : 'New'} (${g.reviewsCount || 0})</td>
+          <td style="font-weight: 700;">$${g.hourlyRate || 25}/hr</td>
+          <td>
+            <span class="badge ${g.verificationStatus === 'approved' ? 'badge-verified' : 'badge-pending'}">
+              ${(g.verificationStatus || 'pending').toUpperCase()}
+            </span>
+          </td>
+          <td>
+            ${g.verificationStatus !== 'approved' ? `
+              <button class="btn btn-outline btn-sm quick-approve-btn" data-id="${g.id}">Approve</button>
+            ` : `
+              <span style="color: var(--success); font-weight: 600; font-size: 0.8rem;">Verified Active</span>
+            `}
+          </td>
+        </tr>
+      `).join('');
+
+      document.querySelectorAll('.quick-approve-btn').forEach(b => {
+        b.addEventListener('click', async (e) => {
+          const id = e.currentTarget.getAttribute('data-id');
+          await updateGuideVerification(id, 'approved');
+          showToast('Guide approved!', 'success');
+          loadAllGuides();
+        });
+      });
+    }
+
+    onAuthReady((user) => {
+      if (user) loadAllGuides();
+    });
+  </script>
+</body>
+</html>

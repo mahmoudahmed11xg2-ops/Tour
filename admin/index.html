@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Admin Operations Console — TourGuide</title>
+  <link rel="stylesheet" href="/css/global.css">
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+
+  <!-- Top Header Navigation -->
+  <header class="site-header">
+    <div class="app-container header-inner">
+      <a href="/admin/index.html" class="brand-logo">
+        <div class="brand-icon" style="background: #1e40af;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+        </div>
+        <span>TourGuide</span>
+        <span class="brand-badge" style="color: #1e40af;">ADMIN</span>
+      </a>
+
+      <nav class="nav-links">
+        <a href="/admin/index.html" class="nav-link active" data-i18n="nav.dashboard">Dashboard</a>
+        <a href="/admin/guides.html" class="nav-link" data-i18n="nav.guides">Guides & Verification</a>
+        <a href="/admin/bookings.html" class="nav-link" data-i18n="nav.bookings">Bookings</a>
+        <a href="/admin/payments.html" class="nav-link" data-i18n="nav.payments">Payments</a>
+        <a href="/admin/reports.html" class="nav-link" data-i18n="nav.reports">Reports</a>
+        <a href="/tourist/index.html" class="nav-link" style="color: var(--text-muted);" data-i18n="nav.touristView">Tourist View</a>
+      </nav>
+
+      <div class="header-actions"></div>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="app-container">
+
+      <!-- Admin Top Operational Bar -->
+      <div class="admin-header">
+        <div>
+          <h1 style="font-size: 1.6rem; font-weight: 800; color: var(--text-primary);" data-i18n="admin.dashboardTitle">Operations Control Center</h1>
+          <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 2px;" data-i18n="admin.dashboardSubtitle">
+            Real-time guide verification, government compliance, bookings pipeline, and disputes.
+          </p>
+        </div>
+
+        <div class="admin-nav-tabs">
+          <a href="/admin/index.html" class="admin-nav-btn active" data-i18n="nav.overview">Overview</a>
+          <a href="/admin/guides.html" class="admin-nav-btn" data-i18n="admin.verificationQueueTitle">Verification Queue</a>
+          <a href="/admin/bookings.html" class="admin-nav-btn" data-i18n="nav.bookings">Live Bookings</a>
+          <a href="/admin/payments.html" class="admin-nav-btn" data-i18n="nav.payments">Revenue & Escrow</a>
+        </div>
+      </div>
+
+      <!-- Real KPI Numbers Grid -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--space-4); margin-bottom: var(--space-6);">
+        <div class="card">
+          <span style="font-size: 0.775rem; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 4px;" data-i18n="admin.activeGuides">Verified Active Guides</span>
+          <div style="font-size: 1.75rem; font-weight: 800;" id="kpiActiveGuides">3</div>
+          <span style="font-size: 0.75rem; color: var(--success);" data-i18n="admin.approvedMarketplace">Approved on marketplace</span>
+        </div>
+
+        <div class="card">
+          <span style="font-size: 0.775rem; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 4px;" data-i18n="admin.pendingApprovals">Pending Verification</span>
+          <div style="font-size: 1.75rem; font-weight: 800; color: var(--warning);" id="kpiPendingGuides">1</div>
+          <span style="font-size: 0.75rem; color: var(--text-muted);" data-i18n="admin.syndicateReview">Syndicate license review</span>
+        </div>
+
+        <div class="card">
+          <span style="font-size: 0.775rem; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 4px;" data-i18n="admin.platformVolume">Platform Commission (15%)</span>
+          <div style="font-size: 1.75rem; font-weight: 800; color: var(--primary);">$250.50</div>
+          <span style="font-size: 0.75rem; color: var(--text-muted);" data-i18n="admin.escrowCommissions">15% escrow commissions</span>
+        </div>
+
+        <div class="card">
+          <span style="font-size: 0.775rem; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 4px;" data-i18n="admin.activeRides">Active Tours</span>
+          <div style="font-size: 1.75rem; font-weight: 800; color: var(--success);">1</div>
+          <span style="font-size: 0.75rem; color: var(--success);" data-i18n="admin.inProgressDispatched">In-progress & dispatched</span>
+        </div>
+      </div>
+
+      <!-- Guide Verification Queue (Section 18) -->
+      <section class="card" style="margin-bottom: var(--space-6);">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title" data-i18n="admin.verificationQueueTitle">Guide Verification Queue (Strict Trust & Safety)</h2>
+            <span style="font-size: 0.8rem; color: var(--text-muted);">Review government syndicate credentials before marketplace approval</span>
+          </div>
+        </div>
+
+        <div id="verificationQueueList">
+          <!-- Dynamically populated -->
+        </div>
+      </section>
+
+      <!-- Recent Live Bookings Pipeline -->
+      <section class="card">
+        <div class="card-header">
+          <h2 class="card-title" data-i18n="admin.allBookingsTitle">Live Marketplace Bookings</h2>
+          <a href="/admin/bookings.html" class="btn btn-outline btn-sm" data-i18n="explore.viewAll">View All Bookings</a>
+        </div>
+
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th data-i18n="admin.bookingIdCol">Booking ID</th>
+                <th data-i18n="admin.touristCol">Tourist</th>
+                <th data-i18n="admin.guideCol">Guide</th>
+                <th data-i18n="admin.locationCol">Location</th>
+                <th data-i18n="admin.totalCol">Total</th>
+                <th data-i18n="admin.feeCol">Commission</th>
+                <th data-i18n="admin.statusCol">Status</th>
+              </tr>
+            </thead>
+            <tbody id="bookingsTableBody">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <script type="module">
+    import { db, COLLECTIONS } from '/js/firebase.js';
+    import { updateGuideVerification } from '/js/guides.js';
+    import { showToast, t, getLocalizedStatus } from '/js/utils.js';
+    import { enforceRouteProtection, onAuthReady } from '/js/auth.js';
+
+    enforceRouteProtection({ allowedRoles: ['admin'] });
+
+    async function loadAdminData() {
+      // 1. Guides & Verification Queue
+      const guides = await db.getCollection(COLLECTIONS.GUIDES);
+      const pending = guides.filter(g => g.verificationStatus === 'pending' || g.verificationStatus === 'under_review');
+      const verified = guides.filter(g => g.verificationStatus === 'approved');
+
+      document.getElementById('kpiActiveGuides').textContent = verified.length;
+      document.getElementById('kpiPendingGuides').textContent = pending.length;
+
+      const queueContainer = document.getElementById('verificationQueueList');
+      if (pending.length === 0) {
+        queueContainer.innerHTML = `
+          <div class="empty-state" style="padding: var(--space-6);">
+            <div class="empty-state-title" style="color: var(--success);">${t('admin.queueClearTitle')}</div>
+            <div class="empty-state-desc">${t('admin.queueClearDesc')}</div>
+          </div>
+        `;
+      } else {
+        queueContainer.innerHTML = pending.map(g => `
+          <div class="verification-card">
+            <div class="verification-meta">
+              <img src="${g.avatar}" alt="${g.name}" style="width: 56px; height: 56px; border-radius: var(--radius-md); object-fit: cover;">
+              <div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <h3 style="font-size: 1rem; font-weight: 700;">${g.name}</h3>
+                  <span class="badge badge-pending">${(g.verificationStatus || 'pending').toUpperCase()}</span>
+                </div>
+                <span style="font-size: 0.8rem; color: var(--text-muted); display: block;">
+                  ${t('admin.locationCol')}: ${g.city || 'Cairo'} · ${t('search.yearsExp', { count: g.experienceYears || 1 })} · ${t('auth.languagesSpoken')}: ${Array.isArray(g.languages) ? g.languages.join(', ') : g.languages}
+                </span>
+                <span style="font-size: 0.775rem; color: var(--accent); font-weight: 600;">
+                  ${t('admin.submittedDocument')}
+                </span>
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 8px;">
+              <button class="btn btn-outline btn-sm request-changes-btn" data-guide-id="${g.id}">${t('admin.requestChanges')}</button>
+              <button class="btn btn-outline btn-sm reject-guide-btn" data-guide-id="${g.id}" style="color: var(--error); border-color: var(--error-border);">${t('admin.reject')}</button>
+              <button class="btn btn-primary btn-sm approve-guide-btn" data-guide-id="${g.id}" style="background: var(--success);">${t('admin.approveLicense')}</button>
+            </div>
+          </div>
+        `).join('');
+
+        // Attach action handlers
+        document.querySelectorAll('.approve-guide-btn').forEach(btn => {
+          btn.addEventListener('click', async (e) => {
+            const guideId = e.currentTarget.getAttribute('data-guide-id');
+            await updateGuideVerification(guideId, 'approved', 'License verified with Egyptian syndicate registry.');
+            showToast(t('toasts.guideApproved'), 'success');
+            await loadAdminData();
+          });
+        });
+
+        document.querySelectorAll('.reject-guide-btn').forEach(btn => {
+          btn.addEventListener('click', async (e) => {
+            const guideId = e.currentTarget.getAttribute('data-guide-id');
+            const reason = 'Syndicate verification check failed: invalid license number';
+            await updateGuideVerification(guideId, 'rejected', reason);
+            showToast(t('toasts.guideRejected'), 'error');
+            await loadAdminData();
+          });
+        });
+
+        document.querySelectorAll('.request-changes-btn').forEach(btn => {
+          btn.addEventListener('click', async (e) => {
+            const guideId = e.currentTarget.getAttribute('data-guide-id');
+            await updateGuideVerification(guideId, 'under_review', 'Requested higher resolution image of syndicate license card.');
+            showToast(t('toasts.guideChangesRequested'), 'info');
+            await loadAdminData();
+          });
+        });
+      }
+
+      // 2. Bookings Table
+      const bookings = await db.getCollection(COLLECTIONS.BOOKINGS);
+      const tbody = document.getElementById('bookingsTableBody');
+      tbody.innerHTML = bookings.slice(0, 5).reverse().map(b => `
+        <tr>
+          <td style="font-family: monospace; font-weight: 700;">${b.id}</td>
+          <td>${b.touristName}</td>
+          <td>${b.guideName}</td>
+          <td>${b.location}</td>
+          <td style="font-weight: 700;">$${b.total}</td>
+          <td style="color: var(--success); font-weight: 700;">$${b.platformFee || (b.total * 0.15).toFixed(2)}</td>
+          <td><span class="badge ${b.status === 'Tour Completed' ? 'badge-gray' : 'badge-online'}">${getLocalizedStatus(b.status)}</span></td>
+        </tr>
+      `).join('');
+    }
+
+    document.addEventListener('tourguide:langchange', () => {
+      loadAdminData();
+    });
+
+    onAuthReady((user) => {
+      if (user) loadAdminData();
+    });
+  </script>
+</body>
+</html>

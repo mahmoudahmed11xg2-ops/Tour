@@ -1,0 +1,422 @@
+/* ==========================================================================
+   TourGuide — Tourist Experience & Booking Stylesheet
+   Uber / Airbnb-inspired Search, Guide Profile, and Ride Tracking
+   ========================================================================== */
+
+/* Search Hero ("Where are you going?") */
+.search-hero {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  margin-bottom: var(--space-8);
+  box-shadow: var(--shadow-card);
+}
+
+@media (min-width: 768px) {
+  .search-hero {
+    padding: var(--space-8);
+  }
+}
+
+.search-headline {
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--primary);
+  margin-bottom: var(--space-4);
+}
+
+@media (min-width: 768px) {
+  .search-headline {
+    font-size: 2rem;
+  }
+}
+
+/* Uber-style location stack */
+.location-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+}
+
+@media (min-width: 768px) {
+  .location-inputs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.input-with-icon {
+  position: relative;
+}
+
+.input-with-icon svg {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  inset-inline-start: 14px;
+  width: 18px;
+  height: 18px;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.input-with-icon input,
+.input-with-icon select {
+  padding-inline-start: 42px;
+}
+
+/* Two Booking Modes (Segmented Controls) */
+.booking-mode-selector {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-5);
+  background: var(--bg-subtle);
+  padding: 4px;
+  border-radius: var(--radius-md);
+  max-width: 380px;
+}
+
+.booking-mode-btn {
+  flex: 1;
+  padding: 8px 14px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  text-align: center;
+  color: var(--text-secondary);
+  transition: all 150ms ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.booking-mode-btn.active {
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-subtle);
+}
+
+/* Specialty category horizontal selector */
+.specialty-pills {
+  display: flex;
+  gap: var(--space-2);
+  overflow-x: auto;
+  padding-bottom: var(--space-2);
+  margin-bottom: var(--space-5);
+  scrollbar-width: none;
+}
+
+.specialty-pills::-webkit-scrollbar {
+  display: none;
+}
+
+.specialty-btn {
+  padding: 8px 16px;
+  border-radius: var(--radius-full);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  font-size: 0.825rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  transition: all 150ms ease;
+}
+
+.specialty-btn:hover {
+  border-color: var(--text-secondary);
+  color: var(--text-primary);
+}
+
+.specialty-btn.active {
+  background: var(--primary);
+  color: var(--text-inverse);
+  border-color: var(--primary);
+}
+
+/* ==========================================================================
+   Guide Search Results
+   ========================================================================== */
+
+.results-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-5);
+}
+
+.results-count {
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.guide-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+}
+
+@media (min-width: 640px) {
+  .guide-list {
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  }
+}
+
+.guide-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  box-shadow: var(--shadow-subtle);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.guide-card:hover {
+  border-color: var(--border-hover);
+  box-shadow: var(--shadow-card);
+}
+
+.guide-card-top {
+  display: flex;
+  gap: var(--space-4);
+  margin-bottom: var(--space-3);
+}
+
+.guide-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-md);
+  object-cover: cover;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.guide-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.guide-name-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-bottom: 2px;
+}
+
+.guide-name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.guide-meta-inline {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.guide-languages {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.guide-card-bottom {
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.guide-price {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.guide-price-unit {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.guide-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* ==========================================================================
+   Full Guide Profile Page (Desktop Sidebar + Mobile Sticky CTA)
+   ========================================================================== */
+
+.profile-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-6);
+}
+
+@media (min-width: 992px) {
+  .profile-layout {
+    grid-template-columns: 1fr 380px;
+    align-items: start;
+  }
+}
+
+.profile-main-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+}
+
+@media (min-width: 768px) {
+  .profile-main-card {
+    padding: var(--space-8);
+  }
+}
+
+.profile-header-strip {
+  display: flex;
+  gap: var(--space-5);
+  margin-bottom: var(--space-6);
+  padding-bottom: var(--space-6);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.profile-avatar-lg {
+  width: 96px;
+  height: 96px;
+  border-radius: var(--radius-lg);
+  object-fit: cover;
+  border: 2px solid var(--bg-surface);
+  box-shadow: var(--shadow-card);
+}
+
+.profile-sidebar-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  box-shadow: var(--shadow-card);
+  position: sticky;
+  top: calc(var(--header-height) + 20px);
+}
+
+/* Mobile Sticky Bottom CTA */
+.mobile-sticky-cta {
+  display: flex;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--bg-surface);
+  border-top: 1px solid var(--border-color);
+  padding: var(--space-3) var(--space-4);
+  align-items: center;
+  justify-content: space-between;
+  z-index: 45;
+  box-shadow: 0 -4px 16px rgba(0,0,0,0.06);
+}
+
+@media (min-width: 992px) {
+  .mobile-sticky-cta {
+    display: none;
+  }
+}
+
+/* ==========================================================================
+   Active Booking Ride Tracking (Uber-style)
+   ========================================================================== */
+
+.tracking-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+  margin-bottom: var(--space-6);
+}
+
+.map-simulation-area {
+  height: 220px;
+  background: #e2e8f0;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-image: radial-gradient(#cbd5e1 1.5px, transparent 1.5px);
+  background-size: 20px 20px;
+}
+
+.status-timeline {
+  display: flex;
+  justify-content: space-between;
+  padding: var(--space-5);
+  background: var(--bg-subtle);
+  border-bottom: 1px solid var(--border-color);
+  overflow-x: auto;
+}
+
+.timeline-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 4px;
+  flex: 1;
+  min-width: 80px;
+  position: relative;
+}
+
+.timeline-step-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--border-color);
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.timeline-step.completed .timeline-step-icon {
+  background: var(--success);
+  color: var(--text-inverse);
+}
+
+.timeline-step.current .timeline-step-icon {
+  background: var(--primary);
+  color: var(--text-inverse);
+  box-shadow: 0 0 0 4px rgba(15, 23, 42, 0.15);
+}
+
+.timeline-step-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.timeline-step.current .timeline-step-label {
+  color: var(--text-primary);
+}
