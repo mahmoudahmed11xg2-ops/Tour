@@ -20,15 +20,16 @@
           </svg>
         </div>
         <span>TourGuide</span>
-        <span class="brand-badge" style="color: #1e40af;">ADMIN</span>
+        <span class="brand-badge" style="color: #1e40af;" data-i18n="brand.adminBadge">ADMIN</span>
       </a>
 
       <nav class="nav-links">
-        <a href="/admin/index.html" class="nav-link">Dashboard</a>
-        <a href="/admin/guides.html" class="nav-link">Guides & Verification</a>
-        <a href="/admin/bookings.html" class="nav-link">Bookings</a>
-        <a href="/admin/payments.html" class="nav-link active">Payments</a>
-        <a href="/admin/reports.html" class="nav-link">Reports</a>
+        <a href="/admin/index.html" class="nav-link" data-i18n="nav.dashboard">Dashboard</a>
+        <a href="/admin/guides.html" class="nav-link" data-i18n="nav.guides">Guides & Verification</a>
+        <a href="/admin/bookings.html" class="nav-link" data-i18n="nav.bookings">Bookings</a>
+        <a href="/admin/users.html" class="nav-link" data-i18n="nav.users">Users</a>
+        <a href="/admin/payments.html" class="nav-link active" data-i18n="nav.payments">Payments</a>
+        <a href="/admin/reports.html" class="nav-link" data-i18n="nav.reports">Reports</a>
       </nav>
 
       <div class="header-actions"></div>
@@ -37,25 +38,60 @@
 
   <main class="main-content">
     <div class="app-container">
-      
-      <h1 style="font-size: 1.5rem; font-weight: 800; margin-bottom: var(--space-6);">Payments, Escrow & Commissions</h1>
+
+      <h1 style="font-size: 1.5rem; font-weight: 800; margin-bottom: var(--space-6);" data-i18n="admin.paymentsTitle">Payments, Escrow & Commissions</h1>
 
       <div class="card" style="margin-bottom: var(--space-6);">
         <div class="card-header">
-          <h2 class="card-title">Commission & Payout Policy</h2>
+          <h2 class="card-title" data-i18n="admin.paymentsPolicyTitle">Commission & Payout Policy</h2>
         </div>
-        <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.6;">
-          Tourist payment is collected upfront via Paymob / Stripe and held in platform escrow. 
-          Upon tour completion, the platform fee (15%) is retained, and 85% is released to the guide's wallet for automated settlement.
+        <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.6;" data-i18n="admin.paymentsPolicyDesc">
+          Tourist payment is collected upfront via Paymob / Stripe and held in platform escrow.
+          Upon tour completion, the platform fee (15%) is retained, and 85% is released to the guide wallet for automated settlement.
         </p>
+      </div>
+
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th data-i18n="admin.bookingIdCol">Booking ID</th>
+              <th data-i18n="admin.totalCol">Total</th>
+              <th data-i18n="admin.feeCol">Commission (15%)</th>
+              <th data-i18n="admin.statusCol">Status</th>
+            </tr>
+          </thead>
+          <tbody id="paymentsTbody"></tbody>
+        </table>
       </div>
 
     </div>
   </main>
 
   <script type="module">
-    import { enforceRouteProtection } from '/js/auth.js';
+    import { db, COLLECTIONS } from '/js/firebase.js';
+    import { enforceRouteProtection, onAuthReady } from '/js/auth.js';
+    import { formatCurrency } from '/js/utils.js';
+
     enforceRouteProtection({ allowedRoles: ['admin'] });
+
+    async function loadPayments() {
+      const payments = await db.getCollection(COLLECTIONS.PAYMENTS);
+      const tbody = document.getElementById('paymentsTbody');
+      tbody.innerHTML = payments.map(p => `
+        <tr>
+          <td style="font-family: monospace; font-weight: 700;">${p.bookingId || p.id}</td>
+          <td style="font-weight: 700;">${formatCurrency(Number(p.amount || 0).toFixed(2), p.currency || 'USD')}</td>
+          <td style="color: var(--success); font-weight: 700;">${formatCurrency(Number(p.platformFee || 0).toFixed(2), p.currency || 'USD')}</td>
+          <td><span class="badge badge-online">${p.status || ''}</span></td>
+        </tr>
+      `).join('');
+    }
+
+    document.addEventListener('tourguide:langchange', loadPayments);
+    onAuthReady((user) => {
+      if (user) loadPayments();
+    });
   </script>
 </body>
 </html>

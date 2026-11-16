@@ -20,7 +20,7 @@
           </svg>
         </div>
         <span>TourGuide</span>
-        <span class="brand-badge">CAPTAIN</span>
+        <span class="brand-badge" data-i18n="brand.captainBadge">CAPTAIN</span>
       </a>
 
       <nav class="nav-links">
@@ -37,8 +37,8 @@
 
   <main class="main-content">
     <div class="app-container" style="max-width: 900px;">
-      
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-6);">
+
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-6); flex-wrap: wrap; gap: var(--space-3);">
         <div>
           <h1 style="font-size: 1.5rem; font-weight: 800;" data-i18n="guide.earningsTitle">Earnings & Payouts</h1>
           <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 2px;" data-i18n="guide.earningsSubtitle">
@@ -48,60 +48,38 @@
         <button id="requestPayoutBtn" class="btn btn-primary btn-sm" data-i18n="guide.requestPayoutBtn">Request Payout</button>
       </div>
 
-      <!-- Financial Metrics Grid -->
+      <!-- Financial Metrics Grid (Real Firestore Totals) -->
       <div class="kpi-grid">
         <div class="kpi-card">
           <span class="kpi-label" data-i18n="guide.availablePayout">Available for Payout</span>
-          <div class="kpi-value" style="color: var(--success);">$485.00</div>
+          <div class="kpi-value" id="kpiNetPayout" style="color: var(--success);">$0.00</div>
           <span class="kpi-subtext" data-i18n="guide.directBankNotice">Direct Bank / Vodafone Cash</span>
         </div>
         <div class="kpi-card">
           <span class="kpi-label" data-i18n="guide.grossBookings">Gross Bookings</span>
-          <div class="kpi-value">$1,670.00</div>
+          <div class="kpi-value" id="kpiGross">$0.00</div>
           <span class="kpi-subtext" data-i18n="guide.totalTouristPayments">Total tourist payments</span>
         </div>
         <div class="kpi-card">
           <span class="kpi-label" data-i18n="guide.platformFeesTitle">Platform Fees (15%)</span>
-          <div class="kpi-value">$250.50</div>
+          <div class="kpi-value" id="kpiFees">$0.00</div>
           <span class="kpi-subtext" data-i18n="guide.infraSupport">Infrastructure & support</span>
         </div>
         <div class="kpi-card">
           <span class="kpi-label" data-i18n="guide.completedTours">Completed Tours</span>
-          <div class="kpi-value">28</div>
-          <span class="kpi-subtext" data-i18n="guide.thisQuarter">This quarter</span>
+          <div class="kpi-value" id="kpiCompletedCount">0</div>
+          <span class="kpi-subtext" data-i18n="guide.thisQuarter">Total completed</span>
         </div>
       </div>
 
-      <!-- Recent Payout & Tour Ledger -->
+      <!-- Real Completed Tour Ledger -->
       <div class="card">
         <div class="card-header">
           <h2 class="card-title" data-i18n="guide.completedToursBreakdown">Completed Tours Breakdown</h2>
-          <span style="font-size: 0.8rem; color: var(--text-muted);" data-i18n="guide.last30Days">Last 30 days</span>
+          <span style="font-size: 0.8rem; color: var(--text-muted);" data-i18n="guide.last30Days">All completed tours</span>
         </div>
 
-        <div style="display: grid; gap: var(--space-3);">
-          <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border-color);">
-            <div>
-              <span style="font-weight: 700; font-size: 0.95rem; display: block;">Pyramids of Giza & Sphinx (Elena Rostova)</span>
-              <span style="font-size: 0.775rem; color: var(--text-muted);">BK-9021 · 2 hours · Nov 11, 2026</span>
-            </div>
-            <div style="text-align: right;">
-              <span style="font-weight: 800; font-size: 1rem; color: var(--success); display: block;">+$42.50</span>
-              <span style="font-size: 0.75rem; color: var(--text-muted);">Gross: $50 · Fee: $7.50</span>
-            </div>
-          </div>
-
-          <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border-color);">
-            <div>
-              <span style="font-weight: 700; font-size: 0.95rem; display: block;">Old Cairo & Khan el-Khalili (Markus Weber)</span>
-              <span style="font-size: 0.775rem; color: var(--text-muted);">BK-8842 · 4 hours · Nov 9, 2026</span>
-            </div>
-            <div style="text-align: right;">
-              <span style="font-weight: 800; font-size: 1rem; color: var(--success); display: block;">+$85.00</span>
-              <span style="font-size: 0.75rem; color: var(--text-muted);">Gross: $100 · Fee: $15.00</span>
-            </div>
-          </div>
-        </div>
+        <div id="earningsLedgerList" style="display: grid; gap: var(--space-3);"></div>
       </div>
 
     </div>
@@ -109,30 +87,61 @@
 
   <script type="module">
     import { onAuthReady, enforceRouteProtection } from '/js/auth.js';
-    import { getBookingsForGuide } from '/js/booking.js';
-    import { showToast, t } from '/js/utils.js';
+    import { BOOKING_STATUS, getBookingsForGuide } from '/js/booking.js';
+    import { showToast, t, formatCurrency, formatDuration } from '/js/utils.js';
 
     enforceRouteProtection({ allowedRoles: ['guide', 'admin'] });
 
+    let completedBookings = [];
+
+    function renderEarnings() {
+      const gross = completedBookings.reduce((sum, b) => sum + Number(b.price || 0), 0);
+      const fees = completedBookings.reduce((sum, b) => sum + Number(b.platformFee || 0), 0);
+      const net = Math.max(0, gross - fees);
+
+      document.getElementById('kpiNetPayout').textContent = formatCurrency(net.toFixed(2));
+      document.getElementById('kpiGross').textContent = formatCurrency(gross.toFixed(2));
+      document.getElementById('kpiFees').textContent = formatCurrency(fees.toFixed(2));
+      document.getElementById('kpiCompletedCount').textContent = String(completedBookings.length);
+
+      const ledger = document.getElementById('earningsLedgerList');
+      if (completedBookings.length === 0) {
+        ledger.innerHTML = `<p style="font-size: 0.875rem; color: var(--text-muted);">${t('guide.noCompletedToursYet')}</p>`;
+        return;
+      }
+
+      ledger.innerHTML = completedBookings.map(b => {
+        const bGross = Number(b.price || 0);
+        const bFee = Number(b.platformFee || 0);
+        const bNet = Math.max(0, bGross - bFee);
+        const cur = b.currency || 'USD';
+        return `
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border-color);">
+            <div>
+              <span style="font-weight: 700; font-size: 0.95rem; display: block;">${b.location} (${b.touristName})</span>
+              <span style="font-size: 0.775rem; color: var(--text-muted);">${b.id} · ${formatDuration(b.duration)} · ${b.date}</span>
+            </div>
+            <div style="text-align: end;">
+              <span style="font-weight: 800; font-size: 1rem; color: var(--success); display: block;">+${formatCurrency(bNet.toFixed(2), cur)}</span>
+              <span style="font-size: 0.75rem; color: var(--text-muted);">${t('guide.grossLabel')}: ${formatCurrency(bGross.toFixed(2), cur)} · ${t('guide.feeLabel')}: ${formatCurrency(bFee.toFixed(2), cur)}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
     onAuthReady(async (user) => {
       if (!user) return;
-      try {
-        const bookings = await getBookingsForGuide(user.uid);
-        const completed = bookings.filter(b => b.status === 'Tour Completed');
-        if (completed.length > 0) {
-          const gross = completed.reduce((sum, b) => sum + (b.price || 0), 0);
-          const platformFee = completed.reduce((sum, b) => sum + (b.platformFee || 0), 0);
-          const net = gross - platformFee;
-          console.log(`Guide earnings computed: net $${net}`);
-        }
-      } catch (e) {
-        console.warn('Earnings load notice:', e);
-      }
+      const bookings = await getBookingsForGuide(user.uid);
+      completedBookings = bookings.filter(b => b.status === BOOKING_STATUS.COMPLETED);
+      renderEarnings();
     });
 
     document.getElementById('requestPayoutBtn').addEventListener('click', () => {
       showToast(t('toasts.payoutRequested'), 'success');
     });
+
+    document.addEventListener('tourguide:langchange', renderEarnings);
   </script>
 </body>
 </html>

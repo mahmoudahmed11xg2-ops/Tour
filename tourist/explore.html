@@ -38,13 +38,16 @@
 
       <!-- Explore Filters Strip -->
       <div style="background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-xl); padding: var(--space-5); margin-bottom: var(--space-6); box-shadow: var(--shadow-subtle);">
-        <h1 style="font-size: 1.35rem; font-weight: 800; margin-bottom: var(--space-4);" data-i18n="explore.title">Explore Egypt's Certified Guides</h1>
+        <div style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-4);">
+          <h1 style="font-size: 1.35rem; font-weight: 800;" data-i18n="explore.title">Explore Certified Guides</h1>
+          <span id="exploreCount" style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;"></span>
+        </div>
 
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--space-3);">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(165px, 1fr)); gap: var(--space-3);">
           <div>
-            <label class="form-label" data-i18n="explore.filterCity">Destination</label>
+            <label class="form-label" data-i18n="explore.filterCity">City</label>
             <select id="filterCity" class="form-select">
-              <option value="all" data-i18n="explore.filterAllCities">All Destinations</option>
+              <option value="all" data-i18n="explore.filterAllCities">All Cities</option>
               <option value="Giza">Giza</option>
               <option value="Cairo">Cairo</option>
               <option value="Luxor">Luxor</option>
@@ -53,9 +56,30 @@
           </div>
 
           <div>
+            <label class="form-label" data-i18n="explore.filterDate">Date</label>
+            <input type="date" id="filterDate" class="form-input">
+          </div>
+
+          <div>
+            <label class="form-label" data-i18n="explore.filterTime">Start Time</label>
+            <input type="time" id="filterTime" class="form-input" value="10:00">
+          </div>
+
+          <div>
+            <label class="form-label" data-i18n="explore.filterDuration">Duration</label>
+            <select id="filterDuration" class="form-select">
+              <option value="2" selected>2 hrs</option>
+              <option value="3">3 hrs</option>
+              <option value="4">4 hrs</option>
+              <option value="6">6 hrs</option>
+              <option value="8">8 hrs</option>
+            </select>
+          </div>
+
+          <div>
             <label class="form-label" data-i18n="explore.filterLanguage">Language</label>
             <select id="filterLanguage" class="form-select">
-              <option value="all" data-i18n="search.anyLanguage">All Languages</option>
+              <option value="all" data-i18n="search.anyLanguage">Any Language</option>
               <option value="English" data-i18n="languages.en">English</option>
               <option value="Arabic" data-i18n="languages.ar">Arabic</option>
               <option value="German" data-i18n="languages.german">German</option>
@@ -66,22 +90,64 @@
           </div>
 
           <div>
-            <label class="form-label" data-i18n="explore.filterSpecialty">Category</label>
+            <label class="form-label" data-i18n="explore.filterSpecialty">Specialty</label>
             <select id="filterSpecialty" class="form-select">
-              <option value="all" data-i18n="explore.filterAllSpecialties">All Categories</option>
+              <option value="all" data-i18n="explore.filterAllSpecialties">All Specialties</option>
               <option value="History" data-i18n="search.categoryHistory">History</option>
               <option value="Architecture" data-i18n="search.categoryArchitecture">Architecture</option>
               <option value="Museum" data-i18n="search.categoryMuseum">Museum</option>
-              <option value="Food" data-i18n="search.categoryFood">Food & Culinary</option>
+              <option value="Food" data-i18n="search.categoryFood">Food</option>
               <option value="Local Experience" data-i18n="search.categoryLocal">Local Experience</option>
-              <option value="Desert" data-i18n="search.categoryDesert">Desert Safari</option>
+              <option value="Desert" data-i18n="search.categoryDesert">Desert</option>
+              <option value="Family" data-i18n="search.categoryFamily">Family</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="form-label" data-i18n="explore.filterMaxPrice">Max Price / hr</label>
+            <select id="filterMaxPrice" class="form-select">
+              <option value="" data-i18n="explore.filterAnyPrice">Any Price</option>
+              <option value="25">$25 / hr</option>
+              <option value="35">$35 / hr</option>
+              <option value="50">$50 / hr</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="form-label" data-i18n="explore.filterMinRating">Min Rating</label>
+            <select id="filterMinRating" class="form-select">
+              <option value="" data-i18n="explore.filterAnyRating">Any Rating</option>
+              <option value="4.5">4.5+</option>
+              <option value="4.8">4.8+</option>
+              <option value="4.9">4.9+</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="form-label" data-i18n="explore.filterMaxDistance">Max Distance</label>
+            <select id="filterMaxDistance" class="form-select">
+              <option value="" data-i18n="explore.filterAnyDistance">Any Distance</option>
+              <option value="3">3 km</option>
+              <option value="5">5 km</option>
+              <option value="10">10 km</option>
+              <option value="15">15 km</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="form-label" data-i18n="explore.filterSort">Sort By</label>
+            <select id="filterSort" class="form-select">
+              <option value="recommended" data-i18n="explore.sortRecommended">Recommended</option>
+              <option value="rating" data-i18n="explore.sortRating">Highest Rating</option>
+              <option value="price" data-i18n="explore.sortPrice">Lowest Price</option>
+              <option value="distance" data-i18n="explore.sortDistance">Nearest Distance</option>
             </select>
           </div>
 
           <div style="display: flex; align-items: flex-end;">
             <label class="checkbox-label" style="height: 44px; display: flex; align-items: center;">
               <input type="checkbox" id="filterOnlineNow">
-              <span style="font-weight: 600;" data-i18n="explore.filterOnlineNow">Available Now Only</span>
+              <span style="font-weight: 600;" data-i18n="explore.filterOnlineNow">Online Now Only</span>
             </label>
           </div>
         </div>
@@ -114,29 +180,49 @@
   </nav>
 
   <script type="module">
-    import { fetchGuides } from '/js/guides.js';
-    import { t } from '/js/utils.js';
+    import { matchGuides } from '/js/matching.js';
+    import { t, formatCurrency, getTodayISODate } from '/js/utils.js';
     import '/js/auth.js';
 
     const list = document.getElementById('exploreList');
+    const dateInput = document.getElementById('filterDate');
+    const today = getTodayISODate();
+    dateInput.value = today;
+    dateInput.min = today;
 
     async function loadExploreGuides() {
       list.innerHTML = '<div class="empty-state"><div class="spinner"></div></div>';
 
       const city = document.getElementById('filterCity').value;
+      const date = document.getElementById('filterDate').value || today;
+      const startTime = document.getElementById('filterTime').value || '10:00';
+      const durationHours = Number(document.getElementById('filterDuration').value) || 2;
       const language = document.getElementById('filterLanguage').value;
       const specialty = document.getElementById('filterSpecialty').value;
+      const maxPrice = document.getElementById('filterMaxPrice').value;
+      const minRating = document.getElementById('filterMinRating').value;
+      const maxDistance = document.getElementById('filterMaxDistance').value;
+      const sortBy = document.getElementById('filterSort').value;
       const onlineOnly = document.getElementById('filterOnlineNow').checked;
 
-      const guides = await fetchGuides({
-        city: city !== 'all' ? city : null,
-        language: language !== 'all' ? language : null,
-        specialty: specialty !== 'all' ? specialty : null,
-        onlineOnly,
-        verifiedOnly: true
+      const results = await matchGuides({
+        location: city,
+        date,
+        startTime,
+        durationHours,
+        language,
+        specialty,
+        maxPrice: maxPrice ? Number(maxPrice) : null,
+        minRating: minRating ? Number(minRating) : null,
+        maxDistance: maxDistance ? Number(maxDistance) : null,
+        sortBy,
+        isInstant: onlineOnly,
+        includeUnavailable: true
       });
 
-      if (guides.length === 0) {
+      document.getElementById('exploreCount').textContent = `${results.length} ${t('explore.guidesTitle')}`;
+
+      if (results.length === 0) {
         list.innerHTML = `
           <div class="empty-state" style="grid-column: 1 / -1;">
             <div class="empty-state-title">${t('explore.noResultsTitle')}</div>
@@ -146,46 +232,66 @@
         return;
       }
 
-      list.innerHTML = guides.map(g => `
-        <div class="guide-card">
-          <div class="guide-card-top">
-            <img src="${g.avatar}" alt="${g.name}" class="guide-avatar">
-            <div class="guide-info">
-              <div class="guide-name-row">
-                <span class="guide-name">${g.name}</span>
-                <span class="rating-pill">★ ${g.rating ? g.rating.toFixed(1) : '4.9'}</span>
+      list.innerHTML = results.map(({ guide, score, distanceKm, availability }) => {
+        const isAvail = availability.available;
+        const availBadge = isAvail
+          ? `<span class="badge badge-online">${t('explore.availableSlot')}</span>`
+          : `<span class="badge badge-error">${t('explore.unavailableSlot')}</span>`;
+
+        return `
+          <div class="guide-card" style="${isAvail ? '' : 'opacity: 0.78;'}">
+            <div class="guide-card-top">
+              <img src="${guide.avatar}" alt="${guide.name}" class="guide-avatar">
+              <div class="guide-info">
+                <div class="guide-name-row">
+                  <span class="guide-name">${guide.name}</span>
+                  <span class="rating-pill">★ ${guide.rating ? guide.rating.toFixed(1) : '4.9'}</span>
+                </div>
+                <div class="guide-meta-inline">
+                  <span class="badge badge-verified">✓ ${t('search.verifiedBadge')}</span>
+                  ${availBadge}
+                  <span class="badge badge-gray">${t('search.matchScore', { score })}</span>
+                </div>
+                <div class="guide-meta-inline" style="margin-top: 4px;">
+                  <span>${guide.city || 'Cairo'}</span>
+                  <span>·</span>
+                  <span>${guide.experienceYears || 1} ${t('search.yearsExp')}</span>
+                  <span>·</span>
+                  <span>${distanceKm} ${t('search.kmAway')}</span>
+                </div>
+                <div class="guide-languages">${Array.isArray(guide.languages) ? guide.languages.join(' · ') : (guide.languages || '')}</div>
               </div>
-              <div class="guide-meta-inline">
-                <span class="badge badge-verified">✓ ${t('search.verifiedBadge')}</span>
-                <span>·</span>
-                <span>${g.city || 'Cairo'}</span>
-                <span>·</span>
-                <span>${g.experienceYears || 1} ${t('search.yearsExp')}</span>
+            </div>
+            <div class="guide-card-bottom">
+              <div>
+                <span class="guide-price-unit">${t('search.fromPrice')} </span>
+                <span class="guide-price">${formatCurrency(guide.hourlyRate, guide.currency || 'USD')}</span>
+                <span class="guide-price-unit">${t('search.perHour')}</span>
               </div>
-              <div class="guide-languages">${Array.isArray(g.languages) ? g.languages.join(' · ') : g.languages}</div>
+              <a href="/tourist/profile.html?id=${guide.id}&date=${encodeURIComponent(date)}&time=${encodeURIComponent(startTime)}&duration=${durationHours}" class="btn btn-primary btn-sm">${t('search.viewProfile')}</a>
             </div>
           </div>
-          <div class="guide-card-bottom">
-            <div>
-              <span class="guide-price-unit">${t('search.fromPrice')} </span>
-              <span class="guide-price">$${g.hourlyRate}</span>
-              <span class="guide-price-unit">${t('search.perHour')}</span>
-            </div>
-            <a href="/tourist/profile.html?id=${g.id}" class="btn btn-primary btn-sm">${t('search.viewProfile')}</a>
-          </div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
     }
 
-    document.getElementById('filterCity').addEventListener('change', loadExploreGuides);
-    document.getElementById('filterLanguage').addEventListener('change', loadExploreGuides);
-    document.getElementById('filterSpecialty').addEventListener('change', loadExploreGuides);
-    document.getElementById('filterOnlineNow').addEventListener('change', loadExploreGuides);
-
-    document.addEventListener('tourguide:langchange', () => {
-      loadExploreGuides();
+    [
+      'filterCity',
+      'filterDate',
+      'filterTime',
+      'filterDuration',
+      'filterLanguage',
+      'filterSpecialty',
+      'filterMaxPrice',
+      'filterMinRating',
+      'filterMaxDistance',
+      'filterSort',
+      'filterOnlineNow'
+    ].forEach(id => {
+      document.getElementById(id).addEventListener('change', loadExploreGuides);
     });
 
+    document.addEventListener('tourguide:langchange', loadExploreGuides);
     loadExploreGuides();
   </script>
 </body>

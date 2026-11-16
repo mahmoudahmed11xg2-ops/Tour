@@ -20,15 +20,16 @@
           </svg>
         </div>
         <span>TourGuide</span>
-        <span class="brand-badge" style="color: #1e40af;">ADMIN</span>
+        <span class="brand-badge" style="color: #1e40af;" data-i18n="brand.adminBadge">ADMIN</span>
       </a>
 
       <nav class="nav-links">
-        <a href="/admin/index.html" class="nav-link">Dashboard</a>
-        <a href="/admin/guides.html" class="nav-link active">Guides & Verification</a>
-        <a href="/admin/bookings.html" class="nav-link">Bookings</a>
-        <a href="/admin/payments.html" class="nav-link">Payments</a>
-        <a href="/admin/reports.html" class="nav-link">Reports</a>
+        <a href="/admin/index.html" class="nav-link" data-i18n="nav.dashboard">Dashboard</a>
+        <a href="/admin/guides.html" class="nav-link active" data-i18n="nav.guides">Guides & Verification</a>
+        <a href="/admin/bookings.html" class="nav-link" data-i18n="nav.bookings">Bookings</a>
+        <a href="/admin/users.html" class="nav-link" data-i18n="nav.users">Users</a>
+        <a href="/admin/payments.html" class="nav-link" data-i18n="nav.payments">Payments</a>
+        <a href="/admin/reports.html" class="nav-link" data-i18n="nav.reports">Reports</a>
       </nav>
 
       <div class="header-actions"></div>
@@ -37,22 +38,22 @@
 
   <main class="main-content">
     <div class="app-container">
-      
+
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-6);">
-        <h1 style="font-size: 1.5rem; font-weight: 800;">All Registered Tour Guides</h1>
+        <h1 style="font-size: 1.5rem; font-weight: 800;" data-i18n="admin.allGuidesTitle">All Tour Guides & Accreditation</h1>
       </div>
 
       <div class="table-responsive">
         <table class="data-table">
           <thead>
             <tr>
-              <th>Guide</th>
-              <th>City / Location</th>
-              <th>Languages</th>
-              <th>Rating</th>
-              <th>Hourly Rate</th>
-              <th>Verification</th>
-              <th>Actions</th>
+              <th data-i18n="admin.guideCol">Guide</th>
+              <th data-i18n="admin.cityCol">City / Location</th>
+              <th data-i18n="admin.languagesCol">Languages</th>
+              <th data-i18n="admin.ratingCol">Rating</th>
+              <th data-i18n="admin.rateCol">Hourly Rate</th>
+              <th data-i18n="admin.verificationCol">Verification</th>
+              <th data-i18n="admin.actionCol">Actions</th>
             </tr>
           </thead>
           <tbody id="allGuidesTbody"></tbody>
@@ -65,7 +66,7 @@
   <script type="module">
     import { db, COLLECTIONS } from '/js/firebase.js';
     import { updateGuideVerification } from '/js/guides.js';
-    import { showToast } from '/js/utils.js';
+    import { showToast, t, getLocalizedStatus, formatCurrency } from '/js/utils.js';
     import { enforceRouteProtection, onAuthReady } from '/js/auth.js';
 
     enforceRouteProtection({ allowedRoles: ['admin'] });
@@ -83,19 +84,19 @@
             </div>
           </td>
           <td>${g.city || 'Cairo'}</td>
-          <td>${Array.isArray(g.languages) ? g.languages.join(', ') : g.languages}</td>
-          <td>★ ${g.rating ? g.rating.toFixed(1) : 'New'} (${g.reviewsCount || 0})</td>
-          <td style="font-weight: 700;">$${g.hourlyRate || 25}/hr</td>
+          <td>${Array.isArray(g.languages) ? g.languages.join(', ') : (g.languages || '')}</td>
+          <td>★ ${g.rating ? g.rating.toFixed(1) : '0.0'} (${g.reviewsCount || 0})</td>
+          <td style="font-weight: 700;">${formatCurrency(g.hourlyRate || 25, g.currency || 'USD')}${t('search.perHour')}</td>
           <td>
             <span class="badge ${g.verificationStatus === 'approved' ? 'badge-verified' : 'badge-pending'}">
-              ${(g.verificationStatus || 'pending').toUpperCase()}
+              ${getLocalizedStatus(g.verificationStatus || 'pending', 'guide')}
             </span>
           </td>
           <td>
             ${g.verificationStatus !== 'approved' ? `
-              <button class="btn btn-outline btn-sm quick-approve-btn" data-id="${g.id}">Approve</button>
+              <button class="btn btn-outline btn-sm quick-approve-btn" data-id="${g.id}">${t('admin.quickApprove')}</button>
             ` : `
-              <span style="color: var(--success); font-weight: 600; font-size: 0.8rem;">Verified Active</span>
+              <span style="color: var(--success); font-weight: 600; font-size: 0.8rem;">${t('admin.verifiedActive')}</span>
             `}
           </td>
         </tr>
@@ -105,12 +106,13 @@
         b.addEventListener('click', async (e) => {
           const id = e.currentTarget.getAttribute('data-id');
           await updateGuideVerification(id, 'approved');
-          showToast('Guide approved!', 'success');
+          showToast(t('toasts.guideApproved'), 'success');
           loadAllGuides();
         });
       });
     }
 
+    document.addEventListener('tourguide:langchange', loadAllGuides);
     onAuthReady((user) => {
       if (user) loadAllGuides();
     });

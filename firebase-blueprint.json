@@ -21,7 +21,7 @@
     },
     "Guide": {
       "title": "Guide",
-      "description": "Tour guide marketplace profile document with verification and rates.",
+      "description": "Tour guide marketplace profile document with verification, schedule, and rates.",
       "type": "object",
       "properties": {
         "id": { "type": "string", "maxLength": 128 },
@@ -34,16 +34,22 @@
         "verificationNotes": { "type": "string", "maxLength": 500 },
         "rating": { "type": "number" },
         "reviewsCount": { "type": "number" },
+        "responseRate": { "type": "number" },
         "languages": { "type": "array" },
         "experienceYears": { "type": "number" },
+        "distanceKm": { "type": "number" },
         "city": { "type": "string", "maxLength": 80 },
+        "serviceAreas": { "type": "array" },
         "currentLocationName": { "type": "string", "maxLength": 150 },
         "isOnline": { "type": "boolean" },
+        "instantAvailable": { "type": "boolean" },
         "hourlyRate": { "type": "number" },
         "currency": { "type": "string", "maxLength": 10 },
         "avatar": { "type": "string", "maxLength": 500 },
         "specialties": { "type": "array" },
         "about": { "type": "string", "maxLength": 2000 },
+        "weeklyAvailability": { "type": "object" },
+        "blockedDates": { "type": "array" },
         "packages": { "type": "array" },
         "createdAt": { "type": "string", "format": "date-time" },
         "updatedAt": { "type": "string", "format": "date-time" }
@@ -56,27 +62,76 @@
       "type": "object",
       "properties": {
         "id": { "type": "string", "maxLength": 64 },
-        "guideId": { "type": "string", "maxLength": 128 },
-        "guideName": { "type": "string", "maxLength": 150 },
         "touristId": { "type": "string", "maxLength": 128 },
         "touristName": { "type": "string", "maxLength": 150 },
+        "guideId": { "type": "string", "maxLength": 128 },
+        "guideName": { "type": "string", "maxLength": 150 },
+        "bookingType": { "type": "string", "enum": ["instant", "scheduled"] },
+        "status": {
+          "type": "string",
+          "enum": [
+            "pending",
+            "accepted",
+            "confirmed",
+            "guide_arriving",
+            "meeting_started",
+            "in_progress",
+            "completed",
+            "cancelled",
+            "rejected",
+            "expired",
+            "refunded",
+            "disputed"
+          ]
+        },
         "location": { "type": "string", "maxLength": 200 },
-        "date": { "type": "string", "maxLength": 50 },
-        "time": { "type": "string", "maxLength": 50 },
-        "duration": { "type": "string", "maxLength": 50 },
-        "language": { "type": "string", "maxLength": 50 },
+        "destination": { "type": "string", "maxLength": 200 },
+        "date": { "type": "string", "maxLength": 20 },
+        "startTime": { "type": "string", "maxLength": 10 },
+        "endTime": { "type": "string", "maxLength": 10 },
+        "startMs": { "type": "number" },
+        "endMs": { "type": "number" },
+        "duration": { "type": "number" },
         "guests": { "type": "number" },
+        "language": { "type": "string", "maxLength": 50 },
+        "specialty": { "type": "string", "maxLength": 50 },
         "service": { "type": "string", "maxLength": 150 },
+        "hourlyRate": { "type": "number" },
         "price": { "type": "number" },
         "platformFee": { "type": "number" },
         "total": { "type": "number" },
-        "status": { "type": "string", "maxLength": 50 },
-        "type": { "type": "string", "enum": ["instant", "scheduled"] },
+        "currency": { "type": "string", "maxLength": 10 },
+        "cancellationPolicy": { "type": "string", "maxLength": 500 },
+        "candidateGuideIds": { "type": "array" },
+        "declinedGuideIds": { "type": "array" },
         "cancelReason": { "type": "string", "maxLength": 500 },
+        "rejectionReason": { "type": "string", "maxLength": 200 },
+        "disputeReason": { "type": "string", "maxLength": 500 },
+        "reviewed": { "type": "boolean" },
+        "reviewRating": { "type": "number" },
         "createdAt": { "type": "string", "format": "date-time" },
         "updatedAt": { "type": "string", "format": "date-time" }
       },
-      "required": ["id", "guideId", "touristId", "status", "total"]
+      "required": ["id", "touristId", "guideId", "bookingType", "status", "date", "startTime", "endTime", "duration", "total"]
+    },
+    "GuideBusySlot": {
+      "title": "GuideBusySlot",
+      "description": "Non-PII time-window reservation used for public double-booking prevention.",
+      "type": "object",
+      "properties": {
+        "bookingId": { "type": "string", "maxLength": 64 },
+        "guideId": { "type": "string", "maxLength": 128 },
+        "createdByUid": { "type": "string", "maxLength": 128 },
+        "date": { "type": "string", "maxLength": 20 },
+        "startTime": { "type": "string", "maxLength": 10 },
+        "endTime": { "type": "string", "maxLength": 10 },
+        "startMs": { "type": "number" },
+        "endMs": { "type": "number" },
+        "duration": { "type": "number" },
+        "status": { "type": "string", "maxLength": 30 },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["bookingId", "guideId", "createdByUid", "date", "startTime", "endTime", "startMs", "endMs", "status"]
     },
     "Review": {
       "title": "Review",
@@ -93,6 +148,28 @@
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["id", "bookingId", "guideId", "touristId", "rating"]
+    },
+    "Payment": {
+      "title": "Payment",
+      "description": "Escrow payment record tied to a confirmed booking.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 64 },
+        "paymentId": { "type": "string", "maxLength": 64 },
+        "bookingId": { "type": "string", "maxLength": 64 },
+        "touristId": { "type": "string", "maxLength": 128 },
+        "guideId": { "type": "string", "maxLength": 128 },
+        "amount": { "type": "number" },
+        "platformFee": { "type": "number" },
+        "guideNet": { "type": "number" },
+        "currency": { "type": "string", "maxLength": 10 },
+        "method": { "type": "string", "maxLength": 30 },
+        "status": { "type": "string", "maxLength": 40 },
+        "gateway": { "type": "string", "maxLength": 40 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["paymentId", "bookingId", "touristId", "guideId", "amount", "status"]
     },
     "AuditLog": {
       "title": "AuditLog",
@@ -121,11 +198,19 @@
     },
     "/bookings/{bookingId}": {
       "schema": { "$ref": "#/entities/Booking" },
-      "description": "Marketplace bookings and ride-tracking status."
+      "description": "Marketplace bookings and real-time lifecycle state."
+    },
+    "/guideBusySlots/{bookingId}": {
+      "schema": { "$ref": "#/entities/GuideBusySlot" },
+      "description": "Non-PII busy time slots for double-booking conflict checks."
     },
     "/reviews/{reviewId}": {
       "schema": { "$ref": "#/entities/Review" },
       "description": "Guide reviews by tourists."
+    },
+    "/payments/{paymentId}": {
+      "schema": { "$ref": "#/entities/Payment" },
+      "description": "Booking escrow payments and commissions."
     },
     "/auditLogs/{logId}": {
       "schema": { "$ref": "#/entities/AuditLog" },

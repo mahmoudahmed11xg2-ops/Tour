@@ -30,16 +30,14 @@
         <a href="/admin/index.html" class="nav-link" data-i18n="nav.admin">Admin</a>
       </nav>
 
-      <div class="header-actions">
-        <!-- Auth state and language toggle injected by auth.js -->
-      </div>
+      <div class="header-actions"></div>
     </div>
   </header>
 
   <main class="main-content">
     <div class="app-container">
 
-      <!-- Active Booking Alert Banner (if tourist currently has an ongoing trip) -->
+      <!-- Active Booking Alert Banner -->
       <div id="activeBookingBanner" style="display: none; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: var(--radius-lg); padding: 14px 18px; margin-bottom: var(--space-6); justify-content: space-between; align-items: center;">
         <div style="display: flex; align-items: center; gap: 10px;">
           <span style="width: 10px; height: 10px; border-radius: 50%; background: var(--accent); display: inline-block;"></span>
@@ -48,7 +46,7 @@
             <span style="font-size: 0.775rem; color: var(--text-secondary); display: block;" id="activeBannerSubtitle"></span>
           </div>
         </div>
-        <a id="activeBannerLink" href="/tourist/booking.html" class="btn btn-accent btn-sm" data-i18n="booking.trackTourBtn">Track Ride</a>
+        <a id="activeBannerLink" href="/tourist/booking.html" class="btn btn-accent btn-sm" data-i18n="booking.trackTourBtn">Track Tour</a>
       </div>
 
       <!-- Search Hero -->
@@ -69,11 +67,23 @@
         <div class="location-inputs">
           <div class="input-with-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"></circle><path d="M12 2a10 10 0 0 0-10 10c0 5.25 10 12 10 12s10-6.75 10-12a10 10 0 0 0-10-10z"></path></svg>
-            <input type="text" id="currentLocationInput" class="form-input" value="Giza" placeholder="Current location" data-i18n-placeholder="search.currentLocation">
+            <input type="text" id="currentLocationInput" class="form-input" value="Giza" placeholder="Current location (e.g. Giza)" data-i18n-placeholder="search.currentLocation">
           </div>
           <div class="input-with-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
             <input type="text" id="destinationInput" class="form-input" value="Pyramids of Giza" placeholder="Where do you want to explore?" data-i18n-placeholder="search.destination">
+          </div>
+        </div>
+
+        <!-- Scheduled Date & Start Time Row -->
+        <div id="scheduleDateTimeRow" style="display: none; grid-template-columns: 1fr 1fr; gap: var(--space-3); margin-bottom: var(--space-4);">
+          <div>
+            <label class="form-label" data-i18n="booking.date">Date</label>
+            <input type="date" id="scheduleDateInput" class="form-input">
+          </div>
+          <div>
+            <label class="form-label" data-i18n="booking.startTime">Start Time</label>
+            <input type="time" id="scheduleTimeInput" class="form-input" value="10:00">
           </div>
         </div>
 
@@ -92,8 +102,8 @@
           </div>
         </div>
 
-        <!-- Language & Guests -->
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); margin-bottom: var(--space-5);">
+        <!-- Language, Duration & Guests -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--space-3); margin-bottom: var(--space-5);">
           <div>
             <label class="form-label" data-i18n="search.languageLabel">Language</label>
             <select id="languageSelect" class="form-select">
@@ -104,6 +114,16 @@
               <option value="French" data-i18n="languages.french">French</option>
               <option value="Spanish" data-i18n="languages.spanish">Spanish</option>
               <option value="Italian" data-i18n="languages.italian">Italian</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label" data-i18n="search.durationLabel">Duration</label>
+            <select id="durationSelect" class="form-select">
+              <option value="2" selected>2 hrs</option>
+              <option value="3">3 hrs</option>
+              <option value="4">4 hrs</option>
+              <option value="6">6 hrs</option>
+              <option value="8">8 hrs</option>
             </select>
           </div>
           <div>
@@ -118,9 +138,14 @@
           </div>
         </div>
 
-        <button id="findGuidesBtn" class="btn btn-primary btn-block btn-lg" data-i18n="search.findGuideBtn">
-          Find a Guide
-        </button>
+        <div style="display: flex; gap: var(--space-3); flex-wrap: wrap;">
+          <button id="findGuidesBtn" class="btn btn-primary btn-lg" style="flex: 1; min-width: 180px;" data-i18n="search.findGuideBtn">
+            Find a Guide
+          </button>
+          <button id="requestBestMatchBtn" class="btn btn-accent btn-lg" style="flex: 1; min-width: 180px;" data-i18n="search.requestBestMatchBtn">
+            Instant Match Best Guide
+          </button>
+        </div>
       </section>
 
       <!-- Results -->
@@ -135,6 +160,40 @@
 
     </div>
   </main>
+
+  <!-- Booking Confirmation Summary Modal -->
+  <div id="bookingSummaryModal" class="modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.55); z-index: 1000; align-items: center; justify-content: center; padding: var(--space-4);">
+    <div class="card" style="width: 100%; max-width: 480px; background: var(--bg-surface); padding: var(--space-6); border-radius: var(--radius-xl); box-shadow: var(--shadow-lg);">
+      <h2 style="font-size: 1.2rem; font-weight: 800; margin-bottom: var(--space-4);" data-i18n="booking.summaryTitle">Booking Confirmation Summary</h2>
+
+      <div id="summaryDetails" style="display: grid; gap: 10px; font-size: 0.9rem; margin-bottom: var(--space-4);"></div>
+
+      <div style="background: var(--bg-subtle); padding: 12px; border-radius: var(--radius-md); margin-bottom: var(--space-4); font-size: 0.85rem;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+          <span data-i18n="booking.tourPriceLabel">Tour Price</span>
+          <strong id="summaryTourPrice">$0.00</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+          <span data-i18n="booking.platformFeeLabel">Platform Fee (15%)</span>
+          <strong id="summaryPlatformFee">$0.00</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between; padding-top: 6px; border-top: 1px solid var(--border-color); font-size: 1rem; font-weight: 800;">
+          <span data-i18n="booking.totalLabel">Total Amount</span>
+          <span id="summaryTotal" style="color: var(--primary);">$0.00</span>
+        </div>
+      </div>
+
+      <div style="font-size: 0.78rem; color: var(--text-secondary); background: #f8fafc; border: 1px solid var(--border-color); padding: 10px; border-radius: var(--radius-md); margin-bottom: var(--space-5);">
+        <strong style="display: block; margin-bottom: 2px;" data-i18n="booking.cancellationPolicyLabel">Cancellation Policy</strong>
+        <span data-i18n="booking.cancellationPolicyText">Free cancellation up to 2 hours before start time. Full refund if the guide declines or cannot attend.</span>
+      </div>
+
+      <div style="display: flex; gap: var(--space-3); justify-content: flex-end;">
+        <button id="cancelSummaryBtn" class="btn btn-outline btn-md" data-i18n="booking.backToEdit">Cancel</button>
+        <button id="confirmBookingSubmitBtn" class="btn btn-primary btn-md" data-i18n="booking.confirmAndPay">Confirm & Send Request</button>
+      </div>
+    </div>
+  </div>
 
   <!-- Mobile Bottom Navigation -->
   <nav class="bottom-nav">
@@ -157,41 +216,55 @@
   </nav>
 
   <script type="module">
-    import { fetchGuides } from '/js/guides.js';
+    import { matchGuides } from '/js/matching.js';
     import { createBooking, getActiveBookingForTourist } from '/js/booking.js';
     import { getCurrentUser, onAuthReady } from '/js/auth.js';
-    import { showToast, t, getLocalizedStatus } from '/js/utils.js';
+    import {
+      showToast,
+      t,
+      getLocalizedStatus,
+      formatCurrency,
+      formatDuration,
+      getTodayISODate,
+      getCurrentTimeHHMM
+    } from '/js/utils.js';
 
     let activeMode = 'now';
     let selectedSpecialty = 'all';
+    let currentMatches = [];
+    let pendingBookingPayload = null;
 
     const modeNowBtn = document.getElementById('modeNowBtn');
     const modeScheduleBtn = document.getElementById('modeScheduleBtn');
-    
-    modeNowBtn.addEventListener('click', () => {
-      activeMode = 'now';
-      modeNowBtn.classList.add('active');
-      modeScheduleBtn.classList.remove('active');
-      renderGuides();
-    });
+    const scheduleRow = document.getElementById('scheduleDateTimeRow');
+    const scheduleDateInput = document.getElementById('scheduleDateInput');
+    const scheduleTimeInput = document.getElementById('scheduleTimeInput');
 
-    modeScheduleBtn.addEventListener('click', () => {
-      activeMode = 'schedule';
-      modeScheduleBtn.classList.add('active');
-      modeNowBtn.classList.remove('active');
+    const today = getTodayISODate();
+    scheduleDateInput.value = today;
+    scheduleDateInput.min = today;
+
+    function setMode(mode) {
+      activeMode = mode;
+      modeNowBtn.classList.toggle('active', mode === 'now');
+      modeScheduleBtn.classList.toggle('active', mode === 'schedule');
+      scheduleRow.style.display = mode === 'schedule' ? 'grid' : 'none';
+      document.getElementById('requestBestMatchBtn').style.display = mode === 'now' ? 'inline-flex' : 'none';
       renderGuides();
-    });
+    }
+
+    modeNowBtn.addEventListener('click', () => setMode('now'));
+    modeScheduleBtn.addEventListener('click', () => setMode('schedule'));
 
     document.querySelectorAll('.specialty-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         document.querySelectorAll('.specialty-btn').forEach(b => b.classList.remove('active'));
-        e.target.classList.add('active');
-        selectedSpecialty = e.target.getAttribute('data-specialty');
+        e.currentTarget.classList.add('active');
+        selectedSpecialty = e.currentTarget.getAttribute('data-specialty');
         renderGuides();
       });
     });
 
-    // Check for ongoing booking
     async function checkActiveBooking() {
       const user = getCurrentUser();
       if (!user) return;
@@ -208,34 +281,52 @@
     const guidesList = document.getElementById('guidesList');
     const resultsCount = document.getElementById('resultsCount');
 
+    function getSearchCriteria() {
+      const city = document.getElementById('currentLocationInput').value.trim() || 'all';
+      const destination = document.getElementById('destinationInput').value.trim() || city;
+      const language = document.getElementById('languageSelect').value;
+      const durationHours = Number(document.getElementById('durationSelect').value) || 2;
+      const guests = Number(document.getElementById('guestsSelect').value) || 2;
+      const isInstant = activeMode === 'now';
+      const date = isInstant ? getTodayISODate() : (scheduleDateInput.value || getTodayISODate());
+      const startTime = isInstant ? getCurrentTimeHHMM() : (scheduleTimeInput.value || '10:00');
+      return { city, destination, language, durationHours, guests, isInstant, date, startTime };
+    }
+
     async function renderGuides() {
       guidesList.innerHTML = '<div class="empty-state"><div class="spinner"></div></div>';
-      
-      const city = document.getElementById('currentLocationInput').value || 'Giza';
-      const language = document.getElementById('languageSelect').value;
+      const criteria = getSearchCriteria();
 
-      const guides = await fetchGuides({
-        city: city === 'All' ? null : city,
-        language: language,
+      currentMatches = await matchGuides({
+        location: criteria.city === 'All' ? 'all' : criteria.city,
+        language: criteria.language,
         specialty: selectedSpecialty,
-        onlineOnly: activeMode === 'now',
-        verifiedOnly: true
+        date: criteria.date,
+        startTime: criteria.startTime,
+        durationHours: criteria.durationHours,
+        isInstant: criteria.isInstant
       });
 
-      resultsCount.textContent = `${guides.length} ${t('search.verifiedBadge')}`;
+      resultsCount.textContent = `${currentMatches.length} ${t('search.verifiedBadge')}`;
 
-      if (guides.length === 0) {
+      if (currentMatches.length === 0) {
         guidesList.innerHTML = `
           <div class="empty-state">
             <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"></circle><line x1="8" y1="12" x2="16" y2="12"></line></svg>
             <div class="empty-state-title">${t('search.noGuidesFound')}</div>
             <div class="empty-state-desc">${t('search.noGuidesFoundDesc')}</div>
+            <div style="display: flex; gap: var(--space-3); justify-content: center; margin-top: var(--space-4); flex-wrap: wrap;">
+              <button id="emptyTryAgainBtn" class="btn btn-outline btn-sm">${t('search.tryAgainBtn')}</button>
+              <button id="emptyScheduleBtn" class="btn btn-primary btn-sm">${t('search.scheduleGuideBtn')}</button>
+            </div>
           </div>
         `;
+        document.getElementById('emptyTryAgainBtn')?.addEventListener('click', renderGuides);
+        document.getElementById('emptyScheduleBtn')?.addEventListener('click', () => setMode('schedule'));
         return;
       }
 
-      guidesList.innerHTML = guides.map(guide => `
+      guidesList.innerHTML = currentMatches.map(({ guide, score, distanceKm }) => `
         <div class="guide-card">
           <div class="guide-card-top">
             <img src="${guide.avatar}" alt="${guide.name}" class="guide-avatar">
@@ -251,14 +342,15 @@
 
               <div class="guide-meta-inline">
                 <span class="badge badge-verified">✓ ${t('search.verifiedBadge')}</span>
+                <span class="badge badge-online">${t('search.matchScore', { score })}</span>
                 <span>·</span>
                 <span>${guide.experienceYears || 1} ${t('search.yearsExp')}</span>
                 <span>·</span>
-                <span>${guide.distanceKm || 2.4} ${t('search.kmAway')}</span>
+                <span>${distanceKm} ${t('search.kmAway')}</span>
               </div>
 
               <div class="guide-languages">
-                ${Array.isArray(guide.languages) ? guide.languages.join(' · ')}
+                ${Array.isArray(guide.languages) ? guide.languages.join(' · ') : (guide.languages || '')}
               </div>
             </div>
           </div>
@@ -266,13 +358,13 @@
           <div class="guide-card-bottom">
             <div>
               <span class="guide-price-unit">${t('search.fromPrice')} </span>
-              <span class="guide-price">$${guide.hourlyRate}</span>
+              <span class="guide-price">${formatCurrency(guide.hourlyRate, guide.currency || 'USD')}</span>
               <span class="guide-price-unit">${t('search.perHour')}</span>
             </div>
 
             <div class="guide-actions">
-              <a href="/tourist/profile.html?id=${guide.id}" class="btn btn-outline btn-sm">${t('search.viewProfile')}</a>
-              <button class="btn btn-primary btn-sm book-guide-btn" data-guide-id="${guide.id}" data-guide-name="${guide.name}" data-guide-rate="${guide.hourlyRate}">
+              <a href="/tourist/profile.html?id=${guide.id}&date=${encodeURIComponent(criteria.date)}&time=${encodeURIComponent(criteria.startTime)}&duration=${criteria.durationHours}" class="btn btn-outline btn-sm">${t('search.viewProfile')}</a>
+              <button class="btn btn-primary btn-sm book-guide-btn" data-guide-id="${guide.id}">
                 ${t('search.bookGuide')}
               </button>
             </div>
@@ -281,47 +373,106 @@
       `).join('');
 
       document.querySelectorAll('.book-guide-btn').forEach(btn => {
-        btn.addEventListener('click', async (e) => {
-          const user = getCurrentUser();
-          const guideId = e.currentTarget.getAttribute('data-guide-id');
-          const guideName = e.currentTarget.getAttribute('data-guide-name');
-          const rate = Number(e.currentTarget.getAttribute('data-guide-rate'));
-
-          if (!user) {
-            showToast(t('toasts.authRequired'), 'info');
-            setTimeout(() => {
-              window.location.href = `/login.html?redirect=${encodeURIComponent(window.location.pathname)}`;
-            }, 500);
-            return;
-          }
-
-          const destination = document.getElementById('destinationInput').value || 'Pyramids of Giza';
-          const guests = document.getElementById('guestsSelect').value;
-          const language = document.getElementById('languageSelect').value;
-
-          const booking = await createBooking({
-            guideId,
-            guideName,
-            touristId: user.uid,
-            touristName: `${user.firstName || 'Traveler'} ${user.lastName || ''}`.trim(),
-            location: destination,
-            durationHours: 2,
-            language: language === 'all' ? 'English' : language,
-            guests,
-            hourlyRate: rate,
-            type: activeMode === 'now' ? 'instant' : 'scheduled'
-          });
-
-          showToast(t('booking.bookingConfirmedToast'), 'success');
-          setTimeout(() => {
-            window.location.href = `/tourist/booking.html?id=${booking.id}`;
-          }, 400);
+        btn.addEventListener('click', (e) => {
+          const gid = e.currentTarget.getAttribute('data-guide-id');
+          const match = currentMatches.find(m => m.guide.id === gid);
+          if (match) openBookingSummary(match);
         });
       });
     }
 
+    function openBookingSummary(match) {
+      const user = getCurrentUser();
+      if (!user) {
+        showToast(t('toasts.authRequired'), 'info');
+        setTimeout(() => {
+          window.location.href = `/login.html?redirect=${encodeURIComponent(window.location.pathname)}`;
+        }, 400);
+        return;
+      }
+
+      const criteria = getSearchCriteria();
+      const guide = match.guide;
+      const win = match.window;
+      const rate = Number(guide.hourlyRate) || 25;
+      const price = Math.round(rate * win.duration * 100) / 100;
+      const fee = Math.round(price * 0.15 * 100) / 100;
+      const total = Math.round((price + fee) * 100) / 100;
+
+      pendingBookingPayload = {
+        guideId: guide.id,
+        guideName: guide.name,
+        touristId: user.uid,
+        touristName: `${user.firstName || 'Traveler'} ${user.lastName || ''}`.trim(),
+        location: criteria.destination || criteria.city,
+        destination: criteria.destination || criteria.city,
+        date: win.date,
+        startTime: win.startTime,
+        durationHours: win.duration,
+        language: criteria.language === 'all' ? (guide.languages?.[0] || 'English') : criteria.language,
+        specialty: selectedSpecialty === 'all' ? (guide.specialties?.[0] || 'History') : selectedSpecialty,
+        guests: criteria.guests,
+        hourlyRate: rate,
+        currency: guide.currency || 'USD',
+        bookingType: criteria.isInstant ? 'instant' : 'scheduled',
+        candidateGuideIds: currentMatches.map(m => m.guide.id)
+      };
+
+      document.getElementById('summaryDetails').innerHTML = `
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-secondary);">${t('booking.guideLabel')}</span><strong>${guide.name}</strong></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-secondary);">${t('booking.bookingTypeLabel')}</span><strong>${criteria.isInstant ? t('booking.instantType') : t('booking.scheduledType')}</strong></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-secondary);">${t('booking.dateTimeLabel')}</span><strong>${win.date} · ${win.startTime} – ${win.endTime}</strong></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-secondary);">${t('booking.durationLabel')}</span><strong>${formatDuration(win.duration)}</strong></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-secondary);">${t('booking.locationLabel')}</span><strong>${pendingBookingPayload.location}</strong></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-secondary);">${t('booking.guests')}</span><strong>${pendingBookingPayload.guests}</strong></div>
+      `;
+
+      document.getElementById('summaryTourPrice').textContent = formatCurrency(price.toFixed(2), pendingBookingPayload.currency);
+      document.getElementById('summaryPlatformFee').textContent = formatCurrency(fee.toFixed(2), pendingBookingPayload.currency);
+      document.getElementById('summaryTotal').textContent = formatCurrency(total.toFixed(2), pendingBookingPayload.currency);
+
+      document.getElementById('bookingSummaryModal').style.display = 'flex';
+    }
+
+    document.getElementById('cancelSummaryBtn').addEventListener('click', () => {
+      document.getElementById('bookingSummaryModal').style.display = 'none';
+      pendingBookingPayload = null;
+    });
+
+    document.getElementById('confirmBookingSubmitBtn').addEventListener('click', async () => {
+      if (!pendingBookingPayload) return;
+      const btn = document.getElementById('confirmBookingSubmitBtn');
+      btn.disabled = true;
+      try {
+        const booking = await createBooking(pendingBookingPayload);
+        document.getElementById('bookingSummaryModal').style.display = 'none';
+        showToast(t('booking.bookingRequestSentToast'), 'success');
+        setTimeout(() => {
+          window.location.href = `/tourist/booking.html?id=${booking.id}`;
+        }, 350);
+      } catch (err) {
+        showToast(err.code === 'conflict' || err.code === 'day_off' || err.code === 'outside_hours'
+          ? t('toasts.bookingConflict')
+          : (err.message || 'Booking failed'), 'error');
+        btn.disabled = false;
+        renderGuides();
+      }
+    });
+
+    document.getElementById('requestBestMatchBtn').addEventListener('click', async () => {
+      await renderGuides();
+      if (currentMatches.length > 0) {
+        openBookingSummary(currentMatches[0]);
+      } else {
+        showToast(t('booking.noGuideAvailableTitle'), 'error');
+      }
+    });
+
     document.getElementById('findGuidesBtn').addEventListener('click', renderGuides);
     document.getElementById('languageSelect').addEventListener('change', renderGuides);
+    document.getElementById('durationSelect').addEventListener('change', renderGuides);
+    scheduleDateInput.addEventListener('change', renderGuides);
+    scheduleTimeInput.addEventListener('change', renderGuides);
 
     document.addEventListener('tourguide:langchange', () => {
       checkActiveBooking();

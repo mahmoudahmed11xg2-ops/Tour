@@ -78,26 +78,93 @@ export function t(key, params = {}) {
 }
 
 /**
- * Translate booking lifecycle status string
+ * Translate booking lifecycle or guide verification status string
  */
-export function getLocalizedStatus(status) {
-  const statusMap = {
-    'Finding a Guide': 'booking.status.findingGuide',
-    'Guide Found': 'booking.status.guideFound',
-    'Guide Confirmed': 'booking.status.guideConfirmed',
-    'Guide Arriving': 'booking.status.guideArriving',
-    'Meeting Started': 'booking.status.meetingStarted',
-    'Tour in Progress': 'booking.status.tourInProgress',
-    'Tour Completed': 'booking.status.tourCompleted',
+export function getLocalizedStatus(status, context = 'booking') {
+  if (!status) return '';
+
+  if (context === 'guide') {
+    const guideMap = {
+      pending: 'guide.pendingVerificationBadge',
+      under_review: 'guide.pendingVerificationBadge',
+      approved: 'guide.verifiedApprovedBadge',
+      rejected: 'guide.rejectedBadge',
+      suspended: 'guide.rejectedBadge',
+    };
+    const gKey = guideMap[status];
+    return gKey ? t(gKey) : status;
+  }
+
+  const bookingMap = {
+    pending: 'booking.status.pending',
+    accepted: 'booking.status.accepted',
+    confirmed: 'booking.status.confirmed',
+    guide_arriving: 'booking.status.guide_arriving',
+    meeting_started: 'booking.status.meeting_started',
+    in_progress: 'booking.status.in_progress',
+    completed: 'booking.status.completed',
+    cancelled: 'booking.status.cancelled',
+    rejected: 'booking.status.rejected',
+    expired: 'booking.status.expired',
+    refunded: 'booking.status.refunded',
+    disputed: 'booking.status.disputed',
+    // Legacy fallbacks
+    'Finding a Guide': 'booking.status.pending',
+    'Guide Found': 'booking.status.accepted',
+    'Guide Confirmed': 'booking.status.confirmed',
+    'Guide Arriving': 'booking.status.guide_arriving',
+    'Meeting Started': 'booking.status.meeting_started',
+    'Tour in Progress': 'booking.status.in_progress',
+    'Tour Completed': 'booking.status.completed',
     'Cancelled': 'booking.status.cancelled',
-    'pending': 'guide.pendingVerificationBadge',
-    'approved': 'guide.verifiedApprovedBadge',
-    'rejected': 'guide.rejectedBadge',
-    'under_review': 'guide.pendingVerificationBadge'
+    approved: 'guide.verifiedApprovedBadge',
+    under_review: 'guide.pendingVerificationBadge',
   };
 
-  const key = statusMap[status];
+  const key = bookingMap[status];
   return key ? t(key) : status;
+}
+
+/**
+ * Get today's date in YYYY-MM-DD format (local time)
+ */
+export function getTodayISODate() {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, '0');
+  const d = String(now.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+/**
+ * Get current time in HH:MM (24-hour) rounded up to next 5-minute mark
+ */
+export function getCurrentTimeHHMM() {
+  const now = new Date();
+  const mins = now.getHours() * 60 + now.getMinutes();
+  const rounded = Math.ceil(mins / 5) * 5;
+  const h = Math.floor(rounded / 60) % 24;
+  const m = rounded % 60;
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+}
+
+/**
+ * Format duration (numeric or string) cleanly
+ */
+export function formatDuration(duration) {
+  const num = typeof duration === 'number' ? duration : parseFloat(String(duration || '2'));
+  const hours = Number.isFinite(num) && num > 0 ? num : 2;
+  return t('search.hoursCount', { count: hours });
+}
+
+/**
+ * Format booking date + time window cleanly
+ */
+export function formatBookingDateTime(date, startTime, endTime) {
+  const d = date || getTodayISODate();
+  if (startTime && endTime) return `${d} · ${startTime} – ${endTime}`;
+  if (startTime) return `${d} · ${startTime}`;
+  return d;
 }
 
 /**

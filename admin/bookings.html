@@ -20,15 +20,16 @@
           </svg>
         </div>
         <span>TourGuide</span>
-        <span class="brand-badge" style="color: #1e40af;">ADMIN</span>
+        <span class="brand-badge" style="color: #1e40af;" data-i18n="brand.adminBadge">ADMIN</span>
       </a>
 
       <nav class="nav-links">
-        <a href="/admin/index.html" class="nav-link">Dashboard</a>
-        <a href="/admin/guides.html" class="nav-link">Guides & Verification</a>
-        <a href="/admin/bookings.html" class="nav-link active">Bookings</a>
-        <a href="/admin/payments.html" class="nav-link">Payments</a>
-        <a href="/admin/reports.html" class="nav-link">Reports</a>
+        <a href="/admin/index.html" class="nav-link" data-i18n="nav.dashboard">Dashboard</a>
+        <a href="/admin/guides.html" class="nav-link" data-i18n="nav.guides">Guides & Verification</a>
+        <a href="/admin/bookings.html" class="nav-link active" data-i18n="nav.bookings">Bookings</a>
+        <a href="/admin/users.html" class="nav-link" data-i18n="nav.users">Users</a>
+        <a href="/admin/payments.html" class="nav-link" data-i18n="nav.payments">Payments</a>
+        <a href="/admin/reports.html" class="nav-link" data-i18n="nav.reports">Reports</a>
       </nav>
 
       <div class="header-actions"></div>
@@ -37,25 +38,26 @@
 
   <main class="main-content">
     <div class="app-container">
-      
+
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-6);">
-        <h1 style="font-size: 1.5rem; font-weight: 800;">Marketplace Bookings Pipeline</h1>
+        <h1 style="font-size: 1.5rem; font-weight: 800;" data-i18n="admin.allBookingsTitle">Marketplace Bookings Pipeline</h1>
       </div>
 
       <div class="table-responsive">
         <table class="data-table">
           <thead>
             <tr>
-              <th>ID</th>
-              <th>Type</th>
-              <th>Tourist</th>
-              <th>Guide</th>
-              <th>Location</th>
-              <th>Duration</th>
-              <th>Total Paid</th>
-              <th>Platform Fee</th>
-              <th>Status</th>
-              <th>Actions</th>
+              <th data-i18n="admin.bookingIdCol">Booking ID</th>
+              <th data-i18n="admin.typeCol">Type</th>
+              <th data-i18n="admin.touristCol">Tourist</th>
+              <th data-i18n="admin.guideCol">Guide</th>
+              <th data-i18n="admin.locationCol">Location</th>
+              <th data-i18n="admin.dateTimeCol">Date & Time</th>
+              <th data-i18n="admin.durationCol">Duration</th>
+              <th data-i18n="admin.totalCol">Total</th>
+              <th data-i18n="admin.feeCol">Commission (15%)</th>
+              <th data-i18n="admin.statusCol">Status</th>
+              <th data-i18n="admin.actionCol">Action</th>
             </tr>
           </thead>
           <tbody id="allBookingsTbody"></tbody>
@@ -68,31 +70,39 @@
   <script type="module">
     import { db, COLLECTIONS } from '/js/firebase.js';
     import { enforceRouteProtection, onAuthReady } from '/js/auth.js';
+    import { t, getLocalizedStatus, formatCurrency, formatDuration, formatBookingDateTime } from '/js/utils.js';
 
     enforceRouteProtection({ allowedRoles: ['admin'] });
 
     async function loadAllBookings() {
       const bookings = await db.getCollection(COLLECTIONS.BOOKINGS);
+      const sorted = [...bookings].sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
       const tbody = document.getElementById('allBookingsTbody');
 
-      tbody.innerHTML = bookings.reverse().map(b => `
-        <tr>
-          <td style="font-family: monospace; font-weight: 700;">${b.id}</td>
-          <td><span class="badge badge-gray">${(b.type || 'instant').toUpperCase()}</span></td>
-          <td>${b.touristName || 'Tourist'}</td>
-          <td>${b.guideName || 'Guide'}</td>
-          <td>${b.location || 'Cairo'}</td>
-          <td>${b.duration || '2 hours'}</td>
-          <td style="font-weight: 700;">$${b.total}</td>
-          <td style="color: var(--success); font-weight: 700;">$${b.platformFee || (b.total * 0.15).toFixed(2)}</td>
-          <td><span class="badge ${b.status === 'Tour Completed' ? 'badge-gray' : 'badge-online'}">${b.status}</span></td>
-          <td>
-            <a href="/tourist/booking.html?id=${b.id}" class="btn btn-outline btn-sm">Inspect Ride</a>
-          </td>
-        </tr>
-      `).join('');
+      tbody.innerHTML = sorted.map(b => {
+        const bType = b.bookingType || b.type || 'instant';
+        const cur = b.currency || 'USD';
+        return `
+          <tr>
+            <td style="font-family: monospace; font-weight: 700;">${b.id}</td>
+            <td><span class="badge badge-gray">${bType === 'instant' ? t('booking.instantType') : t('booking.scheduledType')}</span></td>
+            <td>${b.touristName || ''}</td>
+            <td>${b.guideName || ''}</td>
+            <td>${b.location || ''}</td>
+            <td>${formatBookingDateTime(b.date, b.startTime, b.endTime)}</td>
+            <td>${formatDuration(b.duration)}</td>
+            <td style="font-weight: 700;">${formatCurrency(Number(b.total || 0).toFixed(2), cur)}</td>
+            <td style="color: var(--success); font-weight: 700;">${formatCurrency(Number(b.platformFee || 0).toFixed(2), cur)}</td>
+            <td><span class="badge ${b.status === 'completed' ? 'badge-gray' : ['cancelled', 'rejected', 'disputed'].includes(b.status) ? 'badge-error' : 'badge-online'}">${getLocalizedStatus(b.status)}</span></td>
+            <td>
+              <a href="/tourist/booking.html?id=${b.id}" class="btn btn-outline btn-sm">${t('admin.inspectRide')}</a>
+            </td>
+          </tr>
+        `;
+      }).join('');
     }
 
+    document.addEventListener('tourguide:langchange', loadAllBookings);
     onAuthReady((user) => {
       if (user) loadAllBookings();
     });

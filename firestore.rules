@@ -7,7 +7,7 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
-    // Helper functions
+    // Core Helpers
     function isSignedIn() {
       return request.auth != null;
     }
@@ -26,29 +26,84 @@ service cloud.firestore {
 
     function isAdmin() {
       return isSignedIn() && (
-        request.auth.token.email == "ma1044853@gmail.com" ||
-        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+        (request.auth.token.email == "ma1044853@gmail.com" && request.auth.token.email_verified == true) ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin")
       );
+    }
+
+    function isValidBookingStatus(status) {
+      return status in [
+        "pending",
+        "accepted",
+        "confirmed",
+        "guide_arriving",
+        "meeting_started",
+        "in_progress",
+        "completed",
+        "cancelled",
+        "rejected",
+        "expired",
+        "refunded",
+        "disputed"
+      ];
+    }
+
+    function isValidBooking(data) {
+      return data.keys().hasAll([
+        "id", "touristId", "guideId", "bookingType", "status",
+        "location", "date", "startTime", "endTime", "duration", "total"
+      ]) &&
+      data.id is string && data.id.size() <= 64 &&
+      data.touristId is string && data.touristId.size() <= 128 &&
+      data.guideId is string && data.guideId.size() <= 128 &&
+      data.bookingType in ["instant", "scheduled"] &&
+      isValidBookingStatus(data.status) &&
+      data.location is string && data.location.size() <= 200 &&
+      data.date is string && data.date.size() <= 20 &&
+      data.startTime is string && data.startTime.size() <= 10 &&
+      data.endTime is string && data.endTime.size() <= 10 &&
+      data.duration is number && data.duration >= 1 && data.duration <= 24 &&
+      data.total is number && data.total >= 0 &&
+      (!("candidateGuideIds" in data) || (data.candidateGuideIds is list && data.candidateGuideIds.size() <= 50)) &&
+      (!("declinedGuideIds" in data) || (data.declinedGuideIds is list && data.declinedGuideIds.size() <= 50));
+    }
+
+    function isValidBusySlot(data, slotId) {
+      return data.keys().hasAll([
+        "bookingId", "guideId", "createdByUid", "date",
+        "startTime", "endTime", "startMs", "endMs", "status"
+      ]) &&
+      data.keys().hasOnly([
+        "bookingId", "guideId", "createdByUid", "date",
+        "startTime", "endTime", "startMs", "endMs", "duration", "status", "updatedAt"
+      ]) &&
+      data.bookingId == slotId &&
+      data.guideId is string && data.guideId.size() <= 128 &&
+      data.createdByUid is string && data.createdByUid.size() <= 128 &&
+      data.date is string && data.date.size() <= 20 &&
+      data.startTime is string && data.startTime.size() <= 10 &&
+      data.endTime is string && data.endTime.size() <= 10 &&
+      data.startMs is number &&
+      data.endMs is number && data.endMs > data.startMs &&
+      data.status is string && data.status.size() <= 30;
     }
 
     // 1. Users Collection
     match /users/{userId} {
       allow get: if isSignedIn() && (request.auth.uid == userId || isAdmin());
       allow list: if isAdmin();
-      
-      // Tourists & Guides can only create their own profile, cannot set role as admin
-      allow create: if isSignedIn() && 
-                    isValidId(userId) && 
-                    request.auth.uid == userId && 
+
+      allow create: if isSignedIn() &&
+                    isValidId(userId) &&
+                    request.auth.uid == userId &&
                     incoming().uid == userId &&
                     (incoming().role == "tourist" || incoming().role == "guide" || isAdmin());
 
-      // Users cannot elevate their own role
       allow update: if isSignedIn() && (
-        isAdmin() || 
-        (request.auth.uid == userId && 
-         incoming().uid == existing().uid && 
+        isAdmin() ||
+        (request.auth.uid == userId &&
+         incoming().uid == existing().uid &&
          incoming().role == existing().role)
       );
 
@@ -59,28 +114,26 @@ service cloud.firestore {
     match /guides/{guideId} {
       allow get, list: if true;
 
-      // Guides can register with pending status only
       allow create: if isSignedIn() && isValidId(guideId) && (
         isAdmin() ||
-        (request.auth.uid == guideId && 
-         incoming().id == guideId && 
+        (request.auth.uid == guideId &&
+         incoming().id == guideId &&
          incoming().verificationStatus == "pending" &&
          incoming().verified == false)
       );
 
-      // Guides can update their online status, bio, rates, but CANNOT self-approve
       allow update: if isSignedIn() && (
         isAdmin() ||
-        (request.auth.uid == guideId && 
-         incoming().id == existing().id && 
-         incoming().verificationStatus == existing().verificationStatus && 
+        (request.auth.uid == guideId &&
+         incoming().id == existing().id &&
+         incoming().verificationStatus == existing().verificationStatus &&
          incoming().verified == existing().verified)
       );
 
       allow delete: if isAdmin();
     }
 
-    // 3. Bookings Collection
+    // 3. Bookings Collection (Ownership & Strict State Machine)
     match /bookings/{bookingId} {
       allow get: if isSignedIn() && (
         isAdmin() ||
@@ -94,47 +147,155 @@ service cloud.firestore {
         resource.data.guideId == request.auth.uid
       );
 
-      allow create: if isSignedIn() && 
-                    isValidId(bookingId) && 
-                    (incoming().touristId == request.auth.uid || isAdmin());
+      allow create: if isSignedIn() &&
+                    isValidId(bookingId) &&
+                    isValidBooking(incoming()) &&
+                    incoming().id == bookingId &&
+                    (isAdmin() || (
+                      incoming().touristId == request.auth.uid &&
+                      incoming().status == "pending"
+                    ));
 
-      allow update: if isSignedIn() && (
+      allow update: if isSignedIn() &&
+                    isValidBooking(incoming()) &&
+                    incoming().id == existing().id &&
+                    incoming().touristId == existing().touristId &&
+                    incoming().bookingType == existing().bookingType &&
+                    incoming().createdAt == existing().createdAt && (
         isAdmin() ||
-        resource.data.touristId == request.auth.uid ||
-        resource.data.guideId == request.auth.uid
+
+        // Guide Accept: pending -> confirmed
+        (existing().guideId == request.auth.uid &&
+         existing().status == "pending" &&
+         incoming().status == "confirmed" &&
+         incoming().guideId == existing().guideId &&
+         incoming().diff(existing()).affectedKeys().hasOnly(["status", "acceptedAt", "confirmedAt", "updatedAt"])) ||
+
+        // Guide Decline on Instant -> Automatic Fallback Dispatch to Next Candidate
+        (existing().guideId == request.auth.uid &&
+         existing().status == "pending" &&
+         existing().bookingType == "instant" &&
+         incoming().status == "pending" &&
+         incoming().guideId != existing().guideId &&
+         incoming().diff(existing()).affectedKeys().hasOnly([
+           "guideId", "guideName", "hourlyRate", "price", "platformFee", "total",
+           "declinedGuideIds", "candidateGuideIds", "reassignedAt", "updatedAt"
+         ])) ||
+
+        // Guide Decline -> Rejected
+        (existing().guideId == request.auth.uid &&
+         existing().status == "pending" &&
+         incoming().status == "rejected" &&
+         incoming().diff(existing()).affectedKeys().hasOnly(["status", "declinedGuideIds", "rejectionReason", "updatedAt"])) ||
+
+        // Guide Sequential Operational Transitions (no skipping)
+        (existing().guideId == request.auth.uid &&
+         incoming().guideId == existing().guideId &&
+         incoming().diff(existing()).affectedKeys().hasOnly(["status", "startedAt", "completedAt", "updatedAt"]) && (
+           (existing().status == "accepted" && incoming().status == "confirmed") ||
+           (existing().status == "confirmed" && incoming().status == "guide_arriving") ||
+           (existing().status == "guide_arriving" && incoming().status == "meeting_started") ||
+           (existing().status == "meeting_started" && incoming().status == "in_progress") ||
+           (existing().status == "in_progress" && incoming().status == "completed")
+         )) ||
+
+        // Tourist Retry Instant Booking from rejected/expired -> pending
+        (existing().touristId == request.auth.uid &&
+         existing().bookingType == "instant" &&
+         existing().status in ["rejected", "expired"] &&
+         incoming().status == "pending" &&
+         incoming().diff(existing()).affectedKeys().hasOnly([
+           "guideId", "guideName", "date", "startTime", "endTime", "startMs", "endMs",
+           "hourlyRate", "price", "platformFee", "total", "status",
+           "declinedGuideIds", "candidateGuideIds", "rejectionReason", "updatedAt"
+         ])) ||
+
+        // Tourist or Guide Cancel before tour starts
+        ((existing().touristId == request.auth.uid || existing().guideId == request.auth.uid) &&
+         existing().status in ["pending", "accepted", "confirmed", "guide_arriving"] &&
+         incoming().status == "cancelled" &&
+         incoming().diff(existing()).affectedKeys().hasOnly(["status", "cancelReason", "cancelledBy", "updatedAt"])) ||
+
+        // Tourist or Guide Open Dispute
+        ((existing().touristId == request.auth.uid || existing().guideId == request.auth.uid) &&
+         !(existing().status in ["cancelled", "rejected", "expired", "refunded"]) &&
+         incoming().status == "disputed" &&
+         incoming().diff(existing()).affectedKeys().hasOnly(["status", "disputeReason", "disputedBy", "updatedAt"])) ||
+
+        // Tourist Review Flag on Completed Booking
+        (existing().touristId == request.auth.uid &&
+         existing().status == "completed" &&
+         incoming().status == "completed" &&
+         incoming().diff(existing()).affectedKeys().hasOnly(["reviewed", "reviewRating", "updatedAt"]))
       );
 
       allow delete: if isAdmin();
     }
 
-    // 4. Reviews Collection
+    // 4. Non-PII Guide Busy Slots Collection (Double-Booking Guard)
+    match /guideBusySlots/{slotId} {
+      allow get, list: if true;
+
+      allow create: if isSignedIn() &&
+                    isValidId(slotId) &&
+                    isValidBusySlot(incoming(), slotId) &&
+                    (isAdmin() || incoming().createdByUid == request.auth.uid);
+
+      allow update: if isSignedIn() &&
+                    isValidBusySlot(incoming(), slotId) &&
+                    incoming().createdByUid == existing().createdByUid &&
+                    (isAdmin() || existing().createdByUid == request.auth.uid || existing().guideId == request.auth.uid);
+
+      allow delete: if isSignedIn() && (
+        isAdmin() ||
+        resource.data.createdByUid == request.auth.uid ||
+        resource.data.guideId == request.auth.uid
+      );
+    }
+
+    // 5. Reviews Collection
     match /reviews/{reviewId} {
       allow get, list: if true;
-      allow create: if isSignedIn() && isValidId(reviewId) && (incoming().touristId == request.auth.uid || isAdmin());
+      allow create: if isSignedIn() &&
+                    isValidId(reviewId) &&
+                    incoming().id == reviewId &&
+                    incoming().rating is number &&
+                    incoming().rating >= 1 && incoming().rating <= 5 &&
+                    (!("comment" in incoming()) || (incoming().comment is string && incoming().comment.size() <= 1000)) &&
+                    (incoming().touristId == request.auth.uid || isAdmin());
       allow update, delete: if isAdmin();
     }
 
-    // 5. Audit Logs Collection
+    // 6. Audit Logs Collection
     match /auditLogs/{logId} {
       allow read: if isAdmin();
       allow create: if isSignedIn();
-      allow update, delete: if false; // Immutable audit trail
+      allow update, delete: if false;
     }
 
-    // 6. Notifications Collection
+    // 7. Notifications Collection
     match /notifications/{notificationId} {
       allow read: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
       allow create: if isSignedIn();
-      allow update: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
-      allow delete: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow update, delete: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
     }
 
-    // 7. Payments Collection
+    // 8. Payments Collection
     match /payments/{paymentId} {
-      allow read: if isSignedIn() && (isAdmin() || resource.data.touristId == request.auth.uid);
-      allow create: if isSignedIn();
-      allow update, delete: if isAdmin();
+      allow read: if isSignedIn() && (
+        isAdmin() ||
+        resource.data.touristId == request.auth.uid ||
+        resource.data.guideId == request.auth.uid
+      );
+      allow create: if isSignedIn() &&
+                    isValidId(paymentId) &&
+                    (isAdmin() || incoming().touristId == request.auth.uid || incoming().guideId == request.auth.uid);
+      allow update: if isSignedIn() && (
+        isAdmin() ||
+        resource.data.touristId == request.auth.uid ||
+        resource.data.guideId == request.auth.uid
+      );
+      allow delete: if isAdmin();
     }
   }
 }
-

@@ -508,10 +508,16 @@ button {
   border: 1px solid var(--success-border);
 }
 
-.badge-pending {
+.badge-pending, .badge-warning {
   background: var(--warning-bg);
   color: var(--warning);
   border: 1px solid var(--warning-border);
+}
+
+.badge-error {
+  background: var(--error-bg);
+  color: var(--error);
+  border: 1px solid var(--error-border);
 }
 
 .badge-gray {

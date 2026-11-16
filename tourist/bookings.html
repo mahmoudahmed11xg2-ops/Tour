@@ -35,16 +35,14 @@
 
   <main class="main-content">
     <div class="app-container" style="max-width: 800px;">
-      
+
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-6);">
         <h1 style="font-size: 1.5rem; font-weight: 800;" data-i18n="booking.myBookingsTitle">My Tours & Bookings</h1>
         <a href="/tourist/index.html" class="btn btn-outline btn-sm" data-i18n="booking.findNewGuide">Find New Guide</a>
       </div>
 
       <!-- Bookings List -->
-      <div id="bookingsListContainer" style="display: grid; gap: var(--space-4);">
-        <!-- Rendered dynamically -->
-      </div>
+      <div id="bookingsListContainer" style="display: grid; gap: var(--space-4);"></div>
 
     </div>
   </main>
@@ -71,67 +69,75 @@
 
   <script type="module">
     import { onAuthReady, enforceRouteProtection } from '/js/auth.js';
-    import { getBookingsForTourist } from '/js/booking.js';
-    import { t, getLocalizedStatus } from '/js/utils.js';
+    import { subscribeToTouristBookings } from '/js/booking.js';
+    import {
+      t,
+      getLocalizedStatus,
+      formatCurrency,
+      formatDuration,
+      formatBookingDateTime
+    } from '/js/utils.js';
 
     enforceRouteProtection({ allowedRoles: ['tourist', 'admin'] });
 
     const container = document.getElementById('bookingsListContainer');
+    let latestBookings = [];
+    let unsubscribe = null;
 
-    async function renderUserBookings(user) {
-      if (!user) return;
-      container.innerHTML = '<div class="empty-state"><div class="spinner"></div></div>';
-
-      try {
-        const list = await getBookingsForTourist(user.uid);
-
-        if (!list || list.length === 0) {
-          container.innerHTML = `
-            <div class="empty-state card">
-              <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-              <h2 class="empty-state-title">${t('booking.noBookingsTitle')}</h2>
-              <p class="empty-state-desc">${t('booking.noBookingsDesc')}</p>
-              <a href="/tourist/index.html" class="btn btn-primary btn-sm">${t('booking.findNewGuide')}</a>
-            </div>
-          `;
-          return;
-        }
-
-        container.innerHTML = list.map(b => `
-          <div class="card" style="display: flex; flex-direction: column; gap: var(--space-3);">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-              <div>
-                <span class="badge ${b.status === 'Tour Completed' ? 'badge-gray' : 'badge-online'}" style="margin-bottom: 6px;">
-                  ${getLocalizedStatus(b.status)}
-                </span>
-                <h3 style="font-size: 1.05rem; font-weight: 700;">${b.location}</h3>
-                <span style="font-size: 0.8rem; color: var(--text-muted);">${t('booking.guideLabel')}: ${b.guideName} · ${b.duration}</span>
-              </div>
-              <span style="font-size: 1.15rem; font-weight: 800; font-variant-numeric: tabular-nums;">$${b.total}</span>
-            </div>
-
-            <div style="padding-top: var(--space-3); border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
-              <span style="font-size: 0.8rem; color: var(--text-secondary);">${b.date} · ${b.time || ''}</span>
-              <a href="/tourist/booking.html?id=${b.id}" class="btn btn-outline btn-sm">
-                ${b.status === 'Tour Completed' ? t('booking.viewDetails') : t('booking.trackTourBtn')}
-              </a>
-            </div>
-          </div>
-        `).join('');
-      } catch (err) {
-        console.error('Bookings load error:', err);
-        container.innerHTML = '<p style="color: var(--danger); text-align: center;">Failed to load bookings from Cloud Firestore.</p>';
-      }
+    function getStatusBadgeClass(status) {
+      if (['completed', 'cancelled', 'expired', 'refunded'].includes(status)) return 'badge-gray';
+      if (['rejected', 'disputed'].includes(status)) return 'badge-error';
+      if (status === 'pending') return 'badge-warning';
+      return 'badge-online';
     }
 
-    let currentUser = null;
-    onAuthReady(async (user) => {
-      currentUser = user;
-      renderUserBookings(user);
+    function renderBookingsList(list) {
+      latestBookings = list || [];
+      if (latestBookings.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state card">
+            <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+            <h2 class="empty-state-title">${t('booking.noBookingsTitle')}</h2>
+            <p class="empty-state-desc">${t('booking.noBookingsDesc')}</p>
+            <a href="/tourist/index.html" class="btn btn-primary btn-sm">${t('booking.findNewGuide')}</a>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = latestBookings.map(b => `
+        <div class="card" style="display: flex; flex-direction: column; gap: var(--space-3);">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-3);">
+            <div>
+              <div style="display: flex; gap: 6px; margin-bottom: 6px; flex-wrap: wrap;">
+                <span class="badge ${getStatusBadgeClass(b.status)}">${getLocalizedStatus(b.status)}</span>
+                <span class="badge badge-gray">${b.bookingType === 'instant' ? t('booking.instantType') : t('booking.scheduledType')}</span>
+              </div>
+              <h3 style="font-size: 1.05rem; font-weight: 700;">${b.location}</h3>
+              <span style="font-size: 0.8rem; color: var(--text-muted);">${t('booking.guideLabel')}: ${b.guideName} · ${formatDuration(b.duration)}</span>
+            </div>
+            <span style="font-size: 1.15rem; font-weight: 800; font-variant-numeric: tabular-nums;">${formatCurrency(Number(b.total || 0).toFixed(2), b.currency || 'USD')}</span>
+          </div>
+
+          <div style="padding-top: var(--space-3); border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 0.8rem; color: var(--text-secondary);">${formatBookingDateTime(b.date, b.startTime, b.endTime)}</span>
+            <a href="/tourist/booking.html?id=${b.id}" class="btn btn-outline btn-sm">
+              ${['completed', 'cancelled', 'rejected'].includes(b.status) ? t('booking.viewDetails') : t('booking.trackTourBtn')}
+            </a>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    onAuthReady((user) => {
+      if (!user) return;
+      container.innerHTML = '<div class="empty-state"><div class="spinner"></div></div>';
+      if (unsubscribe) unsubscribe();
+      unsubscribe = subscribeToTouristBookings(user.uid, renderBookingsList);
     });
 
     document.addEventListener('tourguide:langchange', () => {
-      if (currentUser) renderUserBookings(currentUser);
+      renderBookingsList(latestBookings);
     });
   </script>
 </body>

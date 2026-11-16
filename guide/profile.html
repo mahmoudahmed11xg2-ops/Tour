@@ -20,7 +20,7 @@
           </svg>
         </div>
         <span>TourGuide</span>
-        <span class="brand-badge">CAPTAIN</span>
+        <span class="brand-badge" data-i18n="brand.captainBadge">CAPTAIN</span>
       </a>
 
       <nav class="nav-links">
@@ -37,14 +37,14 @@
 
   <main class="main-content">
     <div class="app-container" style="max-width: 800px;">
-      
+
       <h1 style="font-size: 1.5rem; font-weight: 800; margin-bottom: var(--space-6);" data-i18n="guide.profileTitle">Guide Profile & Government License</h1>
 
       <!-- Verification Status Box -->
       <div class="card" style="margin-bottom: var(--space-6);">
         <div class="card-header">
           <h2 class="card-title" data-i18n="guide.syndicateVerification">Ministry License Verification</h2>
-          <span class="badge badge-verified" id="verificationBadge" data-i18n="guide.verifiedApprovedBadge">✓ Approved & Verified</span>
+          <span class="badge badge-verified" id="verificationBadge" data-i18n="guide.pendingVerificationBadge">⏳ Pending Verification</span>
         </div>
         <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: var(--space-4);" data-i18n="guide.licenseNotice">
           All guides must hold a valid tourist guiding syndicate membership and Ministry of Tourism and Antiquities license.
@@ -52,8 +52,8 @@
 
         <div style="background: var(--bg-subtle); padding: 12px 16px; border-radius: var(--radius-md); display: flex; justify-content: space-between; align-items: center;">
           <div>
-            <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-primary); display: block;" data-i18n="guide.activeSyndicate">Syndicate License #EGY-2018-4421</span>
-            <span style="font-size: 0.75rem; color: var(--text-muted);" data-i18n="guide.validThrough">Verified on Jan 14, 2026 · Valid through Dec 2028</span>
+            <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-primary); display: block;" data-i18n="guide.activeSyndicate">Syndicate License</span>
+            <span style="font-size: 0.75rem; color: var(--text-muted);" data-i18n="guide.validThrough">Verified with Egyptian Syndicate Registry</span>
           </div>
           <span class="badge badge-online" data-i18n="guide.activeStatus">Active</span>
         </div>
@@ -68,28 +68,28 @@
         <form id="guideProfileForm">
           <div class="form-group">
             <label class="form-label" data-i18n="guide.fullNameLabel">Full Name</label>
-            <input type="text" class="form-input" id="profName" value="Ahmed Hassan">
+            <input type="text" class="form-input" id="profName" value="">
           </div>
 
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3);" class="form-group">
             <div>
               <label class="form-label" data-i18n="guide.hourlyRateUSD">Hourly Rate ($ USD)</label>
-              <input type="number" class="form-input" id="profRate" value="25">
+              <input type="number" class="form-input" id="profRate" value="">
             </div>
             <div>
               <label class="form-label" data-i18n="guide.primaryAreaLabel">Primary Area</label>
-              <input type="text" class="form-input" id="profCity" value="Giza">
+              <input type="text" class="form-input" id="profCity" value="">
             </div>
           </div>
 
           <div class="form-group">
             <label class="form-label" data-i18n="auth.languagesSpoken">Languages (comma-separated)</label>
-            <input type="text" class="form-input" id="profLangs" value="Arabic, English, German">
+            <input type="text" class="form-input" id="profLangs" value="">
           </div>
 
           <div class="form-group">
             <label class="form-label" data-i18n="guide.aboutBioLabel">About / Bio</label>
-            <textarea class="form-textarea" rows="4" id="profAbout">Certified Egyptologist and graduate of Faculty of Archaeology. Over 8 years guiding travelers through the pyramids, Sphinx, and the Grand Egyptian Museum with focus on ancient architectural techniques.</textarea>
+            <textarea class="form-textarea" rows="4" id="profAbout"></textarea>
           </div>
 
           <button type="submit" class="btn btn-primary btn-block" data-i18n="guide.saveChanges">Save Changes</button>

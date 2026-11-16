@@ -107,6 +107,7 @@ export const COLLECTIONS = {
   TOURS: 'tours',
   LOCATIONS: 'locations',
   AVAILABILITY: 'availability',
+  GUIDE_BUSY_SLOTS: 'guideBusySlots',
   BOOKINGS: 'bookings',
   PAYMENTS: 'payments',
   PAYOUTS: 'payouts',
@@ -153,105 +154,5 @@ export async function validateFirestoreConnection() {
   }
 }
 
-// Initial seed data for production guides if collection is empty
-const INITIAL_MARKETPLACE_GUIDES = [
-  {
-    id: 'guide_ahmed_hassan_official',
-    name: 'Ahmed Hassan',
-    email: 'ahmed.guide@tourguide.com',
-    phone: '+20 100 123 4567',
-    country: 'Egypt',
-    verified: true,
-    verificationStatus: 'approved',
-    rating: 4.9,
-    reviewsCount: 127,
-    languages: ['Arabic', 'English', 'German'],
-    experienceYears: 8,
-    distanceKm: 2.4,
-    hourlyRate: 25,
-    currency: 'USD',
-    city: 'Giza',
-    currentLocationName: 'Giza Plateau First Gate',
-    isOnline: true,
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80',
-    specialties: ['History', 'Architecture', 'Museum'],
-    about: 'Certified Egyptologist and graduate of Faculty of Archaeology, Cairo University. Over 8 years guiding travelers through the pyramids, Sphinx, and the Grand Egyptian Museum with focus on ancient architectural techniques.',
-    packages: [
-      { id: 'pkg1', title: 'Pyramids of Giza & Sphinx In-Depth', duration: '3 hours', price: 75 },
-      { id: 'pkg2', title: 'Grand Egyptian Museum (GEM) Masterpieces', duration: '4 hours', price: 100 }
-    ],
-    createdAt: new Date().toISOString()
-  },
-  {
-    id: 'guide_sarah_mansour_official',
-    name: 'Dr. Sarah Mansour',
-    email: 'sarah.mansour@tourguide.com',
-    phone: '+20 102 987 6543',
-    country: 'Egypt',
-    verified: true,
-    verificationStatus: 'approved',
-    rating: 4.95,
-    reviewsCount: 142,
-    languages: ['Arabic', 'English', 'French'],
-    experienceYears: 11,
-    distanceKm: 3.8,
-    hourlyRate: 35,
-    currency: 'USD',
-    city: 'Cairo',
-    currentLocationName: 'Tahrir Square / Downtown',
-    isOnline: true,
-    avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80',
-    specialties: ['Museum', 'History', 'Family'],
-    about: 'PhD in Coptic & Islamic Heritage. Passionate about bringing ancient historical inscriptions to life for couples, solo travelers, and families with interactive storytelling.',
-    packages: [
-      { id: 'pkg3', title: 'Old Cairo: Hanging Church & Coptic Museum', duration: '3.5 hours', price: 110 }
-    ],
-    createdAt: new Date().toISOString()
-  },
-  {
-    id: 'guide_karim_luxor_official',
-    name: 'Karim El-Sayed',
-    email: 'karim.luxor@tourguide.com',
-    phone: '+20 111 555 4321',
-    country: 'Egypt',
-    verified: true,
-    verificationStatus: 'approved',
-    rating: 4.88,
-    reviewsCount: 94,
-    languages: ['Arabic', 'English', 'Spanish'],
-    experienceYears: 6,
-    distanceKm: 5.1,
-    hourlyRate: 28,
-    currency: 'USD',
-    city: 'Luxor',
-    currentLocationName: 'Karnak Temple',
-    isOnline: false,
-    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80',
-    specialties: ['Desert', 'Local Experience', 'Food'],
-    about: 'Specialized in Luxor West Bank royal tombs, temple hieroglyphics, and authentic culinary trails.',
-    packages: [
-      { id: 'pkg4', title: 'Valley of the Kings & Karnak Expedition', duration: '4 hours', price: 95 }
-    ],
-    createdAt: new Date().toISOString()
-  }
-];
-
-/**
- * Seed initial marketplace guides to Firestore if empty
- */
-export async function seedInitialGuidesIfEmpty() {
-  try {
-    const snap = await getDocs(collection(db, COLLECTIONS.GUIDES));
-    if (snap.empty) {
-      for (const guide of INITIAL_MARKETPLACE_GUIDES) {
-        await setDoc(doc(db, COLLECTIONS.GUIDES, guide.id), guide);
-      }
-    }
-  } catch (err) {
-    console.warn('Initial guides seed notice:', err.message);
-  }
-}
-
-// Auto-run connection check & seed
+// Auto-run connection check
 validateFirestoreConnection();
-seedInitialGuidesIfEmpty();

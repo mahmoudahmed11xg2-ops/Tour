@@ -20,7 +20,7 @@
           </svg>
         </div>
         <span>TourGuide</span>
-        <span class="brand-badge">CAPTAIN</span>
+        <span class="brand-badge" data-i18n="brand.captainBadge">CAPTAIN</span>
       </a>
 
       <nav class="nav-links">
@@ -37,57 +37,145 @@
 
   <main class="main-content">
     <div class="app-container" style="max-width: 900px;">
-      
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-6);">
+
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-6); flex-wrap: wrap; gap: var(--space-3);">
         <h1 style="font-size: 1.5rem; font-weight: 800;" data-i18n="guide.calendarTitle">Availability & Schedule</h1>
-        <button id="openAllBtn" class="btn btn-outline btn-sm" data-i18n="guide.quickOpenAll">Quick Open All</button>
+        <div style="display: flex; gap: var(--space-2);">
+          <button id="openAllBtn" class="btn btn-outline btn-sm" data-i18n="guide.quickOpenAll">Open All Weekdays</button>
+          <button id="saveScheduleBtn" class="btn btn-primary btn-sm" data-i18n="guide.saveScheduleBtn">Save Schedule</button>
+        </div>
       </div>
 
+      <!-- Weekly Schedule Editor (Persisted to Firestore) -->
+      <div class="card" style="margin-bottom: var(--space-6);">
+        <div class="card-header">
+          <h2 class="card-title" data-i18n="guide.weeklySlotsTitle">Weekly Working Hours & Availability</h2>
+          <label class="checkbox-label">
+            <input type="checkbox" id="instantAvailableToggle" checked>
+            <span style="font-size: 0.825rem; font-weight: 600;" data-i18n="guide.availableForInstant">Available for Instant</span>
+          </label>
+        </div>
+
+        <div id="weeklyRows" style="display: grid; gap: var(--space-3);"></div>
+
+        <div class="form-group" style="margin-top: var(--space-5);">
+          <label class="form-label" data-i18n="guide.blockedDatesLabel">Blocked Dates (comma-separated YYYY-MM-DD)</label>
+          <input type="text" id="blockedDatesInput" class="form-input" placeholder="2026-12-25, 2026-12-31">
+        </div>
+      </div>
+
+      <!-- Real Booked Time Slots from guideBusySlots -->
       <div class="card">
         <div class="card-header">
-          <h2 class="card-title" data-i18n="guide.weeklySlotsTitle">Weekly Dispatch Slots</h2>
-          <span style="font-size: 0.8rem; color: var(--text-muted);">Instant & Scheduled</span>
+          <h2 class="card-title" data-i18n="guide.bookedSlotsTitle">Upcoming Booked Time Slots</h2>
         </div>
-
-        <div style="display: grid; gap: var(--space-3);">
-          <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--bg-subtle); border-radius: var(--radius-md);">
-            <div>
-              <span style="font-weight: 700; font-size: 0.95rem;">Today</span>
-              <span style="font-size: 0.8rem; color: var(--text-muted); display: block;">9:00 AM – 6:00 PM</span>
-            </div>
-            <span class="badge badge-online" data-i18n="guide.availableForInstant">Available for Instant</span>
-          </div>
-
-          <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--bg-subtle); border-radius: var(--radius-md);">
-            <div>
-              <span style="font-weight: 700; font-size: 0.95rem;">Tomorrow</span>
-              <span style="font-size: 0.8rem; color: var(--text-muted); display: block;">9:00 AM – 5:00 PM</span>
-            </div>
-            <span class="badge badge-online" data-i18n="guide.availableForInstant">Available for Instant</span>
-          </div>
-
-          <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--bg-subtle); border-radius: var(--radius-md);">
-            <div>
-              <span style="font-weight: 700; font-size: 0.95rem;">Weekend</span>
-              <span style="font-size: 0.8rem; color: var(--text-muted); display: block;">Afternoon & Sunset Tours</span>
-            </div>
-            <span class="badge badge-gray">Scheduled Only</span>
-          </div>
-        </div>
+        <div id="bookedSlotsList" style="display: grid; gap: var(--space-2);"></div>
       </div>
 
     </div>
   </main>
 
   <script type="module">
-    import { enforceRouteProtection } from '/js/auth.js';
-    import { showToast, t } from '/js/utils.js';
+    import { onAuthReady, enforceRouteProtection } from '/js/auth.js';
+    import { getGuideById, updateGuideAvailabilitySchedule } from '/js/guides.js';
+    import { getGuideBusySlots, DEFAULT_WEEKLY_AVAILABILITY, WEEKDAY_KEYS } from '/js/availability.js';
+    import { showToast, t, getLocalizedStatus } from '/js/utils.js';
 
     enforceRouteProtection({ allowedRoles: ['guide', 'admin'] });
 
-    document.getElementById('openAllBtn').addEventListener('click', () => {
+    let currentGuideId = null;
+    let weeklyState = JSON.parse(JSON.stringify(DEFAULT_WEEKLY_AVAILABILITY));
+
+    function renderWeeklyRows() {
+      const container = document.getElementById('weeklyRows');
+      container.innerHTML = WEEKDAY_KEYS.map(day => {
+        const cfg = weeklyState[day] || { enabled: true, start: '07:00', end: '23:00' };
+        return `
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--bg-subtle); border-radius: var(--radius-md); flex-wrap: wrap; gap: var(--space-3);">
+            <label class="checkbox-label" style="min-width: 90px;">
+              <input type="checkbox" class="day-enable-cb" data-day="${day}" ${cfg.enabled ? 'checked' : ''}>
+              <span style="font-weight: 700; text-transform: uppercase;">${day}</span>
+            </label>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <input type="time" class="form-input day-start-input" data-day="${day}" value="${cfg.start || '07:00'}" style="width: 130px; min-height: 36px;">
+              <span>–</span>
+              <input type="time" class="form-input day-end-input" data-day="${day}" value="${cfg.end || '23:00'}" style="width: 130px; min-height: 36px;">
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function readWeeklyFromDom() {
+      const result = {};
+      WEEKDAY_KEYS.forEach(day => {
+        const enabled = document.querySelector(`.day-enable-cb[data-day="${day}"]`)?.checked ?? true;
+        const start = document.querySelector(`.day-start-input[data-day="${day}"]`)?.value || '07:00';
+        const end = document.querySelector(`.day-end-input[data-day="${day}"]`)?.value || '23:00';
+        result[day] = { enabled, start, end };
+      });
+      return result;
+    }
+
+    async function saveSchedule() {
+      if (!currentGuideId) return;
+      weeklyState = readWeeklyFromDom();
+      const blockedDates = document.getElementById('blockedDatesInput').value
+        .split(',')
+        .map(s => s.trim())
+        .filter(Boolean);
+      const instantAvailable = document.getElementById('instantAvailableToggle').checked;
+
+      await updateGuideAvailabilitySchedule(currentGuideId, {
+        weeklyAvailability: weeklyState,
+        blockedDates,
+        instantAvailable
+      });
       showToast(t('toasts.slotsOpened'), 'success');
+    }
+
+    onAuthReady(async (user) => {
+      if (!user) return;
+      currentGuideId = user.uid;
+
+      const [guide, busySlots] = await Promise.all([
+        getGuideById(currentGuideId),
+        getGuideBusySlots(currentGuideId)
+      ]);
+
+      if (guide) {
+        if (guide.weeklyAvailability) {
+          weeklyState = { ...DEFAULT_WEEKLY_AVAILABILITY, ...guide.weeklyAvailability };
+        }
+        document.getElementById('instantAvailableToggle').checked = guide.instantAvailable !== false;
+        if (Array.isArray(guide.blockedDates)) {
+          document.getElementById('blockedDatesInput').value = guide.blockedDates.join(', ');
+        }
+      }
+      renderWeeklyRows();
+
+      const slotsEl = document.getElementById('bookedSlotsList');
+      if (busySlots.length === 0) {
+        slotsEl.innerHTML = `<p style="font-size: 0.875rem; color: var(--text-muted);">${t('guide.noBookedSlots')}</p>`;
+      } else {
+        slotsEl.innerHTML = busySlots.map(s => `
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: var(--bg-subtle); border-radius: var(--radius-md);">
+            <div>
+              <strong>${s.date}</strong> · <span>${s.startTime} – ${s.endTime}</span>
+            </div>
+            <span class="badge badge-online">${getLocalizedStatus(s.status)}</span>
+          </div>
+        `).join('');
+      }
     });
+
+    document.getElementById('openAllBtn').addEventListener('click', () => {
+      weeklyState = JSON.parse(JSON.stringify(DEFAULT_WEEKLY_AVAILABILITY));
+      renderWeeklyRows();
+      saveSchedule();
+    });
+
+    document.getElementById('saveScheduleBtn').addEventListener('click', saveSchedule);
   </script>
 </body>
 </html>

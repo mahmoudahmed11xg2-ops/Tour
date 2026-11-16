@@ -20,15 +20,16 @@
           </svg>
         </div>
         <span>TourGuide</span>
-        <span class="brand-badge" style="color: #1e40af;">ADMIN</span>
+        <span class="brand-badge" style="color: #1e40af;" data-i18n="brand.adminBadge">ADMIN</span>
       </a>
 
       <nav class="nav-links">
-        <a href="/admin/index.html" class="nav-link">Dashboard</a>
-        <a href="/admin/guides.html" class="nav-link">Guides & Verification</a>
-        <a href="/admin/bookings.html" class="nav-link">Bookings</a>
-        <a href="/admin/payments.html" class="nav-link">Payments</a>
-        <a href="/admin/reports.html" class="nav-link">Reports</a>
+        <a href="/admin/index.html" class="nav-link" data-i18n="nav.dashboard">Dashboard</a>
+        <a href="/admin/guides.html" class="nav-link" data-i18n="nav.guides">Guides & Verification</a>
+        <a href="/admin/bookings.html" class="nav-link" data-i18n="nav.bookings">Bookings</a>
+        <a href="/admin/users.html" class="nav-link active" data-i18n="nav.users">Users</a>
+        <a href="/admin/payments.html" class="nav-link" data-i18n="nav.payments">Payments</a>
+        <a href="/admin/reports.html" class="nav-link" data-i18n="nav.reports">Reports</a>
       </nav>
 
       <div class="header-actions"></div>
@@ -37,18 +38,18 @@
 
   <main class="main-content">
     <div class="app-container">
-      
-      <h1 style="font-size: 1.5rem; font-weight: 800; margin-bottom: var(--space-6);">Marketplace User Accounts</h1>
+
+      <h1 style="font-size: 1.5rem; font-weight: 800; margin-bottom: var(--space-6);" data-i18n="admin.usersTitle">User Accounts & Access Control</h1>
 
       <div class="table-responsive">
         <table class="data-table">
           <thead>
             <tr>
-              <th>User ID</th>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Role</th>
-              <th>Country</th>
+              <th data-i18n="admin.userIdCol">User ID</th>
+              <th data-i18n="admin.nameCol">Name</th>
+              <th data-i18n="admin.emailCol">Email</th>
+              <th data-i18n="admin.roleCol">Role</th>
+              <th data-i18n="admin.countryCol">Country</th>
             </tr>
           </thead>
           <tbody id="usersTbody"></tbody>
@@ -61,6 +62,7 @@
   <script type="module">
     import { db, COLLECTIONS } from '/js/firebase.js';
     import { enforceRouteProtection, onAuthReady } from '/js/auth.js';
+    import { getLocalizedRole } from '/js/utils.js';
 
     enforceRouteProtection({ allowedRoles: ['admin'] });
 
@@ -72,13 +74,14 @@
         <tr>
           <td style="font-family: monospace; font-weight: 700;">${u.uid || u.id}</td>
           <td style="font-weight: 600;">${u.firstName || ''} ${u.lastName || ''}</td>
-          <td>${u.email}</td>
-          <td><span class="badge ${u.role === 'admin' ? 'badge-verified' : u.role === 'guide' ? 'badge-online' : 'badge-gray'}">${(u.role || 'tourist').toUpperCase()}</span></td>
+          <td>${u.email || ''}</td>
+          <td><span class="badge ${u.role === 'admin' ? 'badge-verified' : u.role === 'guide' ? 'badge-online' : 'badge-gray'}">${getLocalizedRole(u.role || 'tourist')}</span></td>
           <td>${u.country || 'International'}</td>
         </tr>
       `).join('');
     }
 
+    document.addEventListener('tourguide:langchange', loadUsers);
     onAuthReady((user) => {
       if (user) loadUsers();
     });

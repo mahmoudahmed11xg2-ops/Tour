@@ -20,15 +20,16 @@
           </svg>
         </div>
         <span>TourGuide</span>
-        <span class="brand-badge" style="color: #1e40af;">ADMIN</span>
+        <span class="brand-badge" style="color: #1e40af;" data-i18n="brand.adminBadge">ADMIN</span>
       </a>
 
       <nav class="nav-links">
-        <a href="/admin/index.html" class="nav-link">Dashboard</a>
-        <a href="/admin/guides.html" class="nav-link">Guides & Verification</a>
-        <a href="/admin/bookings.html" class="nav-link">Bookings</a>
-        <a href="/admin/payments.html" class="nav-link">Payments</a>
-        <a href="/admin/reports.html" class="nav-link active">Reports</a>
+        <a href="/admin/index.html" class="nav-link" data-i18n="nav.dashboard">Dashboard</a>
+        <a href="/admin/guides.html" class="nav-link" data-i18n="nav.guides">Guides & Verification</a>
+        <a href="/admin/bookings.html" class="nav-link" data-i18n="nav.bookings">Bookings</a>
+        <a href="/admin/users.html" class="nav-link" data-i18n="nav.users">Users</a>
+        <a href="/admin/payments.html" class="nav-link" data-i18n="nav.payments">Payments</a>
+        <a href="/admin/reports.html" class="nav-link active" data-i18n="nav.reports">Reports</a>
       </nav>
 
       <div class="header-actions"></div>
@@ -37,18 +38,16 @@
 
   <main class="main-content">
     <div class="app-container">
-      
-      <h1 style="font-size: 1.5rem; font-weight: 800; margin-bottom: var(--space-6);">Reports & Security Audit Logs</h1>
+
+      <h1 style="font-size: 1.5rem; font-weight: 800; margin-bottom: var(--space-6);" data-i18n="admin.reportsTitle">Audit Logs & Governance Reports</h1>
 
       <div class="card">
         <div class="card-header">
-          <h2 class="card-title">Immutable System Audit Trail</h2>
-          <span style="font-size: 0.8rem; color: var(--text-muted);">Real-time log stream</span>
+          <h2 class="card-title" data-i18n="admin.immutableNotice">Immutable System Audit Trail</h2>
+          <span style="font-size: 0.8rem; color: var(--text-muted);" data-i18n="admin.realtimeStream">Real-time log stream</span>
         </div>
 
-        <div id="auditLogsContainer" style="display: grid; gap: var(--space-3);">
-          <!-- Dynamically populated -->
-        </div>
+        <div id="auditLogsContainer" style="display: grid; gap: var(--space-3);"></div>
       </div>
 
     </div>
@@ -57,6 +56,7 @@
   <script type="module">
     import { db, COLLECTIONS } from '/js/firebase.js';
     import { enforceRouteProtection, onAuthReady } from '/js/auth.js';
+    import { t } from '/js/utils.js';
 
     enforceRouteProtection({ allowedRoles: ['admin'] });
 
@@ -65,25 +65,27 @@
       const container = document.getElementById('auditLogsContainer');
 
       if (!logs || logs.length === 0) {
-        container.innerHTML = '<p style="color: var(--text-muted); font-size: 0.85rem; padding: 12px;">No audit log events recorded yet.</p>';
+        container.innerHTML = `<p style="color: var(--text-muted); font-size: 0.85rem; padding: 12px;">${t('admin.noLogsRecorded')}</p>`;
         return;
       }
 
-      container.innerHTML = logs.reverse().map(l => `
+      const sorted = [...logs].sort((a, b) => (b.timestamp || '').localeCompare(a.timestamp || ''));
+      container.innerHTML = sorted.map(l => `
         <div style="background: var(--bg-subtle); padding: 12px 14px; border-radius: var(--radius-md); display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem;">
           <div>
             <span style="font-family: monospace; font-weight: 700; color: var(--primary);">${l.action}</span>
             <span style="display: block; font-size: 0.775rem; color: var(--text-secondary); margin-top: 2px;">
-              ${l.notes || l.details || l.bookingId || l.targetId || 'Operation executed'}
+              ${l.notes || l.details || l.bookingId || l.targetId || ''}
             </span>
           </div>
           <span style="font-size: 0.75rem; font-family: monospace; color: var(--text-muted);">
-            ${l.timestamp ? new Date(l.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Recent'}
+            ${l.timestamp ? new Date(l.timestamp).toLocaleString() : ''}
           </span>
         </div>
       `).join('');
     }
 
+    document.addEventListener('tourguide:langchange', loadLogs);
     onAuthReady((user) => {
       if (user) loadLogs();
     });

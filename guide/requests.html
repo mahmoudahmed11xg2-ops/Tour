@@ -20,7 +20,7 @@
           </svg>
         </div>
         <span>TourGuide</span>
-        <span class="brand-badge">CAPTAIN</span>
+        <span class="brand-badge" data-i18n="brand.captainBadge">CAPTAIN</span>
       </a>
 
       <nav class="nav-links">
@@ -37,40 +37,152 @@
 
   <main class="main-content">
     <div class="app-container" style="max-width: 900px;">
-      
+
       <h1 style="font-size: 1.5rem; font-weight: 800; margin-bottom: var(--space-6);" data-i18n="guide.requestsTitle">Booking Requests Queue</h1>
 
-      <div class="card" style="margin-bottom: var(--space-4);">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--space-3);">
-          <div>
-            <span class="badge badge-online" style="margin-bottom: 6px;" data-i18n="guide.liveRequest">Live Request</span>
-            <h3 style="font-size: 1.05rem; font-weight: 700;">Giza Plateau (Pyramids of Giza)</h3>
-            <span style="font-size: 0.8rem; color: var(--text-muted);">Tourist: Elena Rostova · 2 Guests · German/English</span>
-          </div>
-          <span style="font-size: 1.15rem; font-weight: 800; color: var(--success);">$50.00</span>
-        </div>
-        <div style="display: flex; gap: 8px;">
-          <a href="/tourist/booking.html?id=BK-9021" class="btn btn-primary btn-sm" data-i18n="guide.openTracking">Open Tracking</a>
-        </div>
-      </div>
+      <div id="requestsQueueList" style="display: grid; gap: var(--space-4);"></div>
 
     </div>
   </main>
 
   <script type="module">
     import { onAuthReady, enforceRouteProtection } from '/js/auth.js';
-    import { getBookingsForGuide } from '/js/booking.js';
+    import {
+      BOOKING_STATUS,
+      ALLOWED_GUIDE_TRANSITIONS,
+      subscribeToGuideBookings,
+      acceptBooking,
+      declineBooking,
+      progressBookingStatus
+    } from '/js/booking.js';
+    import {
+      showToast,
+      t,
+      getLocalizedStatus,
+      formatCurrency,
+      formatDuration,
+      formatBookingDateTime
+    } from '/js/utils.js';
 
     enforceRouteProtection({ allowedRoles: ['guide', 'admin'] });
 
-    onAuthReady(async (user) => {
-      if (!user) return;
-      try {
-        const bookings = await getBookingsForGuide(user.uid);
-        console.log('Loaded requests for guide:', bookings.length);
-      } catch (err) {
-        console.warn('Load requests:', err);
+    const container = document.getElementById('requestsQueueList');
+    let currentGuideId = null;
+    let latestBookings = [];
+    let unsubscribe = null;
+
+    function renderQueue(bookings) {
+      latestBookings = bookings || [];
+
+      if (latestBookings.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state card">
+            <h2 class="empty-state-title">${t('guide.noPendingRequestsTitle')}</h2>
+            <p class="empty-state-desc">${t('guide.noPendingRequestsDesc')}</p>
+          </div>
+        `;
+        return;
       }
+
+      container.innerHTML = latestBookings.map(b => {
+        const net = Math.max(0, Number(b.price || 0) - Number(b.platformFee || 0));
+        const isPending = b.status === BOOKING_STATUS.PENDING;
+        const nextStatus = ALLOWED_GUIDE_TRANSITIONS[b.status];
+        const nextLabelMap = {
+          confirmed: t('guide.acceptTour'),
+          guide_arriving: t('guide.startArriving'),
+          meeting_started: t('guide.markMet'),
+          in_progress: t('guide.startTour'),
+          completed: t('guide.completeTour')
+        };
+
+        return `
+          <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--space-3); gap: var(--space-3);">
+              <div>
+                <div style="display: flex; gap: 6px; margin-bottom: 6px; flex-wrap: wrap;">
+                  <span class="badge ${isPending ? 'badge-warning' : b.status === 'completed' ? 'badge-gray' : 'badge-online'}">
+                    ${getLocalizedStatus(b.status)}
+                  </span>
+                  <span class="badge badge-gray">
+                    ${b.bookingType === 'instant' ? t('booking.instantType') : t('booking.scheduledType')}
+                  </span>
+                </div>
+                <h3 style="font-size: 1.05rem; font-weight: 700;">${b.location}</h3>
+                <span style="font-size: 0.825rem; color: var(--text-secondary); display: block; margin-top: 2px;">
+                  ${b.touristName} · ${b.guests} ${t('guide.guests')} · ${b.language} · ${formatDuration(b.duration)}
+                </span>
+                <span style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-top: 2px;">
+                  ${formatBookingDateTime(b.date, b.startTime, b.endTime)}
+                </span>
+              </div>
+              <div style="text-align: end;">
+                <span style="font-size: 0.72rem; color: var(--text-muted); display: block;">${t('guide.estimatedEarnings')}</span>
+                <span style="font-size: 1.15rem; font-weight: 800; color: var(--success);">${formatCurrency(net.toFixed(2), b.currency || 'USD')}</span>
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+              ${isPending ? `
+                <button class="btn btn-accept btn-sm accept-btn" data-id="${b.id}">${t('guide.acceptTour')}</button>
+                <button class="btn btn-decline btn-sm decline-btn" data-id="${b.id}">${t('guide.decline')}</button>
+              ` : nextStatus ? `
+                <button class="btn btn-primary btn-sm progress-btn" data-id="${b.id}" data-next="${nextStatus}">${nextLabelMap[nextStatus] || nextStatus}</button>
+              ` : ''}
+              <a href="/tourist/booking.html?id=${b.id}" class="btn btn-outline btn-sm">${t('guide.openTracking')}</a>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      container.querySelectorAll('.accept-btn').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          const id = e.currentTarget.getAttribute('data-id');
+          try {
+            await acceptBooking(id, currentGuideId);
+            showToast(t('toasts.tourAccepted'), 'success');
+          } catch (err) {
+            showToast(err.message || 'Accept failed', 'error');
+          }
+        });
+      });
+
+      container.querySelectorAll('.decline-btn').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          const id = e.currentTarget.getAttribute('data-id');
+          try {
+            const res = await declineBooking(id, currentGuideId);
+            showToast(res.outcome === 'reassigned' ? t('toasts.tourReassigned') : t('toasts.tourDeclined'), 'info');
+          } catch (err) {
+            showToast(err.message || 'Decline failed', 'error');
+          }
+        });
+      });
+
+      container.querySelectorAll('.progress-btn').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          const id = e.currentTarget.getAttribute('data-id');
+          const next = e.currentTarget.getAttribute('data-next');
+          try {
+            await progressBookingStatus(id, currentGuideId, next);
+            showToast(t('toasts.statusUpdated', { status: getLocalizedStatus(next) }), 'success');
+          } catch (err) {
+            showToast(err.message || 'Update failed', 'error');
+          }
+        });
+      });
+    }
+
+    onAuthReady((user) => {
+      if (!user) return;
+      currentGuideId = user.uid;
+      container.innerHTML = '<div class="empty-state"><div class="spinner"></div></div>';
+      if (unsubscribe) unsubscribe();
+      unsubscribe = subscribeToGuideBookings(currentGuideId, renderQueue);
+    });
+
+    document.addEventListener('tourguide:langchange', () => {
+      renderQueue(latestBookings);
     });
   </script>
 </body>
