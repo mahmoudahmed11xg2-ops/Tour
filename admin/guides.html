@@ -2,120 +2,161 @@
 <html lang="en" dir="ltr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Manage Guides — Admin Console</title>
-  <link rel="stylesheet" href="/css/global.css">
-  <link rel="stylesheet" href="/css/admin.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="app-root" content="../">
+  <title>Guides | TourGuide Admin</title>
+  <link rel="stylesheet" href="../css/global.css">
+  <link rel="stylesheet" href="../css/admin.css">
 </head>
-<body>
+<body class="protected-page">
 
-  <!-- Top Header Navigation -->
-  <header class="site-header">
-    <div class="app-container header-inner">
-      <a href="/admin/index.html" class="brand-logo">
-        <div class="brand-icon" style="background: #1e40af;">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+  <header class="site-header admin-mobile-header">
+    <div class="header-inner">
+      <div class="header-left">
+        <button type="button" id="mobileMenuToggle" class="hamburger-btn" aria-label="Menu" aria-expanded="false" aria-controls="mobileDrawer">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
           </svg>
-        </div>
-        <span>TourGuide</span>
-        <span class="brand-badge" style="color: #1e40af;" data-i18n="brand.adminBadge">ADMIN</span>
-      </a>
-
-      <nav class="nav-links">
-        <a href="/admin/index.html" class="nav-link" data-i18n="nav.dashboard">Dashboard</a>
-        <a href="/admin/guides.html" class="nav-link active" data-i18n="nav.guides">Guides & Verification</a>
-        <a href="/admin/bookings.html" class="nav-link" data-i18n="nav.bookings">Bookings</a>
-        <a href="/admin/users.html" class="nav-link" data-i18n="nav.users">Users</a>
-        <a href="/admin/payments.html" class="nav-link" data-i18n="nav.payments">Payments</a>
-        <a href="/admin/reports.html" class="nav-link" data-i18n="nav.reports">Reports</a>
-      </nav>
-
-      <div class="header-actions"></div>
+        </button>
+        <a href="./index.html" class="brand-wordmark" data-i18n="brand.name">TourGuide</a>
+      </div>
+      <div class="header-actions">
+        <button type="button" class="lang-toggle-btn" aria-label="Toggle language"><span class="lang-label">العربية</span></button>
+      </div>
     </div>
   </header>
 
-  <main class="main-content">
-    <div class="app-container">
-
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-6);">
-        <h1 style="font-size: 1.5rem; font-weight: 800;" data-i18n="admin.allGuidesTitle">All Tour Guides & Accreditation</h1>
-      </div>
-
-      <div class="table-responsive">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th data-i18n="admin.guideCol">Guide</th>
-              <th data-i18n="admin.cityCol">City / Location</th>
-              <th data-i18n="admin.languagesCol">Languages</th>
-              <th data-i18n="admin.ratingCol">Rating</th>
-              <th data-i18n="admin.rateCol">Hourly Rate</th>
-              <th data-i18n="admin.verificationCol">Verification</th>
-              <th data-i18n="admin.actionCol">Actions</th>
-            </tr>
-          </thead>
-          <tbody id="allGuidesTbody"></tbody>
-        </table>
-      </div>
-
+  <div id="mobileDrawerBackdrop" class="mobile-drawer-backdrop"></div>
+  <aside id="mobileDrawer" class="mobile-drawer" aria-hidden="true">
+    <div class="drawer-header">
+      <strong class="brand-wordmark" data-i18n="brand.adminBadge">Admin</strong>
+      <button type="button" id="mobileDrawerClose" class="drawer-close-btn" aria-label="Close">&times;</button>
     </div>
-  </main>
+    <nav class="drawer-nav">
+      <a href="./index.html" class="drawer-link" data-i18n="nav.dashboard">Dashboard</a>
+      <a href="./users.html" class="drawer-link" data-i18n="nav.users">Users</a>
+      <a href="./guides.html" class="drawer-link active" data-i18n="nav.guides">Guides</a>
+      <a href="./bookings.html" class="drawer-link" data-i18n="nav.bookings">Bookings</a>
+      <a href="./payments.html" class="drawer-link" data-i18n="nav.payments">Payments</a>
+      <a href="./reports.html" class="drawer-link" data-i18n="nav.reports">Reports</a>
+      <a href="./settings.html" class="drawer-link" data-i18n="nav.settings">Settings</a>
+    </nav>
+    <div id="drawerAuthSlot" class="drawer-footer"></div>
+  </aside>
 
+  <div class="admin-shell">
+    <aside class="admin-sidebar">
+      <div class="admin-sidebar-brand">
+        <a href="./index.html" class="brand-wordmark" data-i18n="brand.name">TourGuide</a>
+      </div>
+      <nav class="admin-sidebar-nav">
+        <a href="./index.html" class="nav-link" data-i18n="nav.dashboard">Dashboard</a>
+        <a href="./users.html" class="nav-link" data-i18n="nav.users">Users</a>
+        <a href="./guides.html" class="nav-link active" data-i18n="nav.guides">Guides</a>
+        <a href="./bookings.html" class="nav-link" data-i18n="nav.bookings">Bookings</a>
+        <a href="./payments.html" class="nav-link" data-i18n="nav.payments">Payments</a>
+        <a href="./reports.html" class="nav-link" data-i18n="nav.reports">Reports</a>
+        <a href="./settings.html" class="nav-link" data-i18n="nav.settings">Settings</a>
+      </nav>
+      <div class="admin-sidebar-footer">
+        <button type="button" class="lang-toggle-btn btn-block"><span class="lang-label">العربية</span></button>
+        <button type="button" id="sidebarLogoutBtn" class="btn btn-outline btn-block btn-sm" data-i18n="nav.logout">Log out</button>
+      </div>
+    </aside>
+
+    <main class="admin-main">
+      <div class="page-header">
+        <h1 class="page-title" data-i18n="admin.allGuidesTitle">Guides &amp; Verification</h1>
+      </div>
+      <div id="guidesTableWrap"></div>
+    </main>
+  </div>
+
+  <script type="module" src="../js/nav.js"></script>
   <script type="module">
-    import { db, COLLECTIONS } from '/js/firebase.js';
-    import { updateGuideVerification } from '/js/guides.js';
-    import { showToast, t, getLocalizedStatus, formatCurrency } from '/js/utils.js';
-    import { enforceRouteProtection, onAuthReady } from '/js/auth.js';
+    import { enforceRouteProtection, logout, onAuthReady } from '../js/auth.js';
+    import { fetchGuides, updateGuideVerification } from '../js/guides.js';
+    import { applyTranslations, setupLanguageToggle, showToast, t, formatCurrency, resolveAvatar, getLocalizedStatus, escapeHtml } from '../js/utils.js';
 
     enforceRouteProtection({ allowedRoles: ['admin'] });
+    applyTranslations();
+    setupLanguageToggle();
+    document.getElementById('sidebarLogoutBtn')?.addEventListener('click', logout);
 
-    async function loadAllGuides() {
-      const guides = await db.getCollection(COLLECTIONS.GUIDES);
-      const tbody = document.getElementById('allGuidesTbody');
+    let guides = [];
 
-      tbody.innerHTML = guides.map(g => `
-        <tr>
-          <td>
-            <div style="display: flex; align-items: center; gap: 10px;">
-              <img src="${g.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=400&q=80'}" style="width: 36px; height: 36px; border-radius: var(--radius-sm); object-fit: cover;">
-              <span style="font-weight: 700;">${g.name}</span>
-            </div>
-          </td>
-          <td>${g.city || 'Cairo'}</td>
-          <td>${Array.isArray(g.languages) ? g.languages.join(', ') : (g.languages || '')}</td>
-          <td>★ ${g.rating ? g.rating.toFixed(1) : '0.0'} (${g.reviewsCount || 0})</td>
-          <td style="font-weight: 700;">${formatCurrency(g.hourlyRate || 25, g.currency || 'USD')}${t('search.perHour')}</td>
-          <td>
-            <span class="badge ${g.verificationStatus === 'approved' ? 'badge-verified' : 'badge-pending'}">
-              ${getLocalizedStatus(g.verificationStatus || 'pending', 'guide')}
-            </span>
-          </td>
-          <td>
-            ${g.verificationStatus !== 'approved' ? `
-              <button class="btn btn-outline btn-sm quick-approve-btn" data-id="${g.id}">${t('admin.quickApprove')}</button>
-            ` : `
-              <span style="color: var(--success); font-weight: 600; font-size: 0.8rem;">${t('admin.verifiedActive')}</span>
-            `}
-          </td>
-        </tr>
-      `).join('');
+    function renderGuides() {
+      document.getElementById('guidesTableWrap').innerHTML = `
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>${escapeHtml(t('admin.guideCol'))}</th>
+                <th>${escapeHtml(t('admin.cityCol'))}</th>
+                <th>${escapeHtml(t('admin.languagesCol'))}</th>
+                <th>${escapeHtml(t('admin.rateCol'))}</th>
+                <th>${escapeHtml(t('admin.verificationCol'))}</th>
+                <th>${escapeHtml(t('admin.actionCol'))}</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${guides.map(g => {
+                const avatar = resolveAvatar(g.avatar, g.name);
+                const approved = g.verificationStatus === 'approved';
+                return `
+                  <tr>
+                    <td>
+                      <div style="display:flex; align-items:center; gap:10px;">
+                        <img src="${avatar}" alt="${escapeHtml(g.name)}" style="width:36px; height:36px; border-radius:8px; object-fit:cover;" referrerpolicy="no-referrer">
+                        <strong>${escapeHtml(g.name)}</strong>
+                      </div>
+                    </td>
+                    <td>${escapeHtml(g.city || '')}</td>
+                    <td>${escapeHtml(Array.isArray(g.languages) ? g.languages.join(', ') : '')}</td>
+                    <td class="tabular-nums">${formatCurrency(g.hourlyRate || 25)}/hr</td>
+                    <td><span class="status-label ${approved ? 'status-success' : 'status-warning'}">${escapeHtml(getLocalizedStatus(g.verificationStatus || 'pending', 'guide'))}</span></td>
+                    <td>
+                      ${approved
+                        ? `<button type="button" class="btn btn-outline btn-sm" data-suspend="${escapeHtml(g.id)}">${escapeHtml(t('admin.reject'))}</button>`
+                        : `<button type="button" class="btn btn-primary btn-sm" data-approve="${escapeHtml(g.id)}">${escapeHtml(t('admin.quickApprove'))}</button>`
+                      }
+                    </td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
 
-      document.querySelectorAll('.quick-approve-btn').forEach(b => {
-        b.addEventListener('click', async (e) => {
-          const id = e.currentTarget.getAttribute('data-id');
-          await updateGuideVerification(id, 'approved');
+      document.querySelectorAll('[data-approve]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          await updateGuideVerification(btn.dataset.approve, 'approved');
           showToast(t('toasts.guideApproved'), 'success');
-          loadAllGuides();
+          guides = await fetchGuides();
+          renderGuides();
+        });
+      });
+
+      document.querySelectorAll('[data-suspend]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          await updateGuideVerification(btn.dataset.suspend, 'rejected');
+          showToast(t('toasts.guideRejected'), 'info');
+          guides = await fetchGuides();
+          renderGuides();
         });
       });
     }
 
-    document.addEventListener('tourguide:langchange', loadAllGuides);
-    onAuthReady((user) => {
-      if (user) loadAllGuides();
+    onAuthReady(async (user) => {
+      if (!user) return;
+      guides = await fetchGuides();
+      renderGuides();
     });
+
+    document.addEventListener('tourguide:langchange', renderGuides);
   </script>
 </body>
 </html>

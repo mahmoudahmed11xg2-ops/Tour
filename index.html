@@ -2,467 +2,344 @@
 <html lang="en" dir="ltr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="app-root" content="./">
   <title>TourGuide | Uber for Tour Guides</title>
-  <meta name="description" content="منصة حجز مرشدين سياحيين معتمدين فورياً وبمواعيد مسبقة - Your City. Your Guide. Your Experience.">
+  <meta name="description" content="Explore the world with the right local guide. Book verified guides instantly or schedule private city tours in your preferred language.">
   <meta property="og:title" content="TourGuide | Uber for Tour Guides">
-  <meta property="og:description" content="منصة حجز مرشدين سياحيين معتمدين فورياً وبمواعيد مسبقة - Your City. Your Guide. Your Experience.">
-  <meta property="og:type" content="website">
-  <link rel="stylesheet" href="/css/global.css">
-  <link rel="stylesheet" href="/css/tourist.css">
+  <meta property="og:description" content="Find a verified local guide who knows the place, the story, and the experience.">
+  <link rel="stylesheet" href="./css/global.css">
+  <link rel="stylesheet" href="./css/landing.css">
 </head>
-<body>
+<body data-surface="public">
 
-  <!-- Top Header Navigation -->
+  <!-- Public Header (Strictly Public Links — Zero Internal Portals) -->
   <header class="site-header">
-    <div class="app-container header-inner">
-      <a href="/" class="brand-logo">
-        <div class="brand-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <circle cx="12" cy="12" r="10"></circle>
-            <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
+    <div class="header-inner">
+      <div class="header-left">
+        <button type="button" id="mobileMenuToggle" class="hamburger-btn" aria-label="Menu" aria-expanded="false" aria-controls="mobileDrawer">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
           </svg>
-        </div>
-        <span>TourGuide</span>
-      </a>
+        </button>
+        <a href="./index.html" class="brand-wordmark">
+          <span class="brand-mark" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
+              <circle cx="12" cy="10" r="3"></circle>
+              <path d="M12 21.7C17.3 17 20 13 20 10a8 8 0 1 0-16 0c0 3 2.7 6.9 8 11.7z"></path>
+            </svg>
+          </span>
+          <span data-i18n="brand.name">TourGuide</span>
+        </a>
+      </div>
 
-      <nav class="nav-links">
-        <a href="/" class="nav-link active" data-i18n="nav.home">Home</a>
-        <a href="/tourist/explore.html" class="nav-link" data-i18n="nav.explore">Explore</a>
-        <a href="/tourist/bookings.html" class="nav-link" data-i18n="nav.bookings">Bookings</a>
-        <a href="/guide/index.html" class="nav-link" data-i18n="nav.guidePortal">Guide Portal</a>
-        <a href="/admin/index.html" class="nav-link" data-i18n="nav.admin">Admin</a>
+      <nav class="header-nav" aria-label="Primary">
+        <a href="#experiences" class="nav-link" data-i18n="nav.explore">Explore</a>
+        <a href="#how-it-works" class="nav-link" data-i18n="nav.howItWorks">How it works</a>
+        <a href="./register.html?role=guide" class="nav-link" data-i18n="nav.becomeGuide">Become a Guide</a>
+        <a href="#trust" class="nav-link" data-i18n="nav.about">About</a>
       </nav>
 
-      <div class="header-actions"></div>
+      <div class="header-actions">
+        <button type="button" class="lang-toggle-btn" aria-label="Toggle language">
+          <span class="lang-label">العربية</span>
+        </button>
+        <a href="./login.html" class="btn btn-ghost btn-sm hide-mobile" data-i18n="nav.login">Log in</a>
+        <a href="./register.html" class="btn btn-primary btn-sm hide-mobile" data-i18n="nav.getStarted">Get Started</a>
+      </div>
     </div>
   </header>
 
-  <!-- Main Content -->
-  <main class="main-content">
-    <div class="app-container">
-
-      <!-- Uber-style Search Hero -->
-      <section class="search-hero">
-        <h1 class="search-headline" data-i18n="search.whereTo">Where are you going?</h1>
-
-        <!-- Booking Mode: Now vs Schedule -->
-        <div class="booking-mode-selector">
-          <button id="modeNowBtn" class="booking-mode-btn active" data-mode="now">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
-            <span data-i18n="search.findGuideNow">Find a Guide Now</span>
-          </button>
-          <button id="modeScheduleBtn" class="booking-mode-btn" data-mode="schedule">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-            <span data-i18n="search.scheduleGuide">Schedule a Guide</span>
-          </button>
-        </div>
-
-        <!-- Location Stack -->
-        <div class="location-inputs">
-          <div class="input-with-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"></circle><path d="M12 2a10 10 0 0 0-10 10c0 5.25 10 12 10 12s10-6.75 10-12a10 10 0 0 0-10-10z"></path></svg>
-            <input type="text" id="currentLocationInput" class="form-input" value="Giza" placeholder="Current location (e.g. Giza)" data-i18n-placeholder="search.currentLocation">
-          </div>
-          <div class="input-with-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-            <input type="text" id="destinationInput" class="form-input" value="Pyramids of Giza" placeholder="Where do you want to explore?" data-i18n-placeholder="search.destination">
-          </div>
-        </div>
-
-        <!-- Scheduled Date & Start Time Row (shown in Schedule mode) -->
-        <div id="scheduleDateTimeRow" style="display: none; grid-template-columns: 1fr 1fr; gap: var(--space-3); margin-bottom: var(--space-4);">
-          <div>
-            <label class="form-label" data-i18n="booking.date">Date</label>
-            <input type="date" id="scheduleDateInput" class="form-input">
-          </div>
-          <div>
-            <label class="form-label" data-i18n="booking.startTime">Start Time</label>
-            <input type="time" id="scheduleTimeInput" class="form-input" value="10:00">
-          </div>
-        </div>
-
-        <!-- What kind of guide? (Specialties) -->
-        <div style="margin-bottom: 8px;">
-          <label class="form-label" data-i18n="search.categoryLabel">What kind of guide?</label>
-          <div class="specialty-pills" id="specialtyContainer">
-            <button class="specialty-btn active" data-specialty="all" data-i18n="search.allCategories">All</button>
-            <button class="specialty-btn" data-specialty="History" data-i18n="search.categoryHistory">History</button>
-            <button class="specialty-btn" data-specialty="Architecture" data-i18n="search.categoryArchitecture">Architecture</button>
-            <button class="specialty-btn" data-specialty="Food" data-i18n="search.categoryFood">Food</button>
-            <button class="specialty-btn" data-specialty="Local Experience" data-i18n="search.categoryLocal">Local Experience</button>
-            <button class="specialty-btn" data-specialty="Museum" data-i18n="search.categoryMuseum">Museum</button>
-            <button class="specialty-btn" data-specialty="Desert" data-i18n="search.categoryDesert">Desert</button>
-            <button class="specialty-btn" data-specialty="Family" data-i18n="search.categoryFamily">Family</button>
-          </div>
-        </div>
-
-        <!-- Language, Duration & Guests Row -->
-        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--space-3); margin-bottom: var(--space-5);">
-          <div>
-            <label class="form-label" data-i18n="search.languageLabel">Language</label>
-            <select id="languageSelect" class="form-select">
-              <option value="all" data-i18n="search.anyLanguage">Any Language</option>
-              <option value="English" selected data-i18n="languages.en">English</option>
-              <option value="Arabic" data-i18n="languages.ar">Arabic (العربية)</option>
-              <option value="German" data-i18n="languages.german">German (Deutsch)</option>
-              <option value="French" data-i18n="languages.french">French (Français)</option>
-              <option value="Spanish" data-i18n="languages.spanish">Spanish (Español)</option>
-              <option value="Italian" data-i18n="languages.italian">Italian (Italiano)</option>
-            </select>
-          </div>
-          <div>
-            <label class="form-label" data-i18n="search.durationLabel">Duration</label>
-            <select id="durationSelect" class="form-select">
-              <option value="2" selected>2 hrs</option>
-              <option value="3">3 hrs</option>
-              <option value="4">4 hrs</option>
-              <option value="6">6 hrs</option>
-              <option value="8">8 hrs</option>
-            </select>
-          </div>
-          <div>
-            <label class="form-label" data-i18n="search.guestsLabel">Guests</label>
-            <select id="guestsSelect" class="form-select">
-              <option value="1">1</option>
-              <option value="2" selected>2</option>
-              <option value="3">3</option>
-              <option value="4">4</option>
-              <option value="6">6+</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Primary CTAs -->
-        <div style="display: flex; gap: var(--space-3); flex-wrap: wrap;">
-          <button id="findGuidesBtn" class="btn btn-primary btn-lg" style="flex: 1; min-width: 180px;" data-i18n="search.findGuideBtn">
-            Find a Guide
-          </button>
-          <button id="requestBestMatchBtn" class="btn btn-accent btn-lg" style="flex: 1; min-width: 180px;" data-i18n="search.requestBestMatchBtn">
-            Instant Match Best Guide
-          </button>
-        </div>
-      </section>
-
-      <!-- Search Results Section -->
-      <section>
-        <div class="results-header">
-          <h2 class="results-count" id="resultsCount" data-i18n="search.availableVerified">Available Verified Guides</h2>
-          <span style="font-size: 0.8rem; color: var(--text-muted);" data-i18n="search.realTimeReady">Real-time dispatch ready</span>
-        </div>
-
-        <div id="guidesList" class="guide-list"></div>
-      </section>
-
+  <!-- Mobile Slide-Over Navigation Drawer -->
+  <div id="mobileDrawerBackdrop" class="mobile-drawer-backdrop"></div>
+  <aside id="mobileDrawer" class="mobile-drawer" aria-hidden="true">
+    <div class="drawer-header">
+      <a href="./index.html" class="brand-wordmark">
+        <span class="brand-mark" aria-hidden="true">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
+            <circle cx="12" cy="10" r="3"></circle>
+            <path d="M12 21.7C17.3 17 20 13 20 10a8 8 0 1 0-16 0c0 3 2.7 6.9 8 11.7z"></path>
+          </svg>
+        </span>
+        <span data-i18n="brand.name">TourGuide</span>
+      </a>
+      <button type="button" id="mobileDrawerClose" class="drawer-close-btn" aria-label="Close menu">&times;</button>
     </div>
+    <nav class="drawer-nav" aria-label="Mobile Navigation">
+      <a href="#experiences" class="drawer-link" data-i18n="nav.explore">Explore</a>
+      <a href="#how-it-works" class="drawer-link" data-i18n="nav.howItWorks">How it works</a>
+      <a href="./register.html?role=guide" class="drawer-link" data-i18n="nav.becomeGuide">Become a Guide</a>
+      <a href="#trust" class="drawer-link" data-i18n="nav.about">About</a>
+    </nav>
+    <div id="drawerAuthSlot" class="drawer-footer">
+      <a href="./login.html" class="btn btn-outline btn-block" data-i18n="nav.login">Log in</a>
+      <a href="./register.html" class="btn btn-primary btn-block" data-i18n="nav.getStarted">Get Started</a>
+    </div>
+  </aside>
+
+  <main>
+    <!-- Hero -->
+    <section class="landing-hero">
+      <img src="./assets/images/hero_giza_pyramids_1794430333959.jpg" alt="Giza Pyramids at sunrise" class="hero-bg-img">
+      <div class="hero-scrim" aria-hidden="true"></div>
+      <div class="container">
+        <div class="hero-content">
+          <h1 class="hero-title" data-i18n="landing.heroTitle">Explore the world with the right guide.</h1>
+          <p class="hero-subtitle" data-i18n="landing.heroSubtitle">Find a local guide who knows the place, the story and the experience.</p>
+          <div class="hero-cta-row">
+            <a href="./login.html" class="btn btn-accent btn-lg" data-i18n="landing.findGuideCta">Find a Guide</a>
+            <a href="#experiences" class="btn hero-btn-outline btn-lg" data-i18n="landing.exploreGuidesCta">Explore Guides</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 1: How It Works -->
+    <section id="how-it-works" class="landing-section">
+      <div class="container">
+        <div class="section-header">
+          <h2 class="section-title" data-i18n="landing.howTitle">How it works</h2>
+          <p class="section-subtitle" data-i18n="landing.howSubtitle">From arrival to discovery in three straightforward steps.</p>
+        </div>
+        <div class="steps-grid">
+          <article class="step-card">
+            <div class="step-number">01</div>
+            <h3 data-i18n="landing.step1Title">Choose where you want to explore.</h3>
+            <p data-i18n="landing.step1Desc">Enter your current neighborhood or landmark and pick instant departure or a future date.</p>
+          </article>
+          <article class="step-card">
+            <div class="step-number">02</div>
+            <h3 data-i18n="landing.step2Title">Find the right local guide.</h3>
+            <p data-i18n="landing.step2Desc">Compare verified guides by language, specialty, availability, and transparent hourly rates.</p>
+          </article>
+          <article class="step-card">
+            <div class="step-number">03</div>
+            <h3 data-i18n="landing.step3Title">Enjoy your experience.</h3>
+            <p data-i18n="landing.step3Desc">Track your guide in real time, message before meeting, and explore at your own pace.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 2: Why TourGuide? -->
+    <section class="landing-section landing-section-subtle">
+      <div class="container">
+        <div class="section-header">
+          <h2 class="section-title" data-i18n="landing.whyTitle">Why TourGuide?</h2>
+          <p class="section-subtitle" data-i18n="landing.whySubtitle">Designed for travelers who value depth, clarity, and trusted local expertise.</p>
+        </div>
+        <div class="why-grid">
+          <article class="why-card">
+            <h3 data-i18n="landing.why1Title">Verified Guides</h3>
+            <p data-i18n="landing.why1Desc">Every guide passes license and identity review before appearing in search results.</p>
+          </article>
+          <article class="why-card">
+            <h3 data-i18n="landing.why2Title">Local Experience</h3>
+            <p data-i18n="landing.why2Desc">Walk with historians, storytellers, and neighborhood insiders who live the culture.</p>
+          </article>
+          <article class="why-card">
+            <h3 data-i18n="landing.why3Title">Instant Booking</h3>
+            <p data-i18n="landing.why3Desc">Need someone nearby today? Match immediately with guides currently online.</p>
+          </article>
+          <article class="why-card">
+            <h3 data-i18n="landing.why4Title">Scheduled Tours</h3>
+            <p data-i18n="landing.why4Desc">Plan multi-hour visits ahead of your flight with live calendar conflict checking.</p>
+          </article>
+          <article class="why-card">
+            <h3 data-i18n="landing.why5Title">Multiple Languages</h3>
+            <p data-i18n="landing.why5Desc">Filter effortlessly for Arabic, English, French, German, Spanish, or Italian.</p>
+          </article>
+          <article class="why-card">
+            <h3 data-i18n="landing.why6Title">Secure Booking</h3>
+            <p data-i18n="landing.why6Desc">Clear upfront pricing, free cancellation window, and protected escrow settlement.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 3: Popular Experiences (6 compact curated photography tiles) -->
+    <section id="experiences" class="landing-section">
+      <div class="container">
+        <div class="section-header">
+          <h2 class="section-title" data-i18n="landing.expTitle">Popular Experiences</h2>
+          <p class="section-subtitle" data-i18n="landing.expSubtitle">Curated local starting points across Egypt’s iconic and hidden districts.</p>
+        </div>
+        <div class="exp-grid">
+          <a href="./login.html" class="exp-card">
+            <img src="./assets/images/hero_giza_pyramids_1794430333959.jpg" alt="Giza Pyramids">
+            <div class="exp-overlay">
+              <h3 data-i18n="landing.expPyramids">Pyramids</h3>
+              <span data-i18n="landing.expPyramidsSub">Giza Plateau &amp; Sphinx</span>
+            </div>
+          </a>
+          <a href="./login.html" class="exp-card">
+            <img src="./assets/images/tourist_luxor_karnak_1794430337178.jpg" alt="Museums and ancient heritage">
+            <div class="exp-overlay">
+              <h3 data-i18n="landing.expMuseums">Museums</h3>
+              <span data-i18n="landing.expMuseumsSub">Grand Egyptian &amp; Coptic Heritage</span>
+            </div>
+          </a>
+          <a href="./login.html" class="exp-card">
+            <img src="./assets/images/exp_historic_cairo_1794841902585.jpg" alt="Historic Cairo streets">
+            <div class="exp-overlay">
+              <h3 data-i18n="landing.expHistoricCairo">Historic Cairo</h3>
+              <span data-i18n="landing.expHistoricCairoSub">Islamic &amp; Al-Muizz Streets</span>
+            </div>
+          </a>
+          <a href="./login.html" class="exp-card">
+            <img src="./assets/images/tourist_luxor_karnak_1794430337178.jpg" alt="Luxor temples">
+            <div class="exp-overlay">
+              <h3 data-i18n="landing.expLuxor">Luxor</h3>
+              <span data-i18n="landing.expLuxorSub">Karnak &amp; Valley of the Kings</span>
+            </div>
+          </a>
+          <a href="./login.html" class="exp-card">
+            <img src="./assets/images/exp_aswan_nile_1794841902962.jpg" alt="Aswan Nile landscape">
+            <div class="exp-overlay">
+              <h3 data-i18n="landing.expAswan">Aswan</h3>
+              <span data-i18n="landing.expAswanSub">Nile Islands &amp; Nubian Villages</span>
+            </div>
+          </a>
+          <a href="./login.html" class="exp-card">
+            <img src="./assets/images/exp_food_cairo_1794841903590.jpg" alt="Cairo street food experience">
+            <div class="exp-overlay">
+              <h3 data-i18n="landing.expFood">Food Experiences</h3>
+              <span data-i18n="landing.expFoodSub">Traditional Markets &amp; Street Bites</span>
+            </div>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Sections 4 & 5: For Tourists & For Tour Guides -->
+    <section class="landing-section landing-section-subtle">
+      <div class="container">
+        <div class="audience-grid">
+          <article class="audience-card">
+            <div class="audience-media">
+              <img src="./assets/images/tourist_luxor_karnak_1794430337178.jpg" alt="Traveler exploring Karnak">
+            </div>
+            <div class="audience-body">
+              <span class="section-kicker" data-i18n="landing.forTouristsLabel">For Tourists</span>
+              <h3 data-i18n="landing.forTouristsTitle">Travel with context, not guesswork.</h3>
+              <p data-i18n="landing.forTouristsDesc">Skip crowded bus schedules and generic scripts. Book an accredited local guide matched to your language, pace, and interests—whether right now or next month.</p>
+              <a href="./register.html?role=tourist" class="btn btn-primary" data-i18n="landing.forTouristsBtn">Find a Guide</a>
+            </div>
+          </article>
+
+          <article class="audience-card">
+            <div class="audience-media">
+              <img src="./assets/images/guide_portrait_ahmed_1794430336207.jpg" alt="Licensed Egyptian Tour Guide">
+            </div>
+            <div class="audience-body">
+              <span class="section-kicker" data-i18n="landing.forGuidesLabel">For Tour Guides</span>
+              <h3 data-i18n="landing.forGuidesTitle">Share your knowledge, set your hours.</h3>
+              <p data-i18n="landing.forGuidesDesc">Receive instant nearby requests or scheduled bookings, manage your weekly schedule, and track every payout clearly without intermediaries.</p>
+              <a href="./register.html?role=guide" class="btn btn-outline" data-i18n="landing.forGuidesBtn">Become a Guide</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 6: Trust / Verification -->
+    <section id="trust" class="landing-section">
+      <div class="container">
+        <div class="trust-box">
+          <div>
+            <span class="section-kicker" data-i18n="landing.trustLabel">Trust &amp; Verification</span>
+            <h2 class="section-title" data-i18n="landing.trustTitle">Verified before every first tour.</h2>
+            <p class="section-subtitle" data-i18n="landing.trustDesc">Tour guides submit their Ministry of Tourism license and syndicate credentials upon registration. Our operations team reviews every application before the guide appears on the marketplace.</p>
+          </div>
+          <ul class="trust-list">
+            <li>
+              <svg class="trust-check" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+              <span data-i18n="landing.trustPoint1">Government &amp; syndicate credential verification</span>
+            </li>
+            <li>
+              <svg class="trust-check" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+              <span data-i18n="landing.trustPoint2">Conflict-free real-time schedule validation</span>
+            </li>
+            <li>
+              <svg class="trust-check" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+              <span data-i18n="landing.trustPoint3">Transparent hourly rates and 2-hour free cancellation</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 7: Final CTA -->
+    <section class="landing-section" style="padding-top: 0;">
+      <div class="container">
+        <div class="final-cta-band">
+          <h2 data-i18n="landing.ctaTitle">Ready to explore?</h2>
+          <p data-i18n="landing.ctaSubtitle">Create your account in under a minute and connect with a verified guide.</p>
+          <a href="./register.html" class="btn btn-accent btn-lg" data-i18n="landing.ctaBtn">Find your Guide</a>
+        </div>
+      </div>
+    </section>
   </main>
 
-  <!-- Booking Confirmation Summary Modal -->
-  <div id="bookingSummaryModal" class="modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.55); z-index: 1000; align-items: center; justify-content: center; padding: var(--space-4);">
-    <div class="card" style="width: 100%; max-width: 480px; background: var(--bg-surface); padding: var(--space-6); border-radius: var(--radius-xl); box-shadow: var(--shadow-lg);">
-      <h2 style="font-size: 1.2rem; font-weight: 800; margin-bottom: var(--space-4);" data-i18n="booking.summaryTitle">Booking Confirmation Summary</h2>
-
-      <div id="summaryDetails" style="display: grid; gap: 10px; font-size: 0.9rem; margin-bottom: var(--space-4);"></div>
-
-      <div style="background: var(--bg-subtle); padding: 12px; border-radius: var(--radius-md); margin-bottom: var(--space-4); font-size: 0.85rem;">
-        <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
-          <span data-i18n="booking.tourPriceLabel">Tour Price</span>
-          <strong id="summaryTourPrice">$0.00</strong>
-        </div>
-        <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
-          <span data-i18n="booking.platformFeeLabel">Platform Fee (15%)</span>
-          <strong id="summaryPlatformFee">$0.00</strong>
-        </div>
-        <div style="display: flex; justify-content: space-between; padding-top: 6px; border-top: 1px solid var(--border-color); font-size: 1rem; font-weight: 800;">
-          <span data-i18n="booking.totalLabel">Total Amount</span>
-          <span id="summaryTotal" style="color: var(--primary);">$0.00</span>
-        </div>
+  <!-- Public Footer -->
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div class="footer-links">
+        <a href="#trust" class="footer-link-btn" data-i18n="landing.footerAbout">About</a>
+        <button type="button" class="footer-link-btn" data-info-modal="help" data-i18n="landing.footerHelp">Help</button>
+        <a href="./register.html?role=guide" class="footer-link-btn" data-i18n="landing.footerBecomeGuide">Become a Guide</a>
+        <button type="button" class="footer-link-btn" data-info-modal="terms" data-i18n="landing.footerTerms">Terms</button>
+        <button type="button" class="footer-link-btn" data-info-modal="privacy" data-i18n="landing.footerPrivacy">Privacy</button>
+        <button type="button" class="footer-link-btn" data-info-modal="contact" data-i18n="landing.footerContact">Contact</button>
       </div>
-
-      <div style="font-size: 0.78rem; color: var(--text-secondary); background: #f8fafc; border: 1px solid var(--border-color); padding: 10px; border-radius: var(--radius-md); margin-bottom: var(--space-5);">
-        <strong style="display: block; margin-bottom: 2px;" data-i18n="booking.cancellationPolicyLabel">Cancellation Policy</strong>
-        <span data-i18n="booking.cancellationPolicyText">Free cancellation up to 2 hours before start time. Full refund if the guide declines or cannot attend.</span>
-      </div>
-
-      <div style="display: flex; gap: var(--space-3); justify-content: flex-end;">
-        <button id="cancelSummaryBtn" class="btn btn-outline btn-md" data-i18n="booking.backToEdit">Cancel</button>
-        <button id="confirmBookingSubmitBtn" class="btn btn-primary btn-md" data-i18n="booking.confirmAndPay">Confirm & Send Request</button>
+      <div class="footer-bottom">
+        <span data-i18n="landing.footerRights">TourGuide Marketplace. All rights reserved.</span>
+        <button type="button" class="lang-toggle-btn" aria-label="Toggle language">
+          <span class="lang-label">العربية</span>
+        </button>
       </div>
     </div>
-  </div>
+  </footer>
 
-  <!-- Mobile Bottom Navigation -->
-  <nav class="bottom-nav">
-    <a href="/" class="bottom-nav-item active">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>
-      <span data-i18n="nav.home">Home</span>
-    </a>
-    <a href="/tourist/explore.html" class="bottom-nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-      <span data-i18n="nav.explore">Explore</span>
-    </a>
-    <a href="/tourist/bookings.html" class="bottom-nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-      <span data-i18n="nav.bookings">Bookings</span>
-    </a>
-    <a href="/tourist/profile.html" class="bottom-nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-      <span data-i18n="nav.profile">Profile</span>
-    </a>
-  </nav>
-
-  <!-- Vanilla JS Modules -->
+  <script type="module" src="./js/nav.js"></script>
   <script type="module">
-    import { matchGuides } from '/js/matching.js';
-    import { createBooking } from '/js/booking.js';
-    import { getCurrentUser } from '/js/auth.js';
-    import {
-      t,
-      showToast,
-      formatCurrency,
-      formatDuration,
-      getTodayISODate,
-      getCurrentTimeHHMM
-    } from '/js/utils.js';
+    import { applyTranslations, setupLanguageToggle, showInfoModal, t } from './js/utils.js';
+    import { onAuthReady, redirectByRole } from './js/auth.js';
 
-    let activeMode = 'now';
-    let selectedSpecialty = 'all';
-    let currentMatches = [];
-    let pendingBookingPayload = null;
+    applyTranslations();
+    setupLanguageToggle();
 
-    const modeNowBtn = document.getElementById('modeNowBtn');
-    const modeScheduleBtn = document.getElementById('modeScheduleBtn');
-    const scheduleRow = document.getElementById('scheduleDateTimeRow');
-    const scheduleDateInput = document.getElementById('scheduleDateInput');
-    const scheduleTimeInput = document.getElementById('scheduleTimeInput');
+    // If user is already signed in, route directly to their portal
+    onAuthReady((user, profile) => {
+      if (user && profile) {
+        redirectByRole(profile);
+      }
+    });
 
-    const today = getTodayISODate();
-    scheduleDateInput.value = today;
-    scheduleDateInput.min = today;
-
-    function setMode(mode) {
-      activeMode = mode;
-      modeNowBtn.classList.toggle('active', mode === 'now');
-      modeScheduleBtn.classList.toggle('active', mode === 'schedule');
-      scheduleRow.style.display = mode === 'schedule' ? 'grid' : 'none';
-      document.getElementById('requestBestMatchBtn').style.display = mode === 'now' ? 'inline-flex' : 'none';
-      renderGuides();
-    }
-
-    modeNowBtn.addEventListener('click', () => setMode('now'));
-    modeScheduleBtn.addEventListener('click', () => setMode('schedule'));
-
-    document.querySelectorAll('.specialty-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        document.querySelectorAll('.specialty-btn').forEach(b => b.classList.remove('active'));
-        e.currentTarget.classList.add('active');
-        selectedSpecialty = e.currentTarget.getAttribute('data-specialty');
-        renderGuides();
+    // Footer info modals
+    document.querySelectorAll('[data-info-modal]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const type = btn.dataset.infoModal;
+        const map = {
+          help: ['landing.helpModalTitle', 'landing.helpModalBody'],
+          terms: ['landing.termsModalTitle', 'landing.termsModalBody'],
+          privacy: ['landing.privacyModalTitle', 'landing.privacyModalBody'],
+          contact: ['landing.contactModalTitle', 'landing.contactModalBody']
+        };
+        const pair = map[type];
+        if (pair) {
+          showInfoModal(t(pair[0]), t(pair[1]));
+        }
       });
     });
-
-    const guidesList = document.getElementById('guidesList');
-    const resultsCount = document.getElementById('resultsCount');
-
-    function getSearchCriteria() {
-      const city = document.getElementById('currentLocationInput').value.trim() || 'all';
-      const destination = document.getElementById('destinationInput').value.trim() || city;
-      const language = document.getElementById('languageSelect').value;
-      const durationHours = Number(document.getElementById('durationSelect').value) || 2;
-      const guests = Number(document.getElementById('guestsSelect').value) || 2;
-      const isInstant = activeMode === 'now';
-      const date = isInstant ? getTodayISODate() : (scheduleDateInput.value || getTodayISODate());
-      const startTime = isInstant ? getCurrentTimeHHMM() : (scheduleTimeInput.value || '10:00');
-
-      return { city, destination, language, durationHours, guests, isInstant, date, startTime };
-    }
-
-    async function renderGuides() {
-      guidesList.innerHTML = '<div class="empty-state"><div class="spinner"></div></div>';
-      const criteria = getSearchCriteria();
-
-      currentMatches = await matchGuides({
-        location: criteria.city === 'All' ? 'all' : criteria.city,
-        language: criteria.language,
-        specialty: selectedSpecialty,
-        date: criteria.date,
-        startTime: criteria.startTime,
-        durationHours: criteria.durationHours,
-        isInstant: criteria.isInstant
-      });
-
-      resultsCount.textContent = `${currentMatches.length} ${t('search.verifiedBadge')}`;
-
-      if (currentMatches.length === 0) {
-        guidesList.innerHTML = `
-          <div class="empty-state">
-            <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"></circle><line x1="8" y1="12" x2="16" y2="12"></line></svg>
-            <div class="empty-state-title">${t('search.noGuidesFound')}</div>
-            <div class="empty-state-desc">${t('search.noGuidesFoundDesc')}</div>
-            <div style="display: flex; gap: var(--space-3); justify-content: center; margin-top: var(--space-4); flex-wrap: wrap;">
-              <button id="emptyTryAgainBtn" class="btn btn-outline btn-sm">${t('search.tryAgainBtn')}</button>
-              <button id="emptyScheduleBtn" class="btn btn-primary btn-sm">${t('search.scheduleGuideBtn')}</button>
-            </div>
-          </div>
-        `;
-        document.getElementById('emptyTryAgainBtn')?.addEventListener('click', renderGuides);
-        document.getElementById('emptyScheduleBtn')?.addEventListener('click', () => setMode('schedule'));
-        return;
-      }
-
-      guidesList.innerHTML = currentMatches.map(({ guide, score, distanceKm }) => `
-        <div class="guide-card">
-          <div class="guide-card-top">
-            <img src="${guide.avatar}" alt="${guide.name}" class="guide-avatar">
-            <div class="guide-info">
-              <div class="guide-name-row">
-                <span class="guide-name">${guide.name}</span>
-                <span class="rating-pill">
-                  <span class="rating-star">★</span>
-                  <span>${guide.rating ? guide.rating.toFixed(1) : '4.9'}</span>
-                  <span style="font-weight: 400; color: var(--text-muted); font-size: 0.75rem;">(${guide.reviewsCount || 0})</span>
-                </span>
-              </div>
-
-              <div class="guide-meta-inline">
-                <span class="badge badge-verified">✓ ${t('search.verifiedBadge')}</span>
-                <span class="badge badge-online">${t('search.matchScore', { score })}</span>
-                <span>·</span>
-                <span>${guide.experienceYears || 1} ${t('search.yearsExp')}</span>
-                <span>·</span>
-                <span>${distanceKm} ${t('search.kmAway')}</span>
-              </div>
-
-              <div class="guide-languages">
-                ${Array.isArray(guide.languages) ? guide.languages.join(' · ') : (guide.languages || '')}
-              </div>
-            </div>
-          </div>
-
-          <div class="guide-card-bottom">
-            <div>
-              <span class="guide-price-unit">${t('search.fromPrice')} </span>
-              <span class="guide-price">${formatCurrency(guide.hourlyRate, guide.currency || 'USD')}</span>
-              <span class="guide-price-unit">${t('search.perHour')}</span>
-            </div>
-
-            <div class="guide-actions">
-              <a href="/tourist/profile.html?id=${guide.id}&date=${encodeURIComponent(criteria.date)}&time=${encodeURIComponent(criteria.startTime)}&duration=${criteria.durationHours}" class="btn btn-outline btn-sm">${t('search.viewProfile')}</a>
-              <button class="btn btn-primary btn-sm book-guide-btn" data-guide-id="${guide.id}">
-                ${t('search.bookGuide')}
-              </button>
-            </div>
-          </div>
-        </div>
-      `).join('');
-
-      document.querySelectorAll('.book-guide-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          const gid = e.currentTarget.getAttribute('data-guide-id');
-          const match = currentMatches.find(m => m.guide.id === gid);
-          if (match) openBookingSummary(match);
-        });
-      });
-    }
-
-    function openBookingSummary(match) {
-      const user = getCurrentUser();
-      if (!user) {
-        showToast(t('toasts.authRequired'), 'info');
-        setTimeout(() => {
-          window.location.href = `/login.html?redirect=${encodeURIComponent(window.location.pathname)}`;
-        }, 400);
-        return;
-      }
-
-      const criteria = getSearchCriteria();
-      const guide = match.guide;
-      const win = match.window;
-      const rate = Number(guide.hourlyRate) || 25;
-      const price = Math.round(rate * win.duration * 100) / 100;
-      const fee = Math.round(price * 0.15 * 100) / 100;
-      const total = Math.round((price + fee) * 100) / 100;
-
-      pendingBookingPayload = {
-        guideId: guide.id,
-        guideName: guide.name,
-        touristId: user.uid,
-        touristName: `${user.firstName || 'Traveler'} ${user.lastName || ''}`.trim(),
-        location: criteria.destination || criteria.city,
-        destination: criteria.destination || criteria.city,
-        date: win.date,
-        startTime: win.startTime,
-        durationHours: win.duration,
-        language: criteria.language === 'all' ? (guide.languages?.[0] || 'English') : criteria.language,
-        specialty: selectedSpecialty === 'all' ? (guide.specialties?.[0] || 'History') : selectedSpecialty,
-        guests: criteria.guests,
-        hourlyRate: rate,
-        currency: guide.currency || 'USD',
-        bookingType: criteria.isInstant ? 'instant' : 'scheduled',
-        candidateGuideIds: currentMatches.map(m => m.guide.id)
-      };
-
-      document.getElementById('summaryDetails').innerHTML = `
-        <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-secondary);">${t('booking.guideLabel')}</span><strong>${guide.name}</strong></div>
-        <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-secondary);">${t('booking.bookingTypeLabel')}</span><strong>${criteria.isInstant ? t('booking.instantType') : t('booking.scheduledType')}</strong></div>
-        <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-secondary);">${t('booking.dateTimeLabel')}</span><strong>${win.date} · ${win.startTime} – ${win.endTime}</strong></div>
-        <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-secondary);">${t('booking.durationLabel')}</span><strong>${formatDuration(win.duration)}</strong></div>
-        <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-secondary);">${t('booking.locationLabel')}</span><strong>${pendingBookingPayload.location}</strong></div>
-        <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-secondary);">${t('booking.guests')}</span><strong>${pendingBookingPayload.guests}</strong></div>
-      `;
-
-      document.getElementById('summaryTourPrice').textContent = formatCurrency(price.toFixed(2), pendingBookingPayload.currency);
-      document.getElementById('summaryPlatformFee').textContent = formatCurrency(fee.toFixed(2), pendingBookingPayload.currency);
-      document.getElementById('summaryTotal').textContent = formatCurrency(total.toFixed(2), pendingBookingPayload.currency);
-
-      document.getElementById('bookingSummaryModal').style.display = 'flex';
-    }
-
-    document.getElementById('cancelSummaryBtn').addEventListener('click', () => {
-      document.getElementById('bookingSummaryModal').style.display = 'none';
-      pendingBookingPayload = null;
-    });
-
-    document.getElementById('confirmBookingSubmitBtn').addEventListener('click', async () => {
-      if (!pendingBookingPayload) return;
-      const btn = document.getElementById('confirmBookingSubmitBtn');
-      btn.disabled = true;
-      try {
-        const booking = await createBooking(pendingBookingPayload);
-        document.getElementById('bookingSummaryModal').style.display = 'none';
-        showToast(t('booking.bookingRequestSentToast'), 'success');
-        setTimeout(() => {
-          window.location.href = `/tourist/booking.html?id=${booking.id}`;
-        }, 350);
-      } catch (err) {
-        showToast(err.code === 'conflict' || err.code === 'day_off' || err.code === 'outside_hours'
-          ? t('toasts.bookingConflict')
-          : (err.message || 'Booking failed'), 'error');
-        btn.disabled = false;
-        renderGuides();
-      }
-    });
-
-    document.getElementById('requestBestMatchBtn').addEventListener('click', async () => {
-      await renderGuides();
-      if (currentMatches.length > 0) {
-        openBookingSummary(currentMatches[0]);
-      } else {
-        showToast(t('booking.noGuideAvailableTitle'), 'error');
-      }
-    });
-
-    document.getElementById('findGuidesBtn').addEventListener('click', renderGuides);
-    document.getElementById('languageSelect').addEventListener('change', renderGuides);
-    document.getElementById('durationSelect').addEventListener('change', renderGuides);
-    scheduleDateInput.addEventListener('change', renderGuides);
-    scheduleTimeInput.addEventListener('change', renderGuides);
-
-    document.addEventListener('tourguide:langchange', () => {
-      renderGuides();
-    });
-
-    renderGuides();
   </script>
 </body>
 </html>

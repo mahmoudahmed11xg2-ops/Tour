@@ -2,180 +2,232 @@
 <html lang="en" dir="ltr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Availability Calendar — TourGuide</title>
-  <link rel="stylesheet" href="/css/global.css">
-  <link rel="stylesheet" href="/css/guide.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="app-root" content="../">
+  <title>Calendar | TourGuide</title>
+  <link rel="stylesheet" href="../css/global.css">
+  <link rel="stylesheet" href="../css/guide.css">
 </head>
-<body>
+<body class="protected-page">
 
-  <!-- Top Header Navigation -->
   <header class="site-header">
-    <div class="app-container header-inner">
-      <a href="/guide/index.html" class="brand-logo">
-        <div class="brand-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <circle cx="12" cy="12" r="10"></circle>
-            <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
+    <div class="header-inner">
+      <div class="header-left">
+        <button type="button" id="mobileMenuToggle" class="hamburger-btn" aria-label="Menu" aria-expanded="false" aria-controls="mobileDrawer">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
           </svg>
-        </div>
-        <span>TourGuide</span>
-        <span class="brand-badge" data-i18n="brand.captainBadge">CAPTAIN</span>
-      </a>
+        </button>
+        <a href="./index.html" class="brand-wordmark">
+          <span class="brand-mark" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
+              <circle cx="12" cy="10" r="3"></circle>
+              <path d="M12 21.7C17.3 17 20 13 20 10a8 8 0 1 0-16 0c0 3 2.7 6.9 8 11.7z"></path>
+            </svg>
+          </span>
+          <span data-i18n="brand.name">TourGuide</span>
+        </a>
+      </div>
 
-      <nav class="nav-links">
-        <a href="/guide/index.html" class="nav-link" data-i18n="nav.overview">Overview</a>
-        <a href="/guide/requests.html" class="nav-link" data-i18n="nav.requests">Requests</a>
-        <a href="/guide/calendar.html" class="nav-link active" data-i18n="nav.calendar">Calendar</a>
-        <a href="/guide/earnings.html" class="nav-link" data-i18n="nav.earnings">Earnings</a>
-        <a href="/guide/profile.html" class="nav-link" data-i18n="nav.profile">Profile</a>
+      <nav class="header-nav" aria-label="Guide Navigation">
+        <a href="./index.html" class="nav-link" data-i18n="nav.home">Home</a>
+        <a href="./requests.html" class="nav-link" data-i18n="nav.requests">Requests</a>
+        <a href="./calendar.html" class="nav-link active" data-i18n="nav.calendar">Calendar</a>
+        <a href="./earnings.html" class="nav-link" data-i18n="nav.earnings">Earnings</a>
+        <a href="./messages.html" class="nav-link" data-i18n="nav.messages">Messages</a>
+        <a href="./profile.html" class="nav-link" data-i18n="nav.profile">Profile</a>
       </nav>
 
-      <div class="header-actions"></div>
+      <div class="header-actions">
+        <button type="button" class="lang-toggle-btn" aria-label="Toggle language">
+          <span class="lang-label">العربية</span>
+        </button>
+      </div>
     </div>
   </header>
 
-  <main class="main-content">
-    <div class="app-container" style="max-width: 900px;">
-
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-6); flex-wrap: wrap; gap: var(--space-3);">
-        <h1 style="font-size: 1.5rem; font-weight: 800;" data-i18n="guide.calendarTitle">Availability & Schedule</h1>
-        <div style="display: flex; gap: var(--space-2);">
-          <button id="openAllBtn" class="btn btn-outline btn-sm" data-i18n="guide.quickOpenAll">Open All Weekdays</button>
-          <button id="saveScheduleBtn" class="btn btn-primary btn-sm" data-i18n="guide.saveScheduleBtn">Save Schedule</button>
-        </div>
-      </div>
-
-      <!-- Weekly Schedule Editor (Persisted to Firestore) -->
-      <div class="card" style="margin-bottom: var(--space-6);">
-        <div class="card-header">
-          <h2 class="card-title" data-i18n="guide.weeklySlotsTitle">Weekly Working Hours & Availability</h2>
-          <label class="checkbox-label">
-            <input type="checkbox" id="instantAvailableToggle" checked>
-            <span style="font-size: 0.825rem; font-weight: 600;" data-i18n="guide.availableForInstant">Available for Instant</span>
-          </label>
-        </div>
-
-        <div id="weeklyRows" style="display: grid; gap: var(--space-3);"></div>
-
-        <div class="form-group" style="margin-top: var(--space-5);">
-          <label class="form-label" data-i18n="guide.blockedDatesLabel">Blocked Dates (comma-separated YYYY-MM-DD)</label>
-          <input type="text" id="blockedDatesInput" class="form-input" placeholder="2026-12-25, 2026-12-31">
-        </div>
-      </div>
-
-      <!-- Real Booked Time Slots from guideBusySlots -->
-      <div class="card">
-        <div class="card-header">
-          <h2 class="card-title" data-i18n="guide.bookedSlotsTitle">Upcoming Booked Time Slots</h2>
-        </div>
-        <div id="bookedSlotsList" style="display: grid; gap: var(--space-2);"></div>
-      </div>
-
+  <div id="mobileDrawerBackdrop" class="mobile-drawer-backdrop"></div>
+  <aside id="mobileDrawer" class="mobile-drawer" aria-hidden="true">
+    <div class="drawer-header">
+      <strong class="brand-wordmark" data-i18n="guide.consoleTitle">Guide Console</strong>
+      <button type="button" id="mobileDrawerClose" class="drawer-close-btn" aria-label="Close">&times;</button>
     </div>
+    <nav class="drawer-nav" aria-label="Guide Mobile Drawer">
+      <a href="./index.html" class="drawer-link" data-i18n="nav.home">Home</a>
+      <a href="./requests.html" class="drawer-link" data-i18n="nav.requests">Requests</a>
+      <a href="./calendar.html" class="drawer-link active" data-i18n="nav.calendar">Calendar</a>
+      <a href="./earnings.html" class="drawer-link" data-i18n="nav.earnings">Earnings</a>
+      <a href="./messages.html" class="drawer-link" data-i18n="nav.messages">Messages</a>
+      <a href="./profile.html" class="drawer-link" data-i18n="nav.profile">Profile</a>
+    </nav>
+    <div id="drawerAuthSlot" class="drawer-footer"></div>
+  </aside>
+
+  <main class="container-narrow page-main">
+    <div class="explore-toolbar">
+      <h1 class="page-title" data-i18n="guide.calendarTitle">Calendar &amp; Availability</h1>
+      <button type="button" id="resetWeekdaysBtn" class="btn btn-outline btn-sm" data-i18n="guide.quickOpenAll">Reset All Weekdays</button>
+    </div>
+
+    <section class="card" style="margin-bottom:18px;">
+      <div class="online-bar" style="margin-bottom:14px; padding:10px 12px;">
+        <span class="form-label" data-i18n="guide.availableForInstant">Accept instant requests</span>
+        <label class="toggle-switch">
+          <input type="checkbox" id="instantAvailToggle" checked>
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+
+      <h2 class="card-title" style="margin-bottom:12px;" data-i18n="guide.weeklySlotsTitle">Weekly Working Hours</h2>
+      <div id="weekdayGrid" class="weekday-grid"></div>
+
+      <div class="form-group" style="margin-top:16px;">
+        <label for="blockedDatesInput" class="form-label" data-i18n="guide.blockedDatesLabel">Blocked Dates (YYYY-MM-DD, comma-separated)</label>
+        <input type="text" id="blockedDatesInput" class="form-control" placeholder="2026-05-01, 2026-05-02">
+      </div>
+
+      <button type="button" id="saveScheduleBtn" class="btn btn-primary btn-block" data-i18n="guide.saveScheduleBtn">Save Schedule</button>
+    </section>
+
+    <section class="card">
+      <h2 class="card-title" style="margin-bottom:10px;" data-i18n="guide.bookedSlotsTitle">Booked Slots</h2>
+      <div id="bookedSlotsList"></div>
+    </section>
   </main>
 
+  <nav class="bottom-nav" aria-label="Guide Mobile Navigation">
+    <a href="./index.html" class="bottom-nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+      <span data-i18n="nav.home">Home</span>
+    </a>
+    <a href="./requests.html" class="bottom-nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path></svg>
+      <span data-i18n="nav.requests">Requests</span>
+    </a>
+    <a href="./calendar.html" class="bottom-nav-item active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line></svg>
+      <span data-i18n="nav.calendar">Calendar</span>
+    </a>
+    <a href="./earnings.html" class="bottom-nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+      <span data-i18n="nav.earnings">Earnings</span>
+    </a>
+    <a href="./messages.html" class="bottom-nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+      <span data-i18n="nav.messages">Messages</span>
+    </a>
+  </nav>
+
+  <script type="module" src="../js/nav.js"></script>
   <script type="module">
-    import { onAuthReady, enforceRouteProtection } from '/js/auth.js';
-    import { getGuideById, updateGuideAvailabilitySchedule } from '/js/guides.js';
-    import { getGuideBusySlots, DEFAULT_WEEKLY_AVAILABILITY, WEEKDAY_KEYS } from '/js/availability.js';
-    import { showToast, t, getLocalizedStatus } from '/js/utils.js';
+    import { enforceRouteProtection, onAuthReady } from '../js/auth.js';
+    import { getGuideById, updateGuideAvailabilitySchedule } from '../js/guides.js';
+    import { getGuideBusySlots, WEEKDAY_KEYS, DEFAULT_WEEKLY_AVAILABILITY } from '../js/availability.js';
+    import { applyTranslations, setupLanguageToggle, showToast, t, escapeHtml, getLocalizedWeekday, getLocalizedStatus } from '../js/utils.js';
 
     enforceRouteProtection({ allowedRoles: ['guide', 'admin'] });
+    applyTranslations();
+    setupLanguageToggle();
 
-    let currentGuideId = null;
+    let currentUid = null;
     let weeklyState = JSON.parse(JSON.stringify(DEFAULT_WEEKLY_AVAILABILITY));
+    let busySlots = [];
 
-    function renderWeeklyRows() {
-      const container = document.getElementById('weeklyRows');
-      container.innerHTML = WEEKDAY_KEYS.map(day => {
-        const cfg = weeklyState[day] || { enabled: true, start: '07:00', end: '23:00' };
+    function renderWeekdays() {
+      const grid = document.getElementById('weekdayGrid');
+      grid.innerHTML = WEEKDAY_KEYS.map(day => {
+        const cfg = weeklyState[day] || { enabled: false, start: '07:00', end: '23:00' };
         return `
-          <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--bg-subtle); border-radius: var(--radius-md); flex-wrap: wrap; gap: var(--space-3);">
-            <label class="checkbox-label" style="min-width: 90px;">
-              <input type="checkbox" class="day-enable-cb" data-day="${day}" ${cfg.enabled ? 'checked' : ''}>
-              <span style="font-weight: 700; text-transform: uppercase;">${day}</span>
-            </label>
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <input type="time" class="form-input day-start-input" data-day="${day}" value="${cfg.start || '07:00'}" style="width: 130px; min-height: 36px;">
-              <span>–</span>
-              <input type="time" class="form-input day-end-input" data-day="${day}" value="${cfg.end || '23:00'}" style="width: 130px; min-height: 36px;">
+          <div class="weekday-card" data-day="${day}">
+            <div class="weekday-top">
+              <strong>${escapeHtml(getLocalizedWeekday(day))}</strong>
+              <label class="toggle-switch">
+                <input type="checkbox" class="day-enabled" data-day="${day}" ${cfg.enabled ? 'checked' : ''}>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="weekday-times">
+              <input type="time" class="form-control day-start" data-day="${day}" value="${escapeHtml(cfg.start || '07:00')}">
+              <input type="time" class="form-control day-end" data-day="${day}" value="${escapeHtml(cfg.end || '23:00')}">
             </div>
           </div>
         `;
       }).join('');
-    }
 
-    function readWeeklyFromDom() {
-      const result = {};
-      WEEKDAY_KEYS.forEach(day => {
-        const enabled = document.querySelector(`.day-enable-cb[data-day="${day}"]`)?.checked ?? true;
-        const start = document.querySelector(`.day-start-input[data-day="${day}"]`)?.value || '07:00';
-        const end = document.querySelector(`.day-end-input[data-day="${day}"]`)?.value || '23:00';
-        result[day] = { enabled, start, end };
+      grid.querySelectorAll('.day-enabled').forEach(cb => {
+        cb.addEventListener('change', () => {
+          weeklyState[cb.dataset.day].enabled = cb.checked;
+        });
       });
-      return result;
+      grid.querySelectorAll('.day-start').forEach(inp => {
+        inp.addEventListener('change', () => {
+          weeklyState[inp.dataset.day].start = inp.value;
+        });
+      });
+      grid.querySelectorAll('.day-end').forEach(inp => {
+        inp.addEventListener('change', () => {
+          weeklyState[inp.dataset.day].end = inp.value;
+        });
+      });
     }
 
-    async function saveSchedule() {
-      if (!currentGuideId) return;
-      weeklyState = readWeeklyFromDom();
-      const blockedDates = document.getElementById('blockedDatesInput').value
+    function renderBookedSlots() {
+      const box = document.getElementById('bookedSlotsList');
+      if (!busySlots.length) {
+        box.innerHTML = `<p class="form-hint">${escapeHtml(t('guide.noBookedSlots'))}</p>`;
+        return;
+      }
+      box.innerHTML = busySlots.map(s => `
+        <div class="availability-row" style="margin-bottom:8px;">
+          <span class="tabular-nums">${escapeHtml(s.date)} &middot; ${escapeHtml(s.startTime)} – ${escapeHtml(s.endTime)}</span>
+          <span class="status-label status-info">${escapeHtml(getLocalizedStatus(s.status))}</span>
+        </div>
+      `).join('');
+    }
+
+    document.getElementById('resetWeekdaysBtn').addEventListener('click', () => {
+      weeklyState = JSON.parse(JSON.stringify(DEFAULT_WEEKLY_AVAILABILITY));
+      renderWeekdays();
+    });
+
+    document.getElementById('saveScheduleBtn').addEventListener('click', async () => {
+      if (!currentUid) return;
+      const blocked = document.getElementById('blockedDatesInput').value
         .split(',')
         .map(s => s.trim())
         .filter(Boolean);
-      const instantAvailable = document.getElementById('instantAvailableToggle').checked;
+      const instantAvailable = document.getElementById('instantAvailToggle').checked;
 
-      await updateGuideAvailabilitySchedule(currentGuideId, {
+      await updateGuideAvailabilitySchedule(currentUid, {
         weeklyAvailability: weeklyState,
-        blockedDates,
+        blockedDates: blocked,
         instantAvailable
       });
       showToast(t('toasts.slotsOpened'), 'success');
-    }
+    });
 
     onAuthReady(async (user) => {
       if (!user) return;
-      currentGuideId = user.uid;
-
-      const [guide, busySlots] = await Promise.all([
-        getGuideById(currentGuideId),
-        getGuideBusySlots(currentGuideId)
-      ]);
-
+      currentUid = user.uid;
+      const guide = await getGuideById(user.uid);
       if (guide) {
-        if (guide.weeklyAvailability) {
-          weeklyState = { ...DEFAULT_WEEKLY_AVAILABILITY, ...guide.weeklyAvailability };
-        }
-        document.getElementById('instantAvailableToggle').checked = guide.instantAvailable !== false;
-        if (Array.isArray(guide.blockedDates)) {
-          document.getElementById('blockedDatesInput').value = guide.blockedDates.join(', ');
-        }
+        weeklyState = guide.weeklyAvailability
+          ? JSON.parse(JSON.stringify(guide.weeklyAvailability))
+          : JSON.parse(JSON.stringify(DEFAULT_WEEKLY_AVAILABILITY));
+        document.getElementById('instantAvailToggle').checked = guide.instantAvailable !== false;
+        document.getElementById('blockedDatesInput').value = Array.isArray(guide.blockedDates) ? guide.blockedDates.join(', ') : '';
       }
-      renderWeeklyRows();
-
-      const slotsEl = document.getElementById('bookedSlotsList');
-      if (busySlots.length === 0) {
-        slotsEl.innerHTML = `<p style="font-size: 0.875rem; color: var(--text-muted);">${t('guide.noBookedSlots')}</p>`;
-      } else {
-        slotsEl.innerHTML = busySlots.map(s => `
-          <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: var(--bg-subtle); border-radius: var(--radius-md);">
-            <div>
-              <strong>${s.date}</strong> · <span>${s.startTime} – ${s.endTime}</span>
-            </div>
-            <span class="badge badge-online">${getLocalizedStatus(s.status)}</span>
-          </div>
-        `).join('');
-      }
+      renderWeekdays();
+      busySlots = await getGuideBusySlots(user.uid);
+      renderBookedSlots();
     });
 
-    document.getElementById('openAllBtn').addEventListener('click', () => {
-      weeklyState = JSON.parse(JSON.stringify(DEFAULT_WEEKLY_AVAILABILITY));
-      renderWeeklyRows();
-      saveSchedule();
+    document.addEventListener('tourguide:langchange', () => {
+      renderWeekdays();
+      renderBookedSlots();
     });
-
-    document.getElementById('saveScheduleBtn').addEventListener('click', saveSchedule);
   </script>
 </body>
 </html>

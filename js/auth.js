@@ -1,40 +1,42 @@
 /**
- * TourGuide — Production Firebase Authentication System
- * Real Email/Password, Google Sign-in, Password Reset, Email Verification & Role-Based Route Protection.
+ * TourGuide — Production Firebase Authentication & Role-Isolated Route Guard
+ * Real Email/Password, Google Sign-in, Password Reset, Email Verification & Role Redirects.
  */
 
-import { 
-  auth, 
-  db, 
-  COLLECTIONS, 
-  handleFirestoreError 
+import {
+  auth,
+  db,
+  COLLECTIONS,
+  handleFirestoreError
 } from './firebase.js';
-import { 
-  signInWithEmailAndPassword, 
-  createUserWithEmailAndPassword, 
-  signOut, 
-  sendPasswordResetEmail, 
-  sendEmailVerification, 
-  signInWithPopup, 
-  GoogleAuthProvider, 
-  onAuthStateChanged 
+import {
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signOut,
+  sendPasswordResetEmail,
+  sendEmailVerification,
+  signInWithPopup,
+  GoogleAuthProvider,
+  onAuthStateChanged
 } from 'firebase/auth';
-import { 
-  doc, 
-  getDoc, 
-  setDoc, 
-  updateDoc 
+import {
+  doc,
+  getDoc,
+  setDoc
 } from 'firebase/firestore';
-import { showToast, t } from './utils.js';
+import {
+  showToast,
+  t,
+  appUrl,
+  DEFAULT_AVATAR_PATH,
+  setupLanguageToggle,
+  escapeHtml
+} from './utils.js';
 
-// Cached user state in memory
 let cachedUserDoc = null;
 let isAuthReady = false;
 const authReadyListeners = [];
 
-/**
- * Register auth readiness callback
- */
 export function onAuthReady(callback) {
   if (isAuthReady) {
     callback(auth.currentUser, cachedUserDoc);
@@ -43,9 +45,6 @@ export function onAuthReady(callback) {
   }
 }
 
-/**
- * Global Firebase Auth State Listener
- */
 onAuthStateChanged(auth, async (firebaseUser) => {
   if (firebaseUser) {
     try {
@@ -55,7 +54,6 @@ onAuthStateChanged(auth, async (firebaseUser) => {
       if (userSnap.exists()) {
         cachedUserDoc = userSnap.data();
       } else {
-        // Bootstrap new user record (e.g. Google Sign-in)
         const defaultRole = firebaseUser.email === 'ma1044853@gmail.com' ? 'admin' : 'tourist';
         cachedUserDoc = {
           uid: firebaseUser.uid,
@@ -82,16 +80,12 @@ onAuthStateChanged(auth, async (firebaseUser) => {
   isAuthReady = true;
   updateUIForAuth();
 
-  // Notify listeners
   while (authReadyListeners.length > 0) {
     const fn = authReadyListeners.shift();
     fn(firebaseUser, cachedUserDoc);
   }
 });
 
-/**
- * Get currently authenticated Firebase user & Firestore profile
- */
 export function getCurrentUser() {
   if (!auth.currentUser) return null;
   return {
@@ -102,9 +96,6 @@ export function getCurrentUser() {
   };
 }
 
-/**
- * Get current user Firestore profile
- */
 export async function getCurrentUserProfile() {
   if (!auth.currentUser) return null;
   if (cachedUserDoc) return cachedUserDoc;
@@ -121,12 +112,9 @@ export async function getCurrentUserProfile() {
   return null;
 }
 
-/**
- * Login with Real Email & Password
- */
 export async function login(email, password) {
   if (!email || !password) {
-    throw new Error('Please enter both email and password.');
+    throw new Error(t('auth.errMissingCreds'));
   }
 
   try {
@@ -140,7 +128,7 @@ export async function login(email, password) {
       cachedUserDoc = {
         uid: userCredential.user.uid,
         email: userCredential.user.email,
-        role: 'tourist'
+        role: userCredential.user.email === 'ma1044853@gmail.com' ? 'admin' : 'tourist'
       };
     }
 
@@ -149,43 +137,38 @@ export async function login(email, password) {
       profile: cachedUserDoc
     };
   } catch (err) {
-    let friendlyMessage = 'Failed to log in. Please check your credentials.';
+    let friendlyMessage = t('auth.errLoginFailed');
     if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password') {
-      friendlyMessage = 'Invalid email or password.';
+      friendlyMessage = t('auth.errInvalidCreds');
     } else if (err.code === 'auth/user-not-found') {
-      friendlyMessage = 'No account found with this email.';
+      friendlyMessage = t('auth.errUserNotFound');
     } else if (err.code === 'auth/too-many-requests') {
-      friendlyMessage = 'Too many failed attempts. Please try again later or reset your password.';
+      friendlyMessage = t('auth.errTooManyRequests');
     } else if (err.code === 'auth/invalid-email') {
-      friendlyMessage = 'Please enter a valid email address.';
+      friendlyMessage = t('auth.errInvalidEmail');
     }
     throw new Error(friendlyMessage);
   }
 }
 
-/**
- * Register a Tourist
- */
 export async function registerTourist({ firstName, lastName, email, password, country, phone, preferredLanguage }) {
   if (!email || !password) {
-    throw new Error('Email and password are required.');
+    throw new Error(t('auth.errEmailPasswordRequired'));
   }
   if (password.length < 6) {
-    throw new Error('Password must be at least 6 characters.');
+    throw new Error(t('auth.errPasswordMin'));
   }
 
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email.trim(), password);
     const user = userCredential.user;
 
-    // Send verification email
     try {
       await sendEmailVerification(user);
     } catch (e) {
       console.warn('Email verification dispatch notice:', e.message);
     }
 
-    // Save profile to Firestore
     const userDoc = {
       uid: user.uid,
       email: user.email,
@@ -207,29 +190,28 @@ export async function registerTourist({ firstName, lastName, email, password, co
   } catch (err) {
     let msg = err.message;
     if (err.code === 'auth/email-already-in-use') {
-      msg = 'An account with this email already exists.';
+      msg = t('auth.errEmailInUse');
     } else if (err.code === 'auth/invalid-email') {
-      msg = 'Invalid email address format.';
+      msg = t('auth.errInvalidEmail');
     } else if (err.code === 'auth/weak-password') {
-      msg = 'Password is too weak. Please use at least 6 characters.';
+      msg = t('auth.errWeakPassword');
     }
     throw new Error(msg);
   }
 }
 
-/**
- * Register a Tour Guide (with Pending Verification)
- */
 export async function registerGuide({ name, email, password, phone, country, languages, areas, experience }) {
   if (!email || !password) {
-    throw new Error('Email and password are required.');
+    throw new Error(t('auth.errEmailPasswordRequired'));
+  }
+  if (password.length < 6) {
+    throw new Error(t('auth.errPasswordMin'));
   }
 
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email.trim(), password);
     const user = userCredential.user;
 
-    // Send verification email
     try {
       await sendEmailVerification(user);
     } catch (e) {
@@ -239,7 +221,6 @@ export async function registerGuide({ name, email, password, phone, country, lan
     const firstName = name.split(' ')[0] || name;
     const lastName = name.split(' ').slice(1).join(' ') || '';
 
-    // 1. User Account Record
     const userDoc = {
       uid: user.uid,
       email: user.email,
@@ -255,15 +236,14 @@ export async function registerGuide({ name, email, password, phone, country, lan
     };
     await setDoc(doc(db, COLLECTIONS.USERS, user.uid), userDoc);
 
-    // 2. Guide Marketplace Profile Document tied strictly to currentUser.uid
     const guideDoc = {
-      id: user.uid, // Strict 1:1 binding to Auth UID
+      id: user.uid,
       name: name.trim(),
       email: user.email,
       phone: phone || '',
       country: country || 'Egypt',
       verified: false,
-      verificationStatus: 'pending', // Pending Admin Approval
+      verificationStatus: 'pending',
       rating: 0,
       reviewsCount: 0,
       languages: Array.isArray(languages) ? languages : [languages],
@@ -273,9 +253,9 @@ export async function registerGuide({ name, email, password, phone, country, lan
       isOnline: false,
       hourlyRate: 25,
       currency: 'USD',
-      avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=400&q=80',
+      avatar: DEFAULT_AVATAR_PATH,
       specialties: ['History', 'Local Experience'],
-      about: 'New guide registration. Submitted government license documents pending verification.',
+      about: 'New guide registration. License credentials submitted and awaiting operations verification.',
       packages: [],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
@@ -287,37 +267,35 @@ export async function registerGuide({ name, email, password, phone, country, lan
   } catch (err) {
     let msg = err.message;
     if (err.code === 'auth/email-already-in-use') {
-      msg = 'An account with this email already exists.';
+      msg = t('auth.errEmailInUse');
+    } else if (err.code === 'auth/invalid-email') {
+      msg = t('auth.errInvalidEmail');
+    } else if (err.code === 'auth/weak-password') {
+      msg = t('auth.errWeakPassword');
     }
     throw new Error(msg);
   }
 }
 
-/**
- * Real Forgot Password via Firebase
- */
 export async function sendResetPassword(email) {
   if (!email) {
-    throw new Error('Please enter your email address.');
+    throw new Error(t('auth.errResetEmailRequired'));
   }
 
   try {
     await sendPasswordResetEmail(auth, email.trim());
     return true;
   } catch (err) {
-    let msg = 'Failed to send password reset email.';
+    let msg = t('auth.errResetFailed');
     if (err.code === 'auth/user-not-found') {
-      msg = 'No user found with this email address.';
+      msg = t('auth.errUserNotFound');
     } else if (err.code === 'auth/invalid-email') {
-      msg = 'Please provide a valid email address.';
+      msg = t('auth.errInvalidEmail');
     }
     throw new Error(msg);
   }
 }
 
-/**
- * Google Sign-In with Real Firebase Provider
- */
 export async function loginWithGoogle() {
   const provider = new GoogleAuthProvider();
   try {
@@ -351,102 +329,98 @@ export async function loginWithGoogle() {
     return { user, profile: cachedUserDoc };
   } catch (err) {
     if (err.code === 'auth/popup-closed-by-user') {
-      throw new Error('Sign in popup was closed before completion.');
+      throw new Error(t('auth.errPopupClosed'));
     }
-    throw new Error(err.message || 'Google authentication failed.');
+    throw new Error(err.message || t('auth.errGoogleFailed'));
   }
 }
 
-/**
- * Logout
- */
 export async function logout() {
   try {
     await signOut(auth);
     cachedUserDoc = null;
     showToast(t('toasts.logoutSuccess'), 'info');
     setTimeout(() => {
-      window.location.href = '/login.html';
-    }, 300);
+      window.location.href = appUrl('login.html');
+    }, 280);
   } catch (err) {
     console.error('Logout error:', err);
   }
 }
 
-/**
- * Redirect according to authenticated user role
- */
+export function getDashboardUrlForRole(role) {
+  if (role === 'guide') return appUrl('guide/index.html');
+  if (role === 'admin') return appUrl('admin/index.html');
+  return appUrl('tourist/index.html');
+}
+
 export function redirectByRole(profile) {
   if (!profile) {
-    window.location.href = '/login.html';
+    window.location.href = appUrl('login.html');
     return;
   }
-
-  if (profile.role === 'guide') {
-    window.location.href = '/guide/index.html';
-  } else if (profile.role === 'admin') {
-    window.location.href = '/admin/index.html';
-  } else {
-    window.location.href = '/tourist/index.html';
-  }
+  window.location.href = getDashboardUrlForRole(profile.role);
 }
 
 /**
- * Route Protection Guard
- * Checks current auth status and role, redirects if unauthorized
+ * Role-isolated Route Protection Guard
  */
 export function enforceRouteProtection({ allowedRoles = ['tourist', 'guide', 'admin'] } = {}) {
   onAuthReady((firebaseUser, profile) => {
-    const currentPath = window.location.pathname;
+    const currentHref = window.location.href;
 
-    // Unauthenticated protection
     if (!firebaseUser) {
       showToast(t('toasts.authRequired'), 'info');
       setTimeout(() => {
-        window.location.href = `/login.html?redirect=${encodeURIComponent(currentPath)}`;
-      }, 400);
+        window.location.href = `${appUrl('login.html')}?redirect=${encodeURIComponent(currentHref)}`;
+      }, 250);
       return;
     }
 
     const role = profile?.role || 'tourist';
 
-    // Role-based restrictions
     if (!allowedRoles.includes(role)) {
       showToast(t('toasts.accessDenied', { role }), 'error');
       setTimeout(() => {
-        if (role === 'tourist') window.location.href = '/tourist/index.html';
-        else if (role === 'guide') window.location.href = '/guide/index.html';
-        else window.location.href = '/admin/index.html';
-      }, 500);
+        window.location.href = getDashboardUrlForRole(role);
+      }, 350);
+    } else {
+      document.documentElement.dataset.authVerified = 'true';
     }
   });
 }
 
 /**
- * Update Header with Auth State and Language Toggle
+ * Update Header Actions (Language + Auth state) cleanly without breaking mobile menu trigger
  */
 export function updateUIForAuth() {
   const user = getCurrentUser();
   const headerActions = document.querySelector('.header-actions');
   if (!headerActions) return;
 
-  const currentLang = localStorage.getItem('tourguide_lang') || 'en';
-  const nextLangLabel = currentLang === 'en' ? 'العربية' : 'English';
+  const isPublicPage = document.body?.dataset?.surface === 'public';
+
   const langBtnHtml = `
-    <button class="lang-toggle-btn" title="${currentLang === 'en' ? 'التحويل إلى العربية' : 'Switch to English'}" aria-label="Toggle language">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink: 0;"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
-      <span class="lang-label">${nextLangLabel}</span>
+    <button type="button" class="lang-toggle-btn" aria-label="Toggle language">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="2" y1="12" x2="22" y2="12"></line>
+        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+      </svg>
+      <span class="lang-label"></span>
     </button>
   `;
-  
+
   if (user) {
-    const roleLabel = user.role === 'admin' ? t('brand.adminBadge') : user.role === 'guide' ? t('brand.captainBadge') : t('touristProfile.memberBadge');
+    const displayName = escapeHtml(user.firstName || user.email?.split('@')[0] || '');
+    const dashUrl = getDashboardUrlForRole(user.role || 'tourist');
     headerActions.innerHTML = `
       ${langBtnHtml}
-      <div style="display: flex; align-items: center; gap: 8px;">
-        <span style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);">${user.firstName || user.email} (${roleLabel})</span>
-        <button id="logoutBtn" class="btn btn-outline btn-sm" style="font-size: 0.75rem; padding: 4px 8px; min-height: 32px;">${t('nav.logout')}</button>
-      </div>
+      ${isPublicPage
+        ? `<a href="${dashUrl}" class="btn btn-primary btn-sm hide-mobile">${escapeHtml(t('nav.dashboard'))}</a>`
+        : `<span class="user-chip hide-mobile">${displayName}</span>
+           <button type="button" id="logoutBtn" class="btn btn-outline btn-sm hide-mobile">${escapeHtml(t('nav.logout'))}</button>`
+      }
     `;
 
     const logoutBtn = document.getElementById('logoutBtn');
@@ -456,26 +430,33 @@ export function updateUIForAuth() {
   } else {
     headerActions.innerHTML = `
       ${langBtnHtml}
-      <a href="/login.html" class="btn btn-secondary btn-sm">${t('nav.login')}</a>
-      <a href="/register.html" class="btn btn-primary btn-sm">${t('nav.register')}</a>
+      <a href="${appUrl('login.html')}" class="btn btn-ghost btn-sm hide-mobile" data-i18n="nav.login">${escapeHtml(t('nav.login'))}</a>
+      <a href="${appUrl('register.html')}" class="btn btn-primary btn-sm hide-mobile" data-i18n="nav.getStarted">${escapeHtml(t('nav.getStarted'))}</a>
     `;
   }
 
-  // Bind toggle action
-  headerActions.querySelectorAll('.lang-toggle-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.preventDefault();
-      const current = localStorage.getItem('tourguide_lang') || 'en';
-      const next = current === 'en' ? 'ar' : 'en';
-      import('./utils.js').then(u => u.setActiveLang(next));
-    });
-  });
+  // Update mobile drawer auth slot if present
+  const drawerAuth = document.getElementById('drawerAuthSlot');
+  if (drawerAuth) {
+    if (user) {
+      drawerAuth.innerHTML = `
+        <button type="button" id="drawerLogoutBtn" class="btn btn-outline btn-block">${escapeHtml(t('nav.logout'))}</button>
+      `;
+      document.getElementById('drawerLogoutBtn')?.addEventListener('click', logout);
+    } else {
+      drawerAuth.innerHTML = `
+        <a href="${appUrl('login.html')}" class="btn btn-outline btn-block">${escapeHtml(t('nav.login'))}</a>
+        <a href="${appUrl('register.html')}" class="btn btn-primary btn-block">${escapeHtml(t('nav.getStarted'))}</a>
+      `;
+    }
+  }
+
+  setupLanguageToggle();
+  import('./utils.js').then(u => u.updateLanguageToggleButtons());
 }
 
-// Re-render header actions when language changes
 if (typeof document !== 'undefined') {
   document.addEventListener('tourguide:langchange', () => {
     updateUIForAuth();
   });
 }
-

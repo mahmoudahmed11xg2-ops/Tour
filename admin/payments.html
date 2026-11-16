@@ -2,96 +2,135 @@
 <html lang="en" dir="ltr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Escrow & Payments — Admin Console</title>
-  <link rel="stylesheet" href="/css/global.css">
-  <link rel="stylesheet" href="/css/admin.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="app-root" content="../">
+  <title>Payments | TourGuide Admin</title>
+  <link rel="stylesheet" href="../css/global.css">
+  <link rel="stylesheet" href="../css/admin.css">
 </head>
-<body>
+<body class="protected-page">
 
-  <!-- Top Header Navigation -->
-  <header class="site-header">
-    <div class="app-container header-inner">
-      <a href="/admin/index.html" class="brand-logo">
-        <div class="brand-icon" style="background: #1e40af;">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+  <header class="site-header admin-mobile-header">
+    <div class="header-inner">
+      <div class="header-left">
+        <button type="button" id="mobileMenuToggle" class="hamburger-btn" aria-label="Menu" aria-expanded="false" aria-controls="mobileDrawer">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
           </svg>
-        </div>
-        <span>TourGuide</span>
-        <span class="brand-badge" style="color: #1e40af;" data-i18n="brand.adminBadge">ADMIN</span>
-      </a>
-
-      <nav class="nav-links">
-        <a href="/admin/index.html" class="nav-link" data-i18n="nav.dashboard">Dashboard</a>
-        <a href="/admin/guides.html" class="nav-link" data-i18n="nav.guides">Guides & Verification</a>
-        <a href="/admin/bookings.html" class="nav-link" data-i18n="nav.bookings">Bookings</a>
-        <a href="/admin/users.html" class="nav-link" data-i18n="nav.users">Users</a>
-        <a href="/admin/payments.html" class="nav-link active" data-i18n="nav.payments">Payments</a>
-        <a href="/admin/reports.html" class="nav-link" data-i18n="nav.reports">Reports</a>
-      </nav>
-
-      <div class="header-actions"></div>
+        </button>
+        <a href="./index.html" class="brand-wordmark" data-i18n="brand.name">TourGuide</a>
+      </div>
+      <div class="header-actions">
+        <button type="button" class="lang-toggle-btn" aria-label="Toggle language"><span class="lang-label">العربية</span></button>
+      </div>
     </div>
   </header>
 
-  <main class="main-content">
-    <div class="app-container">
-
-      <h1 style="font-size: 1.5rem; font-weight: 800; margin-bottom: var(--space-6);" data-i18n="admin.paymentsTitle">Payments, Escrow & Commissions</h1>
-
-      <div class="card" style="margin-bottom: var(--space-6);">
-        <div class="card-header">
-          <h2 class="card-title" data-i18n="admin.paymentsPolicyTitle">Commission & Payout Policy</h2>
-        </div>
-        <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.6;" data-i18n="admin.paymentsPolicyDesc">
-          Tourist payment is collected upfront via Paymob / Stripe and held in platform escrow.
-          Upon tour completion, the platform fee (15%) is retained, and 85% is released to the guide wallet for automated settlement.
-        </p>
-      </div>
-
-      <div class="table-responsive">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th data-i18n="admin.bookingIdCol">Booking ID</th>
-              <th data-i18n="admin.totalCol">Total</th>
-              <th data-i18n="admin.feeCol">Commission (15%)</th>
-              <th data-i18n="admin.statusCol">Status</th>
-            </tr>
-          </thead>
-          <tbody id="paymentsTbody"></tbody>
-        </table>
-      </div>
-
+  <div id="mobileDrawerBackdrop" class="mobile-drawer-backdrop"></div>
+  <aside id="mobileDrawer" class="mobile-drawer" aria-hidden="true">
+    <div class="drawer-header">
+      <strong class="brand-wordmark" data-i18n="brand.adminBadge">Admin</strong>
+      <button type="button" id="mobileDrawerClose" class="drawer-close-btn" aria-label="Close">&times;</button>
     </div>
-  </main>
+    <nav class="drawer-nav">
+      <a href="./index.html" class="drawer-link" data-i18n="nav.dashboard">Dashboard</a>
+      <a href="./users.html" class="drawer-link" data-i18n="nav.users">Users</a>
+      <a href="./guides.html" class="drawer-link" data-i18n="nav.guides">Guides</a>
+      <a href="./bookings.html" class="drawer-link" data-i18n="nav.bookings">Bookings</a>
+      <a href="./payments.html" class="drawer-link active" data-i18n="nav.payments">Payments</a>
+      <a href="./reports.html" class="drawer-link" data-i18n="nav.reports">Reports</a>
+      <a href="./settings.html" class="drawer-link" data-i18n="nav.settings">Settings</a>
+    </nav>
+    <div id="drawerAuthSlot" class="drawer-footer"></div>
+  </aside>
 
+  <div class="admin-shell">
+    <aside class="admin-sidebar">
+      <div class="admin-sidebar-brand">
+        <a href="./index.html" class="brand-wordmark" data-i18n="brand.name">TourGuide</a>
+      </div>
+      <nav class="admin-sidebar-nav">
+        <a href="./index.html" class="nav-link" data-i18n="nav.dashboard">Dashboard</a>
+        <a href="./users.html" class="nav-link" data-i18n="nav.users">Users</a>
+        <a href="./guides.html" class="nav-link" data-i18n="nav.guides">Guides</a>
+        <a href="./bookings.html" class="nav-link" data-i18n="nav.bookings">Bookings</a>
+        <a href="./payments.html" class="nav-link active" data-i18n="nav.payments">Payments</a>
+        <a href="./reports.html" class="nav-link" data-i18n="nav.reports">Reports</a>
+        <a href="./settings.html" class="nav-link" data-i18n="nav.settings">Settings</a>
+      </nav>
+      <div class="admin-sidebar-footer">
+        <button type="button" class="lang-toggle-btn btn-block"><span class="lang-label">العربية</span></button>
+        <button type="button" id="sidebarLogoutBtn" class="btn btn-outline btn-block btn-sm" data-i18n="nav.logout">Log out</button>
+      </div>
+    </aside>
+
+    <main class="admin-main">
+      <div class="page-header">
+        <h1 class="page-title" data-i18n="admin.paymentsTitle">Payments &amp; Escrow</h1>
+      </div>
+
+      <section class="card" style="margin-bottom:18px;">
+        <h2 class="card-title" style="margin-bottom:6px;" data-i18n="admin.paymentsPolicyTitle">Commission Policy</h2>
+        <p class="form-hint" data-i18n="admin.paymentsPolicyDesc">Payments are recorded upfront upon guide confirmation. Upon completion, 15% platform fee is retained and 85% settles to the guide.</p>
+      </section>
+
+      <div id="paymentsTableWrap"></div>
+    </main>
+  </div>
+
+  <script type="module" src="../js/nav.js"></script>
   <script type="module">
-    import { db, COLLECTIONS } from '/js/firebase.js';
-    import { enforceRouteProtection, onAuthReady } from '/js/auth.js';
-    import { formatCurrency } from '/js/utils.js';
+    import { enforceRouteProtection, logout, onAuthReady } from '../js/auth.js';
+    import { getPaymentsForUser } from '../js/payments.js';
+    import { applyTranslations, setupLanguageToggle, t, formatCurrency, escapeHtml } from '../js/utils.js';
 
     enforceRouteProtection({ allowedRoles: ['admin'] });
+    applyTranslations();
+    setupLanguageToggle();
+    document.getElementById('sidebarLogoutBtn')?.addEventListener('click', logout);
 
-    async function loadPayments() {
-      const payments = await db.getCollection(COLLECTIONS.PAYMENTS);
-      const tbody = document.getElementById('paymentsTbody');
-      tbody.innerHTML = payments.map(p => `
-        <tr>
-          <td style="font-family: monospace; font-weight: 700;">${p.bookingId || p.id}</td>
-          <td style="font-weight: 700;">${formatCurrency(Number(p.amount || 0).toFixed(2), p.currency || 'USD')}</td>
-          <td style="color: var(--success); font-weight: 700;">${formatCurrency(Number(p.platformFee || 0).toFixed(2), p.currency || 'USD')}</td>
-          <td><span class="badge badge-online">${p.status || ''}</span></td>
-        </tr>
-      `).join('');
+    let payments = [];
+
+    function renderPayments() {
+      document.getElementById('paymentsTableWrap').innerHTML = `
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Payment ID</th>
+                <th>${escapeHtml(t('admin.bookingIdCol'))}</th>
+                <th>${escapeHtml(t('admin.totalCol'))}</th>
+                <th>${escapeHtml(t('admin.feeCol'))}</th>
+                <th>${escapeHtml(t('guide.estimatedEarnings'))}</th>
+                <th>${escapeHtml(t('admin.statusCol'))}</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${payments.map(p => `
+                <tr>
+                  <td class="tabular-nums">${escapeHtml(p.id)}</td>
+                  <td class="tabular-nums">#${escapeHtml(p.bookingId || '')}</td>
+                  <td class="tabular-nums">${formatCurrency(p.amount || 0, p.currency || 'USD')}</td>
+                  <td class="tabular-nums">${formatCurrency(p.platformFee || 0, p.currency || 'USD')}</td>
+                  <td class="tabular-nums">${formatCurrency(p.guideNet || 0, p.currency || 'USD')}</td>
+                  <td><span class="status-label status-info">${escapeHtml(p.status || 'held_in_escrow')}</span></td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
     }
 
-    document.addEventListener('tourguide:langchange', loadPayments);
-    onAuthReady((user) => {
-      if (user) loadPayments();
+    onAuthReady(async (user) => {
+      if (!user) return;
+      payments = await getPaymentsForUser(user.uid, 'admin');
+      renderPayments();
     });
+
+    document.addEventListener('tourguide:langchange', renderPayments);
   </script>
 </body>
 </html>

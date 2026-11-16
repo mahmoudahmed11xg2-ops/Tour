@@ -116,6 +116,7 @@ export const COLLECTIONS = {
   NOTIFICATIONS: 'notifications',
   DISPUTES: 'disputes',
   AUDIT_LOGS: 'auditLogs',
+  SETTINGS: 'settings',
 };
 
 /**

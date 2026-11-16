@@ -30,7 +30,7 @@ import {
 import { matchGuides } from './matching.js';
 import { createEscrowPayment, updatePaymentStatusForBooking } from './payments.js';
 import { sendNotification } from './notifications.js';
-import { getTodayISODate, getCurrentTimeHHMM } from './utils.js';
+import { getTodayISODate, getCurrentTimeHHMM, t, getLocalizedStatus } from './utils.js';
 
 export const BOOKING_STATUS = {
   PENDING: 'pending',
@@ -74,10 +74,6 @@ export const ALLOWED_GUIDE_TRANSITIONS = {
 export const CANCELLATION_POLICY_STANDARD =
   'Free cancellation up to 2 hours before start time. 100% refund if guide declines or cannot attend.';
 
-/**
- * Create a real booking in Firestore.
- * Always creates with status = 'pending' and validates guide availability first.
- */
 export async function createBooking({
   guideId,
   guideName,
@@ -97,23 +93,21 @@ export async function createBooking({
   bookingType = 'instant',
   candidateGuideIds = []
 }) {
-  if (!touristId) throw new Error('Authentication required to create a booking.');
-  if (!guideId) throw new Error('No guide selected.');
+  if (!touristId) throw new Error(t('booking.errAuthRequired'));
+  if (!guideId) throw new Error(t('booking.errNoGuideSelected'));
 
   const safeDate = date || getTodayISODate();
   const safeStart = startTime || (bookingType === 'instant' ? getCurrentTimeHHMM() : '10:00');
   const win = computeTimeWindow(safeDate, safeStart, durationHours);
 
-  // 1. Strict double-booking & schedule verification
   const availability = await checkGuideAvailability(guideId, win.date, win.startTime, win.duration);
   if (!availability.available) {
-    const err = new Error('Guide is unavailable at the selected date and time.');
+    const err = new Error(t('booking.errGuideUnavailable'));
     err.code = availability.reason || 'conflict';
     err.availability = availability;
     throw err;
   }
 
-  // 2. Price calculation
   const numericRate = Number(hourlyRate) || 25;
   const price = Math.round(numericRate * win.duration * 100) / 100;
   const platformFee = Math.round(price * 0.15 * 100) / 100;
@@ -157,16 +151,20 @@ export async function createBooking({
   };
 
   try {
-    // 3. Persist booking + non-PII busy slot lock
     await setDoc(doc(db, COLLECTIONS.BOOKINGS, bookingId), newBooking);
     await syncBusySlotForBooking(newBooking);
 
-    // 4. Notify Guide + Audit log
     await sendNotification(
       guideId,
-      'New Tour Request',
-      `${newBooking.touristName} requested a ${win.duration}h tour in ${newBooking.location} (${win.date} ${win.startTime}).`,
-      `/guide/requests.html`
+      t('notif.newRequestTitle'),
+      t('notif.newRequestBody', {
+        tourist: newBooking.touristName,
+        hours: win.duration,
+        location: newBooking.location,
+        date: win.date,
+        time: win.startTime
+      }),
+      'guide/requests.html'
     );
 
     await addDoc(collection(db, COLLECTIONS.AUDIT_LOGS), {
@@ -185,21 +183,17 @@ export async function createBooking({
   }
 }
 
-/**
- * Guide Accepts a pending booking -> confirmed + escrow held
- */
 export async function acceptBooking(bookingId, guideId) {
   const ref = doc(db, COLLECTIONS.BOOKINGS, bookingId);
   const snap = await getDoc(ref);
-  if (!snap.exists()) throw new Error('Booking not found.');
+  if (!snap.exists()) throw new Error(t('booking.errNotFound'));
 
   const booking = { id: snap.id, ...snap.data() };
-  if (booking.guideId !== guideId) throw new Error('Unauthorized guide action.');
+  if (booking.guideId !== guideId) throw new Error(t('booking.errUnauthorized'));
   if (booking.status !== BOOKING_STATUS.PENDING) {
-    throw new Error(`Booking is already ${booking.status}.`);
+    throw new Error(t('booking.errAlreadyStatus', { status: getLocalizedStatus(booking.status) }));
   }
 
-  // Re-verify no conflicting confirmed slot exists for this guide
   const check = await checkGuideAvailability(
     guideId,
     booking.date,
@@ -208,7 +202,7 @@ export async function acceptBooking(bookingId, guideId) {
     bookingId
   );
   if (!check.available) {
-    throw new Error('Time slot conflicts with another booking on your calendar.');
+    throw new Error(t('booking.errCalendarConflict'));
   }
 
   const nowIso = new Date().toISOString();
@@ -232,9 +226,9 @@ export async function acceptBooking(bookingId, guideId) {
 
   await sendNotification(
     booking.touristId,
-    'Booking Confirmed',
-    `${booking.guideName} accepted and confirmed your tour in ${booking.location}.`,
-    `/tourist/booking.html?id=${bookingId}`
+    t('notif.bookingConfirmedTitle'),
+    t('notif.bookingConfirmedBody', { guide: booking.guideName, location: booking.location }),
+    `tourist/booking.html?id=${bookingId}`
   );
 
   await addDoc(collection(db, COLLECTIONS.AUDIT_LOGS), {
@@ -248,20 +242,15 @@ export async function acceptBooking(bookingId, guideId) {
   return { ...booking, status: BOOKING_STATUS.CONFIRMED };
 }
 
-/**
- * Guide Declines a pending booking.
- * For INSTANT bookings: automatically re-dispatches to the next eligible available guide.
- * If no eligible guide remains (or scheduled booking): marks 'rejected' & frees busy slot.
- */
 export async function declineBooking(bookingId, guideId, reason = 'Guide declined') {
   const ref = doc(db, COLLECTIONS.BOOKINGS, bookingId);
   const snap = await getDoc(ref);
-  if (!snap.exists()) throw new Error('Booking not found.');
+  if (!snap.exists()) throw new Error(t('booking.errNotFound'));
 
   const booking = { id: snap.id, ...snap.data() };
-  if (booking.guideId !== guideId) throw new Error('Unauthorized guide action.');
+  if (booking.guideId !== guideId) throw new Error(t('booking.errUnauthorized'));
   if (booking.status !== BOOKING_STATUS.PENDING) {
-    throw new Error(`Cannot decline booking in status ${booking.status}.`);
+    throw new Error(t('booking.errCannotDecline', { status: getLocalizedStatus(booking.status) }));
   }
 
   const nowIso = new Date().toISOString();
@@ -269,7 +258,6 @@ export async function declineBooking(bookingId, guideId, reason = 'Guide decline
   declinedSet.add(guideId);
   const updatedDeclined = Array.from(declinedSet);
 
-  // Attempt instant fallback dispatch
   if (booking.bookingType === 'instant') {
     const matches = await matchGuides({
       location: booking.location,
@@ -321,16 +309,16 @@ export async function declineBooking(bookingId, guideId, reason = 'Guide decline
 
       await sendNotification(
         next.id,
-        'New Instant Tour Request',
-        `${booking.touristName} needs a guide in ${booking.location} (${booking.duration}h).`,
-        `/guide/requests.html`
+        t('notif.newInstantTitle'),
+        t('notif.newInstantBody', { tourist: booking.touristName, location: booking.location, hours: booking.duration }),
+        'guide/requests.html'
       );
 
       await sendNotification(
         booking.touristId,
-        'Matching Next Available Guide',
-        `Previous guide unavailable. Automatically matched with ${next.name}.`,
-        `/tourist/booking.html?id=${bookingId}`
+        t('notif.reassignedTitle'),
+        t('notif.reassignedBody', { guide: next.name }),
+        `tourist/booking.html?id=${bookingId}`
       );
 
       await addDoc(collection(db, COLLECTIONS.AUDIT_LOGS), {
@@ -345,7 +333,6 @@ export async function declineBooking(bookingId, guideId, reason = 'Guide decline
     }
   }
 
-  // No fallback available (or scheduled booking declined)
   await updateDoc(ref, {
     status: BOOKING_STATUS.REJECTED,
     declinedGuideIds: updatedDeclined,
@@ -357,11 +344,11 @@ export async function declineBooking(bookingId, guideId, reason = 'Guide decline
 
   await sendNotification(
     booking.touristId,
-    'No Guide Available',
+    t('notif.noGuideTitle'),
     booking.bookingType === 'instant'
-      ? 'No guide is available right now for your instant request. You can try again or schedule for later.'
-      : `${booking.guideName} declined your scheduled request. Please choose another time or guide.`,
-    `/tourist/booking.html?id=${bookingId}`
+      ? t('notif.noGuideInstantBody')
+      : t('notif.noGuideScheduledBody', { guide: booking.guideName }),
+    `tourist/booking.html?id=${bookingId}`
   );
 
   await addDoc(collection(db, COLLECTIONS.AUDIT_LOGS), {
@@ -375,16 +362,13 @@ export async function declineBooking(bookingId, guideId, reason = 'Guide decline
   return { outcome: 'rejected', booking: { ...booking, status: BOOKING_STATUS.REJECTED } };
 }
 
-/**
- * Tourist retries an instant booking that ended in rejected / expired
- */
 export async function retryInstantBooking(bookingId, touristId) {
   const ref = doc(db, COLLECTIONS.BOOKINGS, bookingId);
   const snap = await getDoc(ref);
-  if (!snap.exists()) throw new Error('Booking not found.');
+  if (!snap.exists()) throw new Error(t('booking.errNotFound'));
 
   const booking = { id: snap.id, ...snap.data() };
-  if (booking.touristId !== touristId) throw new Error('Unauthorized.');
+  if (booking.touristId !== touristId) throw new Error(t('booking.errUnauthorized'));
 
   const win = computeTimeWindow(getTodayISODate(), getCurrentTimeHHMM(), booking.duration || 2);
   const matches = await matchGuides({
@@ -433,33 +417,27 @@ export async function retryInstantBooking(bookingId, touristId) {
 
   await sendNotification(
     best.id,
-    'New Instant Tour Request',
-    `${booking.touristName} requested an instant guide in ${booking.location}.`,
-    `/guide/requests.html`
+    t('notif.newInstantTitle'),
+    t('notif.newInstantBody', { tourist: booking.touristName, location: booking.location, hours: win.duration }),
+    'guide/requests.html'
   );
 
   return { outcome: 'dispatched', booking: updated };
 }
 
-/**
- * Guide operational state transition (strict sequential state machine, never skips)
- */
 export async function progressBookingStatus(bookingId, guideId, targetStatus = null) {
   const ref = doc(db, COLLECTIONS.BOOKINGS, bookingId);
   const snap = await getDoc(ref);
-  if (!snap.exists()) throw new Error('Booking not found.');
+  if (!snap.exists()) throw new Error(t('booking.errNotFound'));
 
   const booking = { id: snap.id, ...snap.data() };
   if (booking.guideId !== guideId) {
-    throw new Error('Only the assigned guide can update operational tour status.');
+    throw new Error(t('booking.errUnauthorized'));
   }
 
   const nextStatus = ALLOWED_GUIDE_TRANSITIONS[booking.status];
-  if (!nextStatus) {
-    throw new Error(`No operational transition allowed from "${booking.status}".`);
-  }
-  if (targetStatus && targetStatus !== nextStatus) {
-    throw new Error(`Invalid transition from "${booking.status}" to "${targetStatus}".`);
+  if (!nextStatus || (targetStatus && targetStatus !== nextStatus)) {
+    throw new Error(t('booking.errNoTransition'));
   }
 
   const nowIso = new Date().toISOString();
@@ -482,23 +460,19 @@ export async function progressBookingStatus(bookingId, guideId, targetStatus = n
 
   await sendNotification(
     booking.touristId,
-    'Tour Status Updated',
-    `Your tour status is now: ${nextStatus.replace(/_/g, ' ')}.`,
-    `/tourist/booking.html?id=${bookingId}`
+    t('notif.statusUpdatedTitle'),
+    t('notif.statusUpdatedBody', { status: getLocalizedStatus(nextStatus) }),
+    `tourist/booking.html?id=${bookingId}`
   );
 
   return nextStatus;
 }
 
-/**
- * Cancel a booking (Tourist, Guide before start, or Admin)
- */
 export async function cancelBooking(bookingId, actorId = null, reason = 'Cancelled by user') {
   const ref = doc(db, COLLECTIONS.BOOKINGS, bookingId);
   const snap = await getDoc(ref);
   if (!snap.exists()) return false;
 
-  const booking = snap.data();
   const nowIso = new Date().toISOString();
 
   await updateDoc(ref, {
@@ -522,9 +496,6 @@ export async function cancelBooking(bookingId, actorId = null, reason = 'Cancell
   return true;
 }
 
-/**
- * Open dispute on an active/completed booking
- */
 export async function openDispute(bookingId, actorId, reason = 'Issue reported') {
   const ref = doc(db, COLLECTIONS.BOOKINGS, bookingId);
   const nowIso = new Date().toISOString();
@@ -548,9 +519,6 @@ export async function openDispute(bookingId, actorId, reason = 'Issue reported')
   return true;
 }
 
-/**
- * Queries & Real-Time Listeners
- */
 export async function getBookingById(bookingId) {
   if (!bookingId) return null;
   try {

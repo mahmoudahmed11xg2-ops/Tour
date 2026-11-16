@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="app-root" content="../">
+  <title>Settings | TourGuide Admin</title>
+  <link rel="stylesheet" href="../css/global.css">
+  <link rel="stylesheet" href="../css/admin.css">
+</head>
+<body class="protected-page">
+
+  <header class="site-header admin-mobile-header">
+    <div class="header-inner">
+      <div class="header-left">
+        <button type="button" id="mobileMenuToggle" class="hamburger-btn" aria-label="Menu" aria-expanded="false" aria-controls="mobileDrawer">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+        <a href="./index.html" class="brand-wordmark" data-i18n="brand.name">TourGuide</a>
+      </div>
+      <div class="header-actions">
+        <button type="button" class="lang-toggle-btn" aria-label="Toggle language"><span class="lang-label">العربية</span></button>
+      </div>
+    </div>
+  </header>
+
+  <div id="mobileDrawerBackdrop" class="mobile-drawer-backdrop"></div>
+  <aside id="mobileDrawer" class="mobile-drawer" aria-hidden="true">
+    <div class="drawer-header">
+      <strong class="brand-wordmark" data-i18n="brand.adminBadge">Admin</strong>
+      <button type="button" id="mobileDrawerClose" class="drawer-close-btn" aria-label="Close">&times;</button>
+    </div>
+    <nav class="drawer-nav">
+      <a href="./index.html" class="drawer-link" data-i18n="nav.dashboard">Dashboard</a>
+      <a href="./users.html" class="drawer-link" data-i18n="nav.users">Users</a>
+      <a href="./guides.html" class="drawer-link" data-i18n="nav.guides">Guides</a>
+      <a href="./bookings.html" class="drawer-link" data-i18n="nav.bookings">Bookings</a>
+      <a href="./payments.html" class="drawer-link" data-i18n="nav.payments">Payments</a>
+      <a href="./reports.html" class="drawer-link" data-i18n="nav.reports">Reports</a>
+      <a href="./settings.html" class="drawer-link active" data-i18n="nav.settings">Settings</a>
+    </nav>
+    <div id="drawerAuthSlot" class="drawer-footer"></div>
+  </aside>
+
+  <div class="admin-shell">
+    <aside class="admin-sidebar">
+      <div class="admin-sidebar-brand">
+        <a href="./index.html" class="brand-wordmark" data-i18n="brand.name">TourGuide</a>
+      </div>
+      <nav class="admin-sidebar-nav">
+        <a href="./index.html" class="nav-link" data-i18n="nav.dashboard">Dashboard</a>
+        <a href="./users.html" class="nav-link" data-i18n="nav.users">Users</a>
+        <a href="./guides.html" class="nav-link" data-i18n="nav.guides">Guides</a>
+        <a href="./bookings.html" class="nav-link" data-i18n="nav.bookings">Bookings</a>
+        <a href="./payments.html" class="nav-link" data-i18n="nav.payments">Payments</a>
+        <a href="./reports.html" class="nav-link" data-i18n="nav.reports">Reports</a>
+        <a href="./settings.html" class="nav-link active" data-i18n="nav.settings">Settings</a>
+      </nav>
+      <div class="admin-sidebar-footer">
+        <button type="button" class="lang-toggle-btn btn-block"><span class="lang-label">العربية</span></button>
+        <button type="button" id="sidebarLogoutBtn" class="btn btn-outline btn-block btn-sm" data-i18n="nav.logout">Log out</button>
+      </div>
+    </aside>
+
+    <main class="admin-main">
+      <div class="page-header">
+        <h1 class="page-title" data-i18n="admin.settingsTitle">Platform Settings</h1>
+        <p class="page-subtitle" data-i18n="admin.settingsSubtitle">Configure commission rate, cancellation window, and marketplace policies.</p>
+      </div>
+
+      <section class="card" style="max-width:640px;">
+        <form id="settingsForm">
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label for="cfgCommission" class="form-label" data-i18n="admin.commissionRateLabel">Platform Commission (%)</label>
+              <input type="number" id="cfgCommission" class="form-control" min="0" max="50" value="15" required>
+            </div>
+            <div class="form-group">
+              <label for="cfgCancelHours" class="form-label" data-i18n="admin.freeCancelHoursLabel">Free Cancellation Window (hours)</label>
+              <input type="number" id="cfgCancelHours" class="form-control" min="0" max="72" value="2" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="cfgSupportEmail" class="form-label" data-i18n="admin.supportEmailLabel">Operations Support Email</label>
+            <input type="email" id="cfgSupportEmail" class="form-control" value="support@tourguide.example" required>
+          </div>
+
+          <div class="online-bar" style="padding:10px 12px; margin-bottom:12px;">
+            <span class="form-label" data-i18n="admin.instantMatchingLabel">Enable Instant Guide Matching</span>
+            <label class="toggle-switch">
+              <input type="checkbox" id="cfgInstant" checked>
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <div class="online-bar" style="padding:10px 12px; margin-bottom:16px;">
+            <span class="form-label" data-i18n="admin.autoApproveGuidesLabel">Require Manual Guide Verification</span>
+            <label class="toggle-switch">
+              <input type="checkbox" id="cfgManualVerify" checked>
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <button type="submit" class="btn btn-primary" data-i18n="admin.saveSettingsBtn">Save Settings</button>
+        </form>
+      </section>
+    </main>
+  </div>
+
+  <script type="module" src="../js/nav.js"></script>
+  <script type="module">
+    import { doc, setDoc, getDoc } from 'firebase/firestore';
+    import { enforceRouteProtection, logout, onAuthReady } from '../js/auth.js';
+    import { db, COLLECTIONS } from '../js/firebase.js';
+    import { applyTranslations, setupLanguageToggle, showToast, t } from '../js/utils.js';
+
+    enforceRouteProtection({ allowedRoles: ['admin'] });
+    applyTranslations();
+    setupLanguageToggle();
+    document.getElementById('sidebarLogoutBtn')?.addEventListener('click', logout);
+
+    const settingsRef = doc(db, COLLECTIONS.SETTINGS, 'platform');
+
+    onAuthReady(async (user) => {
+      if (!user) return;
+      try {
+        const snap = await getDoc(settingsRef);
+        if (snap.exists()) {
+          const data = snap.data();
+          if (data.commissionPercent !== undefined) document.getElementById('cfgCommission').value = data.commissionPercent;
+          if (data.freeCancelHours !== undefined) document.getElementById('cfgCancelHours').value = data.freeCancelHours;
+          if (data.supportEmail) document.getElementById('cfgSupportEmail').value = data.supportEmail;
+          document.getElementById('cfgInstant').checked = data.instantMatchingEnabled !== false;
+          document.getElementById('cfgManualVerify').checked = data.requireManualVerification !== false;
+        }
+      } catch (err) {
+        console.warn('Settings load notice:', err.message);
+      }
+    });
+
+    document.getElementById('settingsForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      try {
+        await setDoc(settingsRef, {
+          commissionPercent: Number(document.getElementById('cfgCommission').value || 15),
+          freeCancelHours: Number(document.getElementById('cfgCancelHours').value || 2),
+          supportEmail: document.getElementById('cfgSupportEmail').value.trim(),
+          instantMatchingEnabled: document.getElementById('cfgInstant').checked,
+          requireManualVerification: document.getElementById('cfgManualVerify').checked,
+          updatedAt: new Date().toISOString()
+        });
+        showToast(t('admin.settingsSavedToast'), 'success');
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    });
+  </script>
+</body>
+</html>

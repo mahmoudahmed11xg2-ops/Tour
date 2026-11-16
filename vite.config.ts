@@ -3,6 +3,7 @@ import { defineConfig } from 'vite';
 
 export default defineConfig(() => {
   return {
+    base: './',
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),
@@ -18,11 +19,13 @@ export default defineConfig(() => {
           tourist_explore: path.resolve(__dirname, 'tourist/explore.html'),
           tourist_bookings: path.resolve(__dirname, 'tourist/bookings.html'),
           tourist_booking: path.resolve(__dirname, 'tourist/booking.html'),
+          tourist_messages: path.resolve(__dirname, 'tourist/messages.html'),
           tourist_profile: path.resolve(__dirname, 'tourist/profile.html'),
           guide_home: path.resolve(__dirname, 'guide/index.html'),
           guide_requests: path.resolve(__dirname, 'guide/requests.html'),
           guide_calendar: path.resolve(__dirname, 'guide/calendar.html'),
           guide_earnings: path.resolve(__dirname, 'guide/earnings.html'),
+          guide_messages: path.resolve(__dirname, 'guide/messages.html'),
           guide_profile: path.resolve(__dirname, 'guide/profile.html'),
           admin_home: path.resolve(__dirname, 'admin/index.html'),
           admin_users: path.resolve(__dirname, 'admin/users.html'),
@@ -30,6 +33,7 @@ export default defineConfig(() => {
           admin_bookings: path.resolve(__dirname, 'admin/bookings.html'),
           admin_payments: path.resolve(__dirname, 'admin/payments.html'),
           admin_reports: path.resolve(__dirname, 'admin/reports.html'),
+          admin_settings: path.resolve(__dirname, 'admin/settings.html'),
         },
       },
     },

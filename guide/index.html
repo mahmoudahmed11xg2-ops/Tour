@@ -2,306 +2,353 @@
 <html lang="en" dir="ltr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Guide Portal — TourGuide</title>
-  <link rel="stylesheet" href="/css/global.css">
-  <link rel="stylesheet" href="/css/guide.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="app-root" content="../">
+  <title>Guide Console | TourGuide</title>
+  <link rel="stylesheet" href="../css/global.css">
+  <link rel="stylesheet" href="../css/guide.css">
 </head>
-<body>
+<body class="protected-page">
 
-  <!-- Top Header Navigation -->
   <header class="site-header">
-    <div class="app-container header-inner">
-      <a href="/guide/index.html" class="brand-logo">
-        <div class="brand-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <circle cx="12" cy="12" r="10"></circle>
-            <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
+    <div class="header-inner">
+      <div class="header-left">
+        <button type="button" id="mobileMenuToggle" class="hamburger-btn" aria-label="Menu" aria-expanded="false" aria-controls="mobileDrawer">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
           </svg>
-        </div>
-        <span>TourGuide</span>
-        <span class="brand-badge" data-i18n="brand.captainBadge">CAPTAIN</span>
-      </a>
+        </button>
+        <a href="./index.html" class="brand-wordmark">
+          <span class="brand-mark" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
+              <circle cx="12" cy="10" r="3"></circle>
+              <path d="M12 21.7C17.3 17 20 13 20 10a8 8 0 1 0-16 0c0 3 2.7 6.9 8 11.7z"></path>
+            </svg>
+          </span>
+          <span data-i18n="brand.name">TourGuide</span>
+        </a>
+      </div>
 
-      <nav class="nav-links">
-        <a href="/guide/index.html" class="nav-link active" data-i18n="nav.overview">Overview</a>
-        <a href="/guide/requests.html" class="nav-link" data-i18n="nav.requests">Requests</a>
-        <a href="/guide/calendar.html" class="nav-link" data-i18n="nav.calendar">Calendar</a>
-        <a href="/guide/earnings.html" class="nav-link" data-i18n="nav.earnings">Earnings</a>
-        <a href="/guide/profile.html" class="nav-link" data-i18n="nav.profile">Profile</a>
-        <a href="/tourist/index.html" class="nav-link" style="color: var(--accent);" data-i18n="nav.touristView">Tourist View</a>
+      <nav class="header-nav" aria-label="Guide Navigation">
+        <a href="./index.html" class="nav-link active" data-i18n="nav.home">Home</a>
+        <a href="./requests.html" class="nav-link" data-i18n="nav.requests">Requests</a>
+        <a href="./calendar.html" class="nav-link" data-i18n="nav.calendar">Calendar</a>
+        <a href="./earnings.html" class="nav-link" data-i18n="nav.earnings">Earnings</a>
+        <a href="./messages.html" class="nav-link" data-i18n="nav.messages">Messages</a>
+        <a href="./profile.html" class="nav-link" data-i18n="nav.profile">Profile</a>
       </nav>
 
-      <div class="header-actions"></div>
+      <div class="header-actions">
+        <button type="button" class="lang-toggle-btn" aria-label="Toggle language">
+          <span class="lang-label">العربية</span>
+        </button>
+      </div>
     </div>
   </header>
 
-  <main class="main-content">
-    <div class="app-container">
+  <div id="mobileDrawerBackdrop" class="mobile-drawer-backdrop"></div>
+  <aside id="mobileDrawer" class="mobile-drawer" aria-hidden="true">
+    <div class="drawer-header">
+      <strong class="brand-wordmark" data-i18n="guide.consoleTitle">Guide Console</strong>
+      <button type="button" id="mobileDrawerClose" class="drawer-close-btn" aria-label="Close">&times;</button>
+    </div>
+    <nav class="drawer-nav" aria-label="Guide Mobile Drawer">
+      <a href="./index.html" class="drawer-link active" data-i18n="nav.home">Home</a>
+      <a href="./requests.html" class="drawer-link" data-i18n="nav.requests">Requests</a>
+      <a href="./calendar.html" class="drawer-link" data-i18n="nav.calendar">Calendar</a>
+      <a href="./earnings.html" class="drawer-link" data-i18n="nav.earnings">Earnings</a>
+      <a href="./messages.html" class="drawer-link" data-i18n="nav.messages">Messages</a>
+      <a href="./profile.html" class="drawer-link" data-i18n="nav.profile">Profile</a>
+    </nav>
+    <div id="drawerAuthSlot" class="drawer-footer"></div>
+  </aside>
 
-      <!-- Guide Welcome & Online / Offline Toggle Bar -->
-      <section class="guide-welcome-bar">
-        <div>
-          <span style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase;" data-i18n="guide.consoleTitle">Captain Console</span>
-          <h1 id="greetingHeading" style="font-size: 1.5rem; font-weight: 800; color: var(--text-primary); margin-top: 2px;">...</h1>
-          <p id="onlineStatusText" style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 2px;" data-i18n="guide.offlineStateTitle"></p>
-        </div>
+  <main class="container page-main">
+    <div class="page-header">
+      <h1 id="guideGreeting" class="page-title" data-i18n="guide.consoleTitle">Guide Console</h1>
+    </div>
 
-        <div class="guide-status-toggle">
-          <span id="toggleLabel" style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted);" data-i18n="guide.offline">Offline</span>
-          <label class="toggle-switch">
-            <input type="checkbox" id="onlineCheckbox">
-            <span class="toggle-slider"></span>
-          </label>
-        </div>
-      </section>
+    <!-- Verification Status Banner (rendered if not approved) -->
+    <section id="verificationBanner" class="guide-verification-banner" style="display:none;">
+      <h3 id="verifBannerTitle"></h3>
+      <p id="verifBannerDesc"></p>
+    </section>
 
-      <!-- Real-Time Pending Request Container -->
-      <div id="pendingRequestContainer"></div>
+    <!-- Online / Offline Bar -->
+    <section class="online-bar">
+      <div>
+        <strong id="onlineStateTitle" data-i18n="guide.offlineStateTitle">You are offline for instant requests.</strong>
+      </div>
+      <label class="toggle-switch" aria-label="Online availability toggle">
+        <input type="checkbox" id="onlineToggleInput">
+        <span class="toggle-slider"></span>
+      </label>
+    </section>
 
-      <!-- Real KPI Overview Grid -->
-      <section class="kpi-grid">
-        <div class="kpi-card">
-          <span class="kpi-label" data-i18n="guide.todayBookings">Active & Today's Tours</span>
-          <div class="kpi-value" id="kpiActiveCount">0</div>
-          <span class="kpi-subtext" style="color: var(--success);" data-i18n="guide.activeOngoing">Active pipeline</span>
-        </div>
+    <!-- 4-Card Tabular KPI Grid -->
+    <section class="guide-kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label" data-i18n="guide.todayBookings">Active Tours</div>
+        <div id="kpiActiveCount" class="kpi-value">0</div>
+        <div class="kpi-sub" data-i18n="guide.activeOngoing">In pipeline</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label" data-i18n="guide.upcomingScheduled">Pending Requests</div>
+        <div id="kpiPendingCount" class="kpi-value">0</div>
+        <div class="kpi-sub" data-i18n="guide.thisWeek">Awaiting response</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label" data-i18n="guide.totalEarnings">Net Earnings</div>
+        <div id="kpiEarnings" class="kpi-value">$0</div>
+        <div class="kpi-sub" data-i18n="guide.afterFee">Completed tours</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label" data-i18n="guide.rating">Rating</div>
+        <div id="kpiRating" class="kpi-value">0.0</div>
+        <div id="kpiReviews" class="kpi-sub">0 reviews</div>
+      </div>
+    </section>
 
-        <div class="kpi-card">
-          <span class="kpi-label" data-i18n="guide.upcomingScheduled">Pending Requests</span>
-          <div class="kpi-value" id="kpiPendingCount">0</div>
-          <span class="kpi-subtext" data-i18n="guide.thisWeek">Awaiting your response</span>
-        </div>
-
-        <div class="kpi-card">
-          <span class="kpi-label" data-i18n="guide.totalEarnings">Completed Earnings</span>
-          <div class="kpi-value" id="kpiNetEarnings">$0</div>
-          <span class="kpi-subtext" data-i18n="guide.afterFee">Net guide payout</span>
-        </div>
-
-        <div class="kpi-card">
-          <span class="kpi-label" data-i18n="guide.rating">Rating</span>
-          <div class="kpi-value" id="kpiRating">0.0 ★</div>
-          <span class="kpi-subtext" id="kpiReviewsSub">0 verified reviews</span>
-        </div>
-      </section>
-
-      <!-- Real Active Assignment Card -->
-      <section class="card" style="margin-bottom: var(--space-6);">
+    <div class="guide-panels-grid">
+      <!-- Pending Incoming Requests -->
+      <section class="card">
         <div class="card-header">
-          <h2 class="card-title" data-i18n="guide.activeAssignmentTitle">Active Tour Assignment</h2>
-          <span id="activeAssignmentBadge" class="badge badge-gray" style="display: none;"></span>
+          <h2 class="card-title" data-i18n="guide.incomingRequestTitle">Incoming Request</h2>
+          <a href="./requests.html" class="btn btn-outline btn-sm" data-i18n="explore.viewAll">View All</a>
         </div>
-        <div id="activeAssignmentBody">
-          <p style="font-size: 0.875rem; color: var(--text-muted);" data-i18n="guide.noActiveAssignment">No active tour right now. Accepted tours will appear here.</p>
-        </div>
+        <div id="incomingRequestsList" style="display:flex; flex-direction:column; gap:12px;"></div>
       </section>
 
+      <!-- Active Assignment -->
+      <section class="card">
+        <div class="card-header">
+          <h2 class="card-title" data-i18n="guide.activeAssignmentTitle">Active Tour</h2>
+        </div>
+        <div id="activeAssignmentBox"></div>
+      </section>
     </div>
   </main>
 
+  <nav class="bottom-nav" aria-label="Guide Mobile Navigation">
+    <a href="./index.html" class="bottom-nav-item active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+      <span data-i18n="nav.home">Home</span>
+    </a>
+    <a href="./requests.html" class="bottom-nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path></svg>
+      <span data-i18n="nav.requests">Requests</span>
+    </a>
+    <a href="./calendar.html" class="bottom-nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line></svg>
+      <span data-i18n="nav.calendar">Calendar</span>
+    </a>
+    <a href="./earnings.html" class="bottom-nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+      <span data-i18n="nav.earnings">Earnings</span>
+    </a>
+    <a href="./messages.html" class="bottom-nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+      <span data-i18n="nav.messages">Messages</span>
+    </a>
+  </nav>
+
+  <script type="module" src="../js/nav.js"></script>
   <script type="module">
-    import { updateGuideOnlineStatus, getGuideById } from '/js/guides.js';
-    import { onAuthReady, enforceRouteProtection } from '/js/auth.js';
+    import { enforceRouteProtection, onAuthReady } from '../js/auth.js';
+    import { getGuideById, updateGuideOnlineStatus } from '../js/guides.js';
     import {
-      BOOKING_STATUS,
-      ACTIVE_OPERATIONAL_STATUSES,
-      ALLOWED_GUIDE_TRANSITIONS,
       subscribeToGuideBookings,
       acceptBooking,
       declineBooking,
-      progressBookingStatus
-    } from '/js/booking.js';
+      progressBookingStatus,
+      ACTIVE_OPERATIONAL_STATUSES,
+      ALLOWED_GUIDE_TRANSITIONS
+    } from '../js/booking.js';
     import {
+      applyTranslations,
+      setupLanguageToggle,
       showToast,
       t,
-      getLocalizedStatus,
       formatCurrency,
+      formatBookingDateTime,
       formatDuration,
-      formatBookingDateTime
-    } from '/js/utils.js';
+      getLocalizedStatus,
+      escapeHtml
+    } from '../js/utils.js';
 
     enforceRouteProtection({ allowedRoles: ['guide', 'admin'] });
+    applyTranslations();
+    setupLanguageToggle();
 
-    let currentGuideId = null;
-    let currentProfile = null;
-    let latestBookings = [];
-    let unsubscribe = null;
+    let guideDoc = null;
+    let currentBookings = [];
+    let currentUid = null;
 
-    const checkbox = document.getElementById('onlineCheckbox');
-    const toggleLabel = document.getElementById('toggleLabel');
-    const statusText = document.getElementById('onlineStatusText');
+    function updateVerificationAndOnline() {
+      if (!guideDoc) return;
+      document.getElementById('guideGreeting').textContent = t('guide.goodDay', { name: guideDoc.name || '' });
+      document.getElementById('kpiRating').textContent = Number(guideDoc.rating || 0).toFixed(1);
+      document.getElementById('kpiReviews').textContent = `${guideDoc.reviewsCount || 0} ${t('guide.reviews')}`;
 
-    function refreshStatusText(isOnline) {
-      toggleLabel.textContent = isOnline ? t('guide.online') : t('guide.offline');
-      toggleLabel.style.color = isOnline ? 'var(--success)' : 'var(--text-muted)';
-      statusText.textContent = isOnline ? t('guide.onlineStateTitle') : t('guide.offlineStateTitle');
-    }
-
-    function renderGuideDashboard(bookings) {
-      latestBookings = bookings || [];
-
-      const pending = latestBookings.filter(b => b.status === BOOKING_STATUS.PENDING);
-      const activeList = latestBookings.filter(b => ACTIVE_OPERATIONAL_STATUSES.includes(b.status));
-      const completedList = latestBookings.filter(b => b.status === BOOKING_STATUS.COMPLETED);
-
-      const netEarnings = completedList.reduce((sum, b) => sum + Math.max(0, Number(b.price || 0) - Number(b.platformFee || 0)), 0);
-
-      document.getElementById('kpiActiveCount').textContent = String(activeList.length);
-      document.getElementById('kpiPendingCount').textContent = String(pending.length);
-      document.getElementById('kpiNetEarnings').textContent = formatCurrency(netEarnings.toFixed(0));
-
-      // Render top pending request card
-      const pendingContainer = document.getElementById('pendingRequestContainer');
-      if (pending.length > 0) {
-        const req = pending[0];
-        const estNet = Math.max(0, Number(req.price || 0) - Number(req.platformFee || 0));
-        pendingContainer.innerHTML = `
-          <section class="incoming-request-card">
-            <div class="request-title">
-              <span style="width: 10px; height: 10px; border-radius: 50%; background: #f59e0b; display: inline-block;"></span>
-              <span>${t('guide.incomingRequestTitle')} (${req.bookingType === 'instant' ? t('booking.instantType') : t('booking.scheduledType')})</span>
-            </div>
-
-            <div class="request-details-grid">
-              <div class="request-detail-item">
-                <span class="request-detail-label">${t('guide.location')}</span>
-                <span class="request-detail-val">${req.location}</span>
-              </div>
-              <div class="request-detail-item">
-                <span class="request-detail-label">${t('guide.dateTime')}</span>
-                <span class="request-detail-val">${formatBookingDateTime(req.date, req.startTime, req.endTime)}</span>
-              </div>
-              <div class="request-detail-item">
-                <span class="request-detail-label">${t('guide.duration')}</span>
-                <span class="request-detail-val">${formatDuration(req.duration)}</span>
-              </div>
-              <div class="request-detail-item">
-                <span class="request-detail-label">${t('guide.language')}</span>
-                <span class="request-detail-val">${req.language}</span>
-              </div>
-              <div class="request-detail-item">
-                <span class="request-detail-label">${t('guide.guests')}</span>
-                <span class="request-detail-val">${req.guests}</span>
-              </div>
-              <div class="request-detail-item">
-                <span class="request-detail-label">${t('guide.estimatedEarnings')}</span>
-                <span class="request-detail-val" style="color: var(--success);">${formatCurrency(estNet.toFixed(2), req.currency || 'USD')}</span>
-              </div>
-            </div>
-
-            <div class="request-actions">
-              <button id="acceptRequestBtn" class="btn btn-accept btn-lg">${t('guide.acceptTour')}</button>
-              <button id="declineRequestBtn" class="btn btn-decline btn-lg">${t('guide.decline')}</button>
-            </div>
-          </section>
-        `;
-
-        document.getElementById('acceptRequestBtn').addEventListener('click', async () => {
-          try {
-            await acceptBooking(req.id, currentGuideId);
-            showToast(t('toasts.tourAccepted'), 'success');
-          } catch (err) {
-            showToast(err.message || 'Accept failed', 'error');
-          }
-        });
-
-        document.getElementById('declineRequestBtn').addEventListener('click', async () => {
-          try {
-            const res = await declineBooking(req.id, currentGuideId);
-            showToast(res.outcome === 'reassigned' ? t('toasts.tourReassigned') : t('toasts.tourDeclined'), 'info');
-          } catch (err) {
-            showToast(err.message || 'Decline failed', 'error');
-          }
-        });
+      const banner = document.getElementById('verificationBanner');
+      if (guideDoc.verificationStatus === 'rejected') {
+        banner.style.display = 'block';
+        banner.className = 'guide-verification-banner rejected';
+        document.getElementById('verifBannerTitle').textContent = t('guide.rejectedNoticeTitle');
+        document.getElementById('verifBannerDesc').textContent = t('guide.rejectedNoticeDesc');
+      } else if (guideDoc.verificationStatus !== 'approved') {
+        banner.style.display = 'block';
+        banner.className = 'guide-verification-banner';
+        document.getElementById('verifBannerTitle').textContent = t('guide.pendingNoticeTitle');
+        document.getElementById('verifBannerDesc').textContent = t('guide.pendingNoticeDesc');
       } else {
-        pendingContainer.innerHTML = '';
+        banner.style.display = 'none';
       }
 
-      // Render active assignment card
-      const activeBadge = document.getElementById('activeAssignmentBadge');
-      const activeBody = document.getElementById('activeAssignmentBody');
-      if (activeList.length > 0) {
-        const active = activeList[0];
-        const nextStatus = ALLOWED_GUIDE_TRANSITIONS[active.status];
-        const nextLabelMap = {
-          confirmed: t('guide.acceptTour'),
-          guide_arriving: t('guide.startArriving'),
-          meeting_started: t('guide.markMet'),
-          in_progress: t('guide.startTour'),
-          completed: t('guide.completeTour')
-        };
+      const toggle = document.getElementById('onlineToggleInput');
+      toggle.checked = Boolean(guideDoc.isOnline);
+      document.getElementById('onlineStateTitle').textContent = guideDoc.isOnline
+        ? t('guide.onlineStateTitle')
+        : t('guide.offlineStateTitle');
+    }
 
-        activeBadge.style.display = 'inline-flex';
-        activeBadge.className = 'badge badge-online';
-        activeBadge.textContent = getLocalizedStatus(active.status);
+    function nextActionLabel(status) {
+      if (status === 'confirmed' || status === 'accepted') return t('guide.startArriving');
+      if (status === 'guide_arriving') return t('guide.markMet');
+      if (status === 'meeting_started') return t('guide.startTour');
+      if (status === 'in_progress') return t('guide.completeTour');
+      return '';
+    }
 
-        activeBody.innerHTML = `
-          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-4);">
-            <div>
-              <h3 style="font-size: 1.05rem; font-weight: 700;">${active.location}</h3>
-              <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 2px;">
-                ${active.touristName} · ${active.guests} ${t('guide.guests')} · ${active.language} · ${formatDuration(active.duration)} · ${formatBookingDateTime(active.date, active.startTime, active.endTime)}
-              </p>
+    function renderBookingsUI() {
+      const pending = currentBookings.filter(b => b.status === 'pending');
+      const active = currentBookings.filter(b => ACTIVE_OPERATIONAL_STATUSES.includes(b.status));
+      const completed = currentBookings.filter(b => b.status === 'completed');
+
+      const netEarnings = completed.reduce((sum, b) => sum + Number(b.price || 0), 0);
+
+      document.getElementById('kpiActiveCount').textContent = String(active.length);
+      document.getElementById('kpiPendingCount').textContent = String(pending.length);
+      document.getElementById('kpiEarnings').textContent = formatCurrency(Math.round(netEarnings * 100) / 100);
+
+      const reqContainer = document.getElementById('incomingRequestsList');
+      if (!pending.length) {
+        reqContainer.innerHTML = `
+          <div class="empty-state">
+            <h3>${escapeHtml(t('guide.noPendingRequestsTitle'))}</h3>
+            <p>${escapeHtml(t('guide.noPendingRequestsDesc'))}</p>
+          </div>
+        `;
+      } else {
+        reqContainer.innerHTML = pending.map(b => `
+          <article class="request-item">
+            <div style="display:flex; justify-content:space-between; gap:8px;">
+              <strong>${escapeHtml(b.touristName || 'Traveler')}</strong>
+              <span class="status-label status-warning">${escapeHtml(getLocalizedStatus(b.status))}</span>
             </div>
-            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-              ${nextStatus ? `<button id="progressActiveBtn" class="btn btn-primary btn-sm">${nextLabelMap[nextStatus] || nextStatus}</button>` : ''}
-              <a href="/tourist/booking.html?id=${active.id}" class="btn btn-outline btn-sm">${t('guide.openTracking')}</a>
+            <div class="meta-inline">
+              <span>${escapeHtml(b.location || '')}</span>
+              <span class="meta-sep">&middot;</span>
+              <span class="tabular-nums">${escapeHtml(formatDuration(b.duration))}</span>
+              <span class="meta-sep">&middot;</span>
+              <span>${escapeHtml(b.language || '')}</span>
+            </div>
+            <div class="form-hint tabular-nums">${escapeHtml(formatBookingDateTime(b.date, b.startTime, b.endTime))} &middot; ${formatCurrency(b.price || 0)}</div>
+            <div class="request-actions">
+              <button type="button" class="btn btn-primary btn-sm" data-accept-id="${escapeHtml(b.id)}">${escapeHtml(t('guide.acceptTour'))}</button>
+              <button type="button" class="btn btn-outline btn-sm" data-decline-id="${escapeHtml(b.id)}">${escapeHtml(t('guide.decline'))}</button>
+            </div>
+          </article>
+        `).join('');
+
+        reqContainer.querySelectorAll('[data-accept-id]').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            btn.disabled = true;
+            try {
+              await acceptBooking(btn.dataset.acceptId, currentUid);
+              showToast(t('toasts.tourAccepted'), 'success');
+            } catch (err) {
+              showToast(err.message, 'error');
+              btn.disabled = false;
+            }
+          });
+        });
+
+        reqContainer.querySelectorAll('[data-decline-id]').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            btn.disabled = true;
+            try {
+              const res = await declineBooking(btn.dataset.declineId, currentUid);
+              showToast(res.outcome === 'reassigned' ? t('toasts.tourReassigned') : t('toasts.tourDeclined'), 'info');
+            } catch (err) {
+              showToast(err.message, 'error');
+              btn.disabled = false;
+            }
+          });
+        });
+      }
+
+      const activeBox = document.getElementById('activeAssignmentBox');
+      if (!active.length) {
+        activeBox.innerHTML = `<p class="form-hint">${escapeHtml(t('guide.noActiveAssignment'))}</p>`;
+      } else {
+        const b = active[0];
+        const nextSt = ALLOWED_GUIDE_TRANSITIONS[b.status];
+        const nextLbl = nextActionLabel(b.status);
+        activeBox.innerHTML = `
+          <div class="request-item">
+            <div style="display:flex; justify-content:space-between; gap:8px;">
+              <strong>${escapeHtml(b.touristName || 'Traveler')}</strong>
+              <span class="status-label status-info">${escapeHtml(getLocalizedStatus(b.status))}</span>
+            </div>
+            <div class="meta-inline tabular-nums">
+              <span>${escapeHtml(b.location || '')}</span>
+              <span class="meta-sep">&middot;</span>
+              <span>${escapeHtml(formatBookingDateTime(b.date, b.startTime, b.endTime))}</span>
+            </div>
+            <div class="request-actions">
+              ${nextSt ? `<button type="button" id="advanceStatusBtn" class="btn btn-primary btn-sm">${escapeHtml(nextLbl)}</button>` : ''}
+              <a href="./messages.html?bookingId=${encodeURIComponent(b.id)}" class="btn btn-outline btn-sm">${escapeHtml(t('guide.contactTourist'))}</a>
+              <a href="../tourist/booking.html?id=${encodeURIComponent(b.id)}" class="btn btn-outline btn-sm">${escapeHtml(t('guide.openTracking'))}</a>
             </div>
           </div>
         `;
 
-        document.getElementById('progressActiveBtn')?.addEventListener('click', async () => {
+        document.getElementById('advanceStatusBtn')?.addEventListener('click', async () => {
           try {
-            await progressBookingStatus(active.id, currentGuideId, nextStatus);
-            showToast(t('toasts.statusUpdated', { status: getLocalizedStatus(nextStatus) }), 'success');
+            const ns = await progressBookingStatus(b.id, currentUid);
+            showToast(t('toasts.statusUpdated', { status: getLocalizedStatus(ns) }), 'success');
           } catch (err) {
-            showToast(err.message || 'Update failed', 'error');
+            showToast(err.message, 'error');
           }
         });
-      } else {
-        activeBadge.style.display = 'none';
-        activeBody.innerHTML = `<p style="font-size: 0.875rem; color: var(--text-muted);">${t('guide.noActiveAssignment')}</p>`;
       }
     }
 
-    onAuthReady(async (firebaseUser, profile) => {
-      if (!firebaseUser) return;
-      currentGuideId = firebaseUser.uid;
-      currentProfile = profile;
-
-      const displayName = profile?.firstName || firebaseUser.email?.split('@')[0] || 'Guide';
-      document.getElementById('greetingHeading').textContent = t('guide.goodDay', { name: displayName });
-
-      const guideData = await getGuideById(currentGuideId);
-      if (guideData) {
-        checkbox.checked = !!guideData.isOnline;
-        refreshStatusText(checkbox.checked);
-        document.getElementById('kpiRating').textContent = `${Number(guideData.rating || 0).toFixed(1)} ★`;
-        document.getElementById('kpiReviewsSub').textContent = t('guide.verifiedReviews', { count: guideData.reviewsCount || 0 });
-      }
-
-      if (unsubscribe) unsubscribe();
-      unsubscribe = subscribeToGuideBookings(currentGuideId, renderGuideDashboard);
+    document.getElementById('onlineToggleInput').addEventListener('change', async (e) => {
+      if (!currentUid) return;
+      const state = await updateGuideOnlineStatus(currentUid, e.target.checked);
+      if (guideDoc) guideDoc.isOnline = state;
+      updateVerificationAndOnline();
+      showToast(state ? t('toasts.guideOnline') : t('toasts.guideOffline'), 'info');
     });
 
-    checkbox.addEventListener('change', async () => {
-      if (!currentGuideId) {
-        showToast(t('toasts.authPending'), 'info');
-        return;
-      }
-      const isOnline = checkbox.checked;
-      refreshStatusText(isOnline);
-      await updateGuideOnlineStatus(currentGuideId, isOnline);
-      showToast(isOnline ? t('toasts.nowOnline') : t('toasts.nowOffline'), isOnline ? 'success' : 'info');
+    onAuthReady(async (user) => {
+      if (!user) return;
+      currentUid = user.uid;
+      guideDoc = await getGuideById(user.uid);
+      updateVerificationAndOnline();
+      subscribeToGuideBookings(user.uid, (list) => {
+        currentBookings = list;
+        renderBookingsUI();
+      });
     });
 
     document.addEventListener('tourguide:langchange', () => {
-      if (currentProfile?.firstName) {
-        document.getElementById('greetingHeading').textContent = t('guide.goodDay', { name: currentProfile.firstName });
-      }
-      refreshStatusText(checkbox.checked);
-      renderGuideDashboard(latestBookings);
+      updateVerificationAndOnline();
+      renderBookingsUI();
     });
   </script>
 </body>

@@ -2,426 +2,444 @@
 <html lang="en" dir="ltr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Active Tour — TourGuide</title>
-  <link rel="stylesheet" href="/css/global.css">
-  <link rel="stylesheet" href="/css/tourist.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="app-root" content="../">
+  <title>Booking | TourGuide</title>
+  <link rel="stylesheet" href="../css/global.css">
+  <link rel="stylesheet" href="../css/tourist.css">
 </head>
-<body>
+<body class="protected-page">
 
-  <!-- Top Header Navigation -->
   <header class="site-header">
-    <div class="app-container header-inner">
-      <a href="/" class="brand-logo">
-        <div class="brand-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <circle cx="12" cy="12" r="10"></circle>
-            <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
-          </svg>
-        </div>
-        <span>TourGuide</span>
-      </a>
+    <div class="header-inner">
+      <div class="header-left">
+        <a href="./index.html" class="brand-wordmark">
+          <span class="brand-mark" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
+              <circle cx="12" cy="10" r="3"></circle>
+              <path d="M12 21.7C17.3 17 20 13 20 10a8 8 0 1 0-16 0c0 3 2.7 6.9 8 11.7z"></path>
+            </svg>
+          </span>
+          <span data-i18n="brand.name">TourGuide</span>
+        </a>
+      </div>
 
-      <nav class="nav-links">
-        <a href="/tourist/index.html" class="nav-link" data-i18n="nav.home">Home</a>
-        <a href="/tourist/explore.html" class="nav-link" data-i18n="nav.explore">Explore</a>
-        <a href="/tourist/bookings.html" class="nav-link active" data-i18n="nav.bookings">Bookings</a>
-        <a href="/guide/index.html" class="nav-link" data-i18n="nav.guidePortal">Guide Portal</a>
+      <nav class="header-nav" aria-label="Tourist Navigation">
+        <a href="./index.html" class="nav-link" data-i18n="nav.home">Home</a>
+        <a href="./explore.html" class="nav-link" data-i18n="nav.explore">Explore</a>
+        <a href="./bookings.html" class="nav-link active" data-i18n="nav.bookings">Bookings</a>
+        <a href="./messages.html" class="nav-link" data-i18n="nav.messages">Messages</a>
+        <a href="./profile.html" class="nav-link" data-i18n="nav.profile">Profile</a>
       </nav>
 
-      <div class="header-actions"></div>
+      <div class="header-actions">
+        <button type="button" class="lang-toggle-btn" aria-label="Toggle language">
+          <span class="lang-label">العربية</span>
+        </button>
+      </div>
     </div>
   </header>
 
-  <main class="main-content">
-    <div class="app-container" style="max-width: 800px;">
-
-      <!-- Empty / Not Found Card -->
-      <div id="notFoundCard" class="empty-state card" style="display: none;">
-        <h2 class="empty-state-title" data-i18n="booking.noBookingFound">Booking not found.</h2>
-        <a href="/tourist/bookings.html" class="btn btn-primary btn-sm" style="margin-top: var(--space-3);" data-i18n="touristProfile.viewMyBookings">View My Bookings</a>
+  <main class="container page-main" style="padding-bottom: 36px;">
+    <!-- MODE A: Pre-booking Checkout Summary -->
+    <section id="createBookingSection" style="display:none;">
+      <div class="page-header">
+        <h1 class="page-title" data-i18n="booking.summaryTitle">Booking Summary</h1>
       </div>
 
-      <!-- Real-Time Booking Tracking Card -->
-      <div id="trackingCard" class="tracking-card" style="display: none;">
-
-        <!-- Status Banner -->
-        <div class="map-simulation-area">
-          <div style="background: var(--bg-surface); padding: 10px 18px; border-radius: var(--radius-full); box-shadow: var(--shadow-card); display: flex; align-items: center; gap: 10px; border: 1px solid var(--border-color);">
-            <span id="statusDot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--success); display: inline-block;"></span>
-            <span style="font-size: 0.85rem; font-weight: 700;" id="etaDisplay">...</span>
+      <div class="booking-layout">
+        <div class="card">
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label for="bkLocation" class="form-label" data-i18n="booking.meetingLocation">Meeting Location</label>
+              <input type="text" id="bkLocation" class="form-control">
+            </div>
+            <div class="form-group">
+              <label for="bkDate" class="form-label" data-i18n="booking.date">Date</label>
+              <input type="date" id="bkDate" class="form-control">
+            </div>
+            <div class="form-group">
+              <label for="bkTime" class="form-label" data-i18n="booking.startTime">Start Time</label>
+              <input type="time" id="bkTime" class="form-control">
+            </div>
+            <div class="form-group">
+              <label for="bkDuration" class="form-label" data-i18n="booking.durationLabel">Duration</label>
+              <select id="bkDuration" class="form-control">
+                <option value="2" data-i18n="durations.2">2 hrs</option>
+                <option value="3" data-i18n="durations.3">3 hrs</option>
+                <option value="4" data-i18n="durations.4">4 hrs</option>
+                <option value="6" data-i18n="durations.6">6 hrs</option>
+                <option value="8" data-i18n="durations.8">8 hrs</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="bkLanguage" class="form-label" data-i18n="booking.languageLabel">Language</label>
+              <select id="bkLanguage" class="form-control">
+                <option value="English">English</option>
+                <option value="Arabic">Arabic</option>
+                <option value="French">French</option>
+                <option value="German">German</option>
+                <option value="Spanish">Spanish</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="bkGuests" class="form-label" data-i18n="booking.guests">Guests</label>
+              <input type="number" id="bkGuests" class="form-control" min="1" max="15" value="2">
+            </div>
           </div>
+
+          <div id="availabilityAlert" class="form-hint" style="margin-top:6px;"></div>
         </div>
 
-        <!-- 7-Stage Operational Timeline -->
-        <div class="status-timeline" id="statusTimeline">
-          <div class="timeline-step" data-step="pending">
-            <div class="timeline-step-icon">1</div>
-            <span class="timeline-step-label" data-i18n="booking.timeline.requested">Requested</span>
+        <aside class="card">
+          <div class="profile-hero-row" style="margin-bottom:14px;">
+            <img id="ckGuideAvatar" src="../assets/images/guide_portrait_ahmed_1794430336207.jpg" alt="Guide" class="guide-avatar" referrerpolicy="no-referrer">
+            <div>
+              <h2 id="ckGuideName" class="card-title">Guide</h2>
+              <p id="ckGuideMeta" class="form-hint"></p>
+            </div>
           </div>
-          <div class="timeline-step" data-step="accepted">
-            <div class="timeline-step-icon">2</div>
-            <span class="timeline-step-label" data-i18n="booking.timeline.accepted">Accepted</span>
+
+          <div class="summary-row">
+            <span data-i18n="booking.hourlyRateLabel">Hourly Rate</span>
+            <strong id="ckRate" class="tabular-nums">$0</strong>
           </div>
-          <div class="timeline-step" data-step="confirmed">
-            <div class="timeline-step-icon">3</div>
-            <span class="timeline-step-label" data-i18n="booking.timeline.confirmed">Confirmed</span>
+          <div class="summary-row">
+            <span data-i18n="booking.tourPriceLabel">Tour Price</span>
+            <strong id="ckPrice" class="tabular-nums">$0</strong>
           </div>
-          <div class="timeline-step" data-step="guide_arriving">
-            <div class="timeline-step-icon">4</div>
-            <span class="timeline-step-label" data-i18n="booking.timeline.arriving">Arriving</span>
+          <div class="summary-row">
+            <span data-i18n="booking.platformFeeLabel">Platform Fee (15%)</span>
+            <strong id="ckFee" class="tabular-nums">$0</strong>
           </div>
-          <div class="timeline-step" data-step="meeting_started">
-            <div class="timeline-step-icon">5</div>
-            <span class="timeline-step-label" data-i18n="booking.timeline.met">Met</span>
+          <div class="summary-row summary-total">
+            <span data-i18n="booking.totalLabel">Total</span>
+            <strong id="ckTotal" class="tabular-nums">$0</strong>
           </div>
-          <div class="timeline-step" data-step="in_progress">
-            <div class="timeline-step-icon">6</div>
-            <span class="timeline-step-label" data-i18n="booking.timeline.inProgress">In Progress</span>
-          </div>
-          <div class="timeline-step" data-step="completed">
-            <div class="timeline-step-icon">7</div>
-            <span class="timeline-step-label" data-i18n="booking.timeline.completed">Completed</span>
-          </div>
+
+          <p class="form-hint" style="margin-block:12px;" data-i18n="booking.cancellationPolicyText">Free cancellation up to 2 hours before start time. Full refund if the guide declines.</p>
+
+          <button type="button" id="confirmRequestBtn" class="btn btn-primary btn-block btn-lg" data-i18n="booking.confirmAndPay">Confirm &amp; Send Request</button>
+          <a href="./index.html" class="btn btn-outline btn-block" style="margin-top:8px;" data-i18n="booking.backToEdit">Cancel</a>
+        </aside>
+      </div>
+    </section>
+
+    <!-- MODE B: Live Booking Tracking & Details -->
+    <section id="trackBookingSection" style="display:none;">
+      <div class="explore-toolbar">
+        <div>
+          <h1 id="trTitle" class="page-title tabular-nums">Booking</h1>
+          <p id="trEta" class="page-subtitle"></p>
         </div>
-
-        <!-- No Guide Available Fallback Box (Instant rejected) -->
-        <div id="noGuideFallbackBox" style="display: none; background: #fef2f2; border-bottom: 1px solid #fecaca; padding: var(--space-5);">
-          <h3 style="font-size: 1rem; font-weight: 800; color: #991b1b; margin-bottom: 4px;" data-i18n="booking.noGuideAvailableTitle">No Guide available right now</h3>
-          <p style="font-size: 0.85rem; color: #7f1d1d; margin-bottom: var(--space-4);" data-i18n="booking.noGuideAvailableDesc">
-            All eligible nearby guides are currently busy or declined. Try searching again or schedule a tour in advance.
-          </p>
-          <div style="display: flex; gap: var(--space-3); flex-wrap: wrap;">
-            <button id="retryInstantBtn" class="btn btn-primary btn-sm" data-i18n="search.tryAgainBtn">Try Again</button>
-            <a href="/tourist/explore.html" class="btn btn-outline btn-sm" data-i18n="search.scheduleGuideBtn">Schedule a Guide</a>
-          </div>
-        </div>
-
-        <!-- Guide & Booking Details -->
-        <div style="padding: var(--space-6);">
-
-          <!-- Guide Strip -->
-          <div style="display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); margin-bottom: var(--space-6); padding-bottom: var(--space-5); border-bottom: 1px solid var(--border-color); flex-wrap: wrap;">
-            <div style="display: flex; align-items: center; gap: var(--space-4);">
-              <img id="guideAvatar" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80" alt="Guide" style="width: 60px; height: 60px; border-radius: var(--radius-md); object-fit: cover;">
-              <div>
-                <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
-                  <h3 id="guideName" style="font-size: 1.1rem; font-weight: 700; color: var(--text-primary);">...</h3>
-                  <span class="badge badge-verified" data-i18n="booking.verified">✓ Verified</span>
-                </div>
-                <div style="display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap;">
-                  <span id="bookingStatusPill" class="badge badge-online">...</span>
-                  <span id="bookingTypePill" class="badge badge-gray">...</span>
-                </div>
-              </div>
-            </div>
-
-            <div style="display: flex; gap: 8px;">
-              <button id="callGuideBtn" class="btn btn-outline btn-sm" data-i18n="booking.call">Call</button>
-              <button id="chatGuideBtn" class="btn btn-primary btn-sm" data-i18n="booking.chat">Chat</button>
-            </div>
-          </div>
-
-          <!-- Booking Metadata Grid -->
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--space-4); margin-bottom: var(--space-6);">
-            <div>
-              <span class="form-label" data-i18n="booking.meetingLocation">Meeting Location</span>
-              <p id="meetingLocation" style="font-size: 0.95rem; font-weight: 600; color: var(--text-primary);"></p>
-            </div>
-            <div>
-              <span class="form-label" data-i18n="booking.dateTimeLabel">Date & Time</span>
-              <p id="dateTimeDisplay" style="font-size: 0.95rem; font-weight: 600; color: var(--text-primary);"></p>
-            </div>
-            <div>
-              <span class="form-label" data-i18n="booking.durationAndLang">Tour Duration & Language</span>
-              <p id="durationAndLang" style="font-size: 0.95rem; font-weight: 600; color: var(--text-primary);"></p>
-            </div>
-            <div>
-              <span class="form-label" data-i18n="booking.guestsCount">Guests Count</span>
-              <p id="guestsDisplay" style="font-size: 0.95rem; font-weight: 600; color: var(--text-primary);"></p>
-            </div>
-          </div>
-
-          <!-- Financial Summary -->
-          <div style="background: var(--bg-subtle); padding: 14px; border-radius: var(--radius-md); margin-bottom: var(--space-5); font-size: 0.875rem;">
-            <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
-              <span data-i18n="booking.tourPriceLabel">Tour Price</span>
-              <span id="priceDisplay" style="font-weight: 600;"></span>
-            </div>
-            <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
-              <span data-i18n="booking.platformFeeLabel">Platform Fee (15%)</span>
-              <span id="feeDisplay" style="font-weight: 600;"></span>
-            </div>
-            <div style="display: flex; justify-content: space-between; padding-top: 6px; border-top: 1px solid var(--border-color); font-weight: 800; font-size: 1rem;">
-              <span data-i18n="booking.totalLabel">Total Amount</span>
-              <span id="totalDisplay" style="color: var(--primary);"></span>
-            </div>
-          </div>
-
-          <!-- Cancellation Policy -->
-          <p id="policyDisplay" style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: var(--space-5);"></p>
-
-          <!-- Guide-Only Operational Controls (shown ONLY when logged-in user is the assigned guide) -->
-          <div id="guideActionPanel" style="display: none; gap: var(--space-3); margin-bottom: var(--space-4); flex-wrap: wrap;"></div>
-
-          <!-- Tourist Review Form (shown ONLY after status === 'completed' & not yet reviewed) -->
-          <div id="reviewSection" style="display: none; background: var(--bg-subtle); padding: var(--space-5); border-radius: var(--radius-lg); margin-bottom: var(--space-5);">
-            <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: var(--space-3);" data-i18n="booking.leaveReviewTitle">Rate Your Experience</h3>
-            <form id="reviewForm">
-              <div class="form-group">
-                <select id="reviewRatingSelect" class="form-select">
-                  <option value="5">★★★★★ (5/5)</option>
-                  <option value="4">★★★★☆ (4/5)</option>
-                  <option value="3">★★★☆☆ (3/5)</option>
-                  <option value="2">★★☆☆☆ (2/5)</option>
-                  <option value="1">★☆☆☆☆ (1/5)</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <textarea id="reviewCommentInput" class="form-textarea" rows="3" placeholder="Share feedback about your guide..." data-i18n-placeholder="booking.reviewPlaceholder" required></textarea>
-              </div>
-              <button type="submit" class="btn btn-primary btn-sm" data-i18n="booking.submitReviewBtn">Submit Review</button>
-            </form>
-          </div>
-
-          <!-- Tourist Action Buttons -->
-          <div style="display: flex; gap: var(--space-3); flex-wrap: wrap;">
-            <button id="cancelBookingBtn" class="btn btn-outline" style="flex: 1; color: var(--error); border-color: var(--error-border); display: none;" data-i18n="booking.cancelBooking">
-              Cancel Booking
-            </button>
-            <button id="disputeBookingBtn" class="btn btn-outline" style="flex: 1; display: none;" data-i18n="booking.openDispute">
-              Report Issue / Dispute
-            </button>
-          </div>
-
-        </div>
+        <span id="trStatusBadge" class="status-label status-info"></span>
       </div>
 
+      <div id="timelineStrip" class="timeline-strip"></div>
+
+      <div class="booking-layout">
+        <div class="card">
+          <div class="summary-row">
+            <span data-i18n="booking.guideLabel">Guide</span>
+            <strong id="trGuideName"></strong>
+          </div>
+          <div class="summary-row">
+            <span data-i18n="booking.locationLabel">Location</span>
+            <strong id="trLocation"></strong>
+          </div>
+          <div class="summary-row">
+            <span data-i18n="booking.dateTimeLabel">Date &amp; Time</span>
+            <strong id="trDateTime" class="tabular-nums"></strong>
+          </div>
+          <div class="summary-row">
+            <span data-i18n="booking.durationAndLang">Duration &amp; Language</span>
+            <strong id="trDurationLang" class="tabular-nums"></strong>
+          </div>
+          <div class="summary-row summary-total">
+            <span data-i18n="booking.totalLabel">Total</span>
+            <strong id="trTotal" class="tabular-nums"></strong>
+          </div>
+
+          <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:16px;">
+            <a id="trMessageBtn" href="./messages.html" class="btn btn-primary btn-sm" data-i18n="booking.chatWithGuide">Message</a>
+            <button type="button" id="trCancelBtn" class="btn btn-outline btn-sm" data-i18n="booking.cancelBooking" style="display:none;">Cancel Booking</button>
+            <button type="button" id="trDisputeBtn" class="btn btn-danger btn-sm" data-i18n="booking.openDispute" style="display:none;">Report Issue</button>
+            <button type="button" id="trRetryBtn" class="btn btn-accent btn-sm" data-i18n="search.tryAgainBtn" style="display:none;">Try Again</button>
+          </div>
+        </div>
+
+        <!-- Review Card (shown after completion if not yet reviewed) -->
+        <aside id="reviewCard" class="card" style="display:none;">
+          <h2 class="card-title" style="margin-bottom:10px;" data-i18n="booking.leaveReviewTitle">Rate Your Experience</h2>
+          <form id="reviewForm">
+            <div class="form-group">
+              <label for="revRating" class="form-label" data-i18n="guide.rating">Rating</label>
+              <select id="revRating" class="form-control">
+                <option value="5">5 / 5</option>
+                <option value="4">4 / 5</option>
+                <option value="3">3 / 5</option>
+                <option value="2">2 / 5</option>
+                <option value="1">1 / 5</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <textarea id="revComment" class="form-control" data-i18n-placeholder="booking.reviewPlaceholder" placeholder="Share feedback about your guide and tour..." required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block" data-i18n="booking.submitReviewBtn">Submit Review</button>
+          </form>
+        </aside>
+      </div>
+    </section>
+
+    <div id="notFoundState" class="empty-state" style="display:none;">
+      <h3 data-i18n="booking.noBookingFound">Booking not found.</h3>
+      <a href="./bookings.html" class="btn btn-primary" data-i18n="nav.bookings">Bookings</a>
     </div>
   </main>
 
   <script type="module">
+    import { enforceRouteProtection, getCurrentUser, onAuthReady } from '../js/auth.js';
+    import { getGuideById, submitReview } from '../js/guides.js';
+    import { checkGuideAvailability } from '../js/availability.js';
     import {
-      BOOKING_STATUS,
-      ALLOWED_GUIDE_TRANSITIONS,
-      getActiveBookingForTourist,
+      createBooking,
+      getBookingById,
       subscribeToBooking,
-      acceptBooking,
-      declineBooking,
-      retryInstantBooking,
-      progressBookingStatus,
       cancelBooking,
-      openDispute
-    } from '/js/booking.js';
-    import { getGuideById, submitReview } from '/js/guides.js';
+      openDispute,
+      retryInstantBooking,
+      TERMINAL_BOOKING_STATUSES
+    } from '../js/booking.js';
     import {
-      getUrlParam,
+      applyTranslations,
+      setupLanguageToggle,
       showToast,
+      confirmModal,
       t,
-      getLocalizedStatus,
+      getUrlParam,
+      getTodayISODate,
+      getCurrentTimeHHMM,
       formatCurrency,
+      formatBookingDateTime,
       formatDuration,
-      formatBookingDateTime
-    } from '/js/utils.js';
-    import { enforceRouteProtection, onAuthReady } from '/js/auth.js';
+      getLocalizedStatus,
+      resolveAvatar
+    } from '../js/utils.js';
 
     enforceRouteProtection({ allowedRoles: ['tourist', 'guide', 'admin'] });
+    applyTranslations();
+    setupLanguageToggle();
 
-    const TIMELINE_ORDER = [
-      BOOKING_STATUS.PENDING,
-      BOOKING_STATUS.ACCEPTED,
-      BOOKING_STATUS.CONFIRMED,
-      BOOKING_STATUS.GUIDE_ARRIVING,
-      BOOKING_STATUS.MEETING_STARTED,
-      BOOKING_STATUS.IN_PROGRESS,
-      BOOKING_STATUS.COMPLETED
+    const bookingIdParam = getUrlParam('id');
+    const guideIdParam = getUrlParam('guideId');
+    let unsubscribe = null;
+    let activeBooking = null;
+
+    const TIMELINE_STEPS = [
+      { key: 'pending', labelKey: 'booking.timeline.requested' },
+      { key: 'accepted', labelKey: 'booking.timeline.accepted' },
+      { key: 'confirmed', labelKey: 'booking.timeline.confirmed' },
+      { key: 'guide_arriving', labelKey: 'booking.timeline.arriving' },
+      { key: 'meeting_started', labelKey: 'booking.timeline.met' },
+      { key: 'in_progress', labelKey: 'booking.timeline.inProgress' },
+      { key: 'completed', labelKey: 'booking.timeline.completed' }
     ];
 
-    let activeUser = null;
-    let currentBooking = null;
-    let unsubscribeBooking = null;
+    function renderTracking(b) {
+      activeBooking = b;
+      const trackSec = document.getElementById('trackBookingSection');
+      trackSec.style.display = 'block';
 
-    function renderBooking(b) {
-      currentBooking = b;
-      if (!b) {
-        document.getElementById('trackingCard').style.display = 'none';
-        document.getElementById('notFoundCard').style.display = 'block';
-        return;
-      }
+      document.getElementById('trTitle').textContent = `#${b.id}`;
+      document.getElementById('trEta').textContent = t(`booking.eta.${b.status}`, { guide: b.guideName || 'Guide' });
+      const badge = document.getElementById('trStatusBadge');
+      badge.textContent = getLocalizedStatus(b.status);
+      badge.className = `status-label ${b.status === 'completed' || b.status === 'confirmed' ? 'status-success' : b.status === 'cancelled' || b.status === 'rejected' ? 'status-danger' : 'status-info'}`;
 
-      document.getElementById('notFoundCard').style.display = 'none';
-      document.getElementById('trackingCard').style.display = 'block';
+      document.getElementById('trGuideName').textContent = b.guideName || '';
+      document.getElementById('trLocation').textContent = b.location || '';
+      document.getElementById('trDateTime').textContent = formatBookingDateTime(b.date, b.startTime, b.endTime);
+      document.getElementById('trDurationLang').textContent = `${formatDuration(b.duration)} · ${b.language || 'English'}`;
+      document.getElementById('trTotal').textContent = formatCurrency(b.total || b.price || 0, b.currency || 'USD');
 
-      document.getElementById('guideName').textContent = b.guideName || 'Guide';
-      document.getElementById('bookingStatusPill').textContent = getLocalizedStatus(b.status);
-      document.getElementById('bookingTypePill').textContent = b.bookingType === 'instant' ? t('booking.instantType') : t('booking.scheduledType');
-      document.getElementById('meetingLocation').textContent = b.location || b.destination || '';
-      document.getElementById('dateTimeDisplay').textContent = formatBookingDateTime(b.date, b.startTime, b.endTime);
-      document.getElementById('durationAndLang').textContent = `${formatDuration(b.duration)} · ${t('languages.' + (b.language || 'English').toLowerCase()) || b.language}`;
-      document.getElementById('guestsDisplay').textContent = `${b.guests} ${t('search.guests')}`;
+      const user = getCurrentUser();
+      const msgHref = user?.role === 'guide'
+        ? `../guide/messages.html?bookingId=${encodeURIComponent(b.id)}`
+        : `./messages.html?bookingId=${encodeURIComponent(b.id)}`;
+      document.getElementById('trMessageBtn').href = msgHref;
 
-      const currency = b.currency || 'USD';
-      document.getElementById('priceDisplay').textContent = formatCurrency(Number(b.price || 0).toFixed(2), currency);
-      document.getElementById('feeDisplay').textContent = formatCurrency(Number(b.platformFee || 0).toFixed(2), currency);
-      document.getElementById('totalDisplay').textContent = formatCurrency(Number(b.total || 0).toFixed(2), currency);
-      document.getElementById('policyDisplay').textContent = b.cancellationPolicy || t('booking.cancellationPolicyText');
+      const idx = TIMELINE_STEPS.findIndex(s => s.key === b.status);
+      document.getElementById('timelineStrip').innerHTML = TIMELINE_STEPS.map((s, i) => {
+        const cls = idx > i ? 'done' : idx === i ? 'active' : '';
+        return `<div class="timeline-step ${cls}">${t(s.labelKey)}</div>`;
+      }).join('');
 
-      // ETA / Status banner
-      const etaKey = `booking.eta.${b.status}`;
-      const etaMsg = t(etaKey, { guide: b.guideName || 'Guide' });
-      document.getElementById('etaDisplay').textContent = etaMsg !== etaKey ? etaMsg : getLocalizedStatus(b.status);
-
-      const dot = document.getElementById('statusDot');
-      dot.style.background = ['cancelled', 'rejected', 'expired', 'disputed'].includes(b.status)
-        ? 'var(--error)'
-        : b.status === 'pending'
-          ? '#f59e0b'
-          : 'var(--success)';
-
-      // Timeline step highlight
-      const idx = TIMELINE_ORDER.indexOf(b.status);
-      document.querySelectorAll('.timeline-step').forEach((el, i) => {
-        el.classList.remove('completed', 'current');
-        if (idx >= 0) {
-          if (i < idx) el.classList.add('completed');
-          else if (i === idx) el.classList.add('current');
-        }
-      });
-
-      // Rejected / No guide available fallback
-      document.getElementById('noGuideFallbackBox').style.display =
-        (b.status === BOOKING_STATUS.REJECTED || b.status === BOOKING_STATUS.EXPIRED) ? 'block' : 'none';
-
-      // Guide avatar load
-      if (b.guideId) {
-        getGuideById(b.guideId).then(g => {
-          if (g && g.avatar) document.getElementById('guideAvatar').src = g.avatar;
-        }).catch(() => {});
-      }
-
-      // Role-scoped action controls
-      const isTourist = activeUser && activeUser.uid === b.touristId;
-      const isGuide = activeUser && activeUser.uid === b.guideId;
-
-      const cancelBtn = document.getElementById('cancelBookingBtn');
-      const disputeBtn = document.getElementById('disputeBookingBtn');
-      const reviewSection = document.getElementById('reviewSection');
-      const guidePanel = document.getElementById('guideActionPanel');
-
-      cancelBtn.style.display = (isTourist && ['pending', 'accepted', 'confirmed', 'guide_arriving'].includes(b.status)) ? 'block' : 'none';
-      disputeBtn.style.display = (isTourist && ['in_progress', 'completed'].includes(b.status)) ? 'block' : 'none';
-      reviewSection.style.display = (isTourist && b.status === BOOKING_STATUS.COMPLETED && !b.reviewed) ? 'block' : 'none';
-
-      if (isGuide) {
-        guidePanel.style.display = 'flex';
-        if (b.status === BOOKING_STATUS.PENDING) {
-          guidePanel.innerHTML = `
-            <button id="guideAcceptBtn" class="btn btn-accent" style="flex:1;">${t('guide.acceptTour')}</button>
-            <button id="guideDeclineBtn" class="btn btn-outline" style="flex:1;">${t('guide.decline')}</button>
-          `;
-          document.getElementById('guideAcceptBtn').addEventListener('click', async () => {
-            await acceptBooking(b.id, activeUser.uid);
-            showToast(t('toasts.tourAccepted'), 'success');
-          });
-          document.getElementById('guideDeclineBtn').addEventListener('click', async () => {
-            const res = await declineBooking(b.id, activeUser.uid);
-            showToast(res.outcome === 'reassigned' ? t('toasts.tourReassigned') : t('toasts.noFallbackGuides'), 'info');
-          });
-        } else if (ALLOWED_GUIDE_TRANSITIONS[b.status]) {
-          const next = ALLOWED_GUIDE_TRANSITIONS[b.status];
-          const labelMap = {
-            confirmed: t('guide.acceptTour'),
-            guide_arriving: t('guide.startArriving'),
-            meeting_started: t('guide.markMet'),
-            in_progress: t('guide.startTour'),
-            completed: t('guide.completeTour')
-          };
-          guidePanel.innerHTML = `<button id="guideProgressBtn" class="btn btn-primary btn-block">${labelMap[next] || next}</button>`;
-          document.getElementById('guideProgressBtn').addEventListener('click', async () => {
-            await progressBookingStatus(b.id, activeUser.uid, next);
-            showToast(t('toasts.statusUpdated', { status: getLocalizedStatus(next) }), 'success');
-          });
-        } else {
-          guidePanel.style.display = 'none';
-        }
-      } else {
-        guidePanel.style.display = 'none';
-      }
+      const isTerminal = TERMINAL_BOOKING_STATUSES.includes(b.status);
+      document.getElementById('trCancelBtn').style.display = !isTerminal ? 'inline-flex' : 'none';
+      document.getElementById('trDisputeBtn').style.display = b.status === 'in_progress' || b.status === 'completed' ? 'inline-flex' : 'none';
+      document.getElementById('trRetryBtn').style.display = b.status === 'rejected' && b.bookingType === 'instant' ? 'inline-flex' : 'none';
+      document.getElementById('reviewCard').style.display = b.status === 'completed' && !b.reviewed && user?.uid === b.touristId ? 'block' : 'none';
     }
 
-    onAuthReady(async (user) => {
-      activeUser = user;
-      if (!user) return;
-
-      let targetId = getUrlParam('id');
-      if (!targetId) {
-        const active = await getActiveBookingForTourist(user.uid);
-        targetId = active ? active.id : null;
-      }
-
-      if (!targetId) {
-        renderBooking(null);
+    async function initCreateMode(guideId) {
+      const guide = await getGuideById(guideId);
+      if (!guide) {
+        document.getElementById('notFoundState').style.display = 'block';
         return;
       }
 
-      if (unsubscribeBooking) unsubscribeBooking();
-      unsubscribeBooking = subscribeToBooking(targetId, (booking) => {
-        renderBooking(booking);
-      }, () => {
-        renderBooking(null);
+      document.getElementById('createBookingSection').style.display = 'block';
+      document.getElementById('ckGuideAvatar').src = resolveAvatar(guide.avatar, guide.name);
+      document.getElementById('ckGuideName').textContent = guide.name;
+      document.getElementById('ckGuideMeta').textContent = `${guide.city || 'Egypt'} · ${Array.isArray(guide.languages) ? guide.languages.join(', ') : ''}`;
+
+      const bkLocation = document.getElementById('bkLocation');
+      const bkDate = document.getElementById('bkDate');
+      const bkTime = document.getElementById('bkTime');
+      const bkDuration = document.getElementById('bkDuration');
+      const bkLanguage = document.getElementById('bkLanguage');
+
+      bkLocation.value = getUrlParam('location') || guide.city || 'Giza';
+      bkDate.value = getUrlParam('date') || getTodayISODate();
+      bkDate.min = getTodayISODate();
+      bkTime.value = getUrlParam('time') || getCurrentTimeHHMM();
+      if (getUrlParam('duration')) bkDuration.value = getUrlParam('duration');
+      if (getUrlParam('language') && getUrlParam('language') !== 'all') bkLanguage.value = getUrlParam('language');
+
+      const rate = Number(guide.hourlyRate || 25);
+      async function refreshPricingAndAvailability() {
+        const hrs = Number(bkDuration.value || 2);
+        const price = Math.round(rate * hrs * 100) / 100;
+        const fee = Math.round(price * 0.15 * 100) / 100;
+        const total = Math.round((price + fee) * 100) / 100;
+
+        document.getElementById('ckRate').textContent = formatCurrency(rate);
+        document.getElementById('ckPrice').textContent = formatCurrency(price);
+        document.getElementById('ckFee').textContent = formatCurrency(fee);
+        document.getElementById('ckTotal').textContent = formatCurrency(total);
+
+        const av = await checkGuideAvailability(guide, bkDate.value, bkTime.value, hrs);
+        const alertEl = document.getElementById('availabilityAlert');
+        const btn = document.getElementById('confirmRequestBtn');
+        if (av.available) {
+          alertEl.textContent = t('booking.slotAvailable');
+          alertEl.style.color = 'var(--success)';
+          btn.disabled = false;
+        } else {
+          alertEl.textContent = t('booking.errGuideUnavailable');
+          alertEl.style.color = 'var(--danger)';
+          btn.disabled = true;
+        }
+      }
+
+      [bkDate, bkTime, bkDuration].forEach(el => el.addEventListener('change', refreshPricingAndAvailability));
+      await refreshPricingAndAvailability();
+
+      document.getElementById('confirmRequestBtn').addEventListener('click', async () => {
+        const user = getCurrentUser();
+        if (!user) return;
+        const btn = document.getElementById('confirmRequestBtn');
+        btn.disabled = true;
+        try {
+          const booking = await createBooking({
+            guideId: guide.id,
+            guideName: guide.name,
+            touristId: user.uid,
+            touristName: `${user.firstName || 'Traveler'} ${user.lastName || ''}`.trim(),
+            location: bkLocation.value.trim() || guide.city || 'Giza',
+            destination: getUrlParam('destination') || bkLocation.value.trim(),
+            date: bkDate.value,
+            startTime: bkTime.value,
+            durationHours: Number(bkDuration.value || 2),
+            language: bkLanguage.value,
+            specialty: getUrlParam('specialty') || 'History',
+            guests: Number(document.getElementById('bkGuests').value || 1),
+            hourlyRate: rate,
+            bookingType: getUrlParam('type') || 'scheduled'
+          });
+          showToast(t('booking.bookingConfirmedToast'), 'success');
+          window.location.href = `./booking.html?id=${encodeURIComponent(booking.id)}`;
+        } catch (err) {
+          showToast(err.message, 'error');
+          btn.disabled = false;
+        }
       });
+    }
+
+    document.getElementById('trCancelBtn').addEventListener('click', async () => {
+      if (!activeBooking) return;
+      const ok = await confirmModal({
+        title: t('booking.cancelConfirmTitle'),
+        message: t('booking.cancelConfirmPrompt'),
+        danger: true
+      });
+      if (!ok) return;
+      const user = getCurrentUser();
+      await cancelBooking(activeBooking.id, user?.uid);
+      showToast(t('booking.bookingCancelledToast'), 'info');
     });
 
-    document.getElementById('retryInstantBtn').addEventListener('click', async () => {
-      if (!currentBooking || !activeUser) return;
-      const res = await retryInstantBooking(currentBooking.id, activeUser.uid);
+    document.getElementById('trDisputeBtn').addEventListener('click', async () => {
+      if (!activeBooking) return;
+      const ok = await confirmModal({
+        title: t('booking.disputeConfirmTitle'),
+        message: t('booking.disputeConfirmPrompt'),
+        danger: true
+      });
+      if (!ok) return;
+      const user = getCurrentUser();
+      await openDispute(activeBooking.id, user?.uid);
+      showToast(t('booking.disputeOpenedToast'), 'info');
+    });
+
+    document.getElementById('trRetryBtn').addEventListener('click', async () => {
+      if (!activeBooking) return;
+      const user = getCurrentUser();
+      const res = await retryInstantBooking(activeBooking.id, user?.uid);
       if (res.outcome === 'dispatched') {
         showToast(t('booking.bookingRequestSentToast'), 'success');
       } else {
-        showToast(t('booking.noGuideAvailableTitle'), 'error');
-      }
-    });
-
-    document.getElementById('cancelBookingBtn').addEventListener('click', async () => {
-      if (!currentBooking || !activeUser) return;
-      if (confirm(t('booking.cancelConfirmPrompt'))) {
-        await cancelBooking(currentBooking.id, activeUser.uid, 'Cancelled by tourist');
-        showToast(t('booking.bookingCancelledToast'), 'info');
-      }
-    });
-
-    document.getElementById('disputeBookingBtn').addEventListener('click', async () => {
-      if (!currentBooking || !activeUser) return;
-      if (confirm(t('booking.disputeConfirmPrompt'))) {
-        await openDispute(currentBooking.id, activeUser.uid, 'Tourist reported issue');
-        showToast(t('booking.disputeOpenedToast'), 'info');
+        showToast(t('booking.noGuideAvailableTitle'), 'info');
       }
     });
 
     document.getElementById('reviewForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      if (!currentBooking || !activeUser) return;
+      if (!activeBooking) return;
+      const user = getCurrentUser();
       await submitReview({
-        bookingId: currentBooking.id,
-        guideId: currentBooking.guideId,
-        touristId: activeUser.uid,
-        touristName: currentBooking.touristName || activeUser.email,
-        rating: Number(document.getElementById('reviewRatingSelect').value),
-        comment: document.getElementById('reviewCommentInput').value
+        bookingId: activeBooking.id,
+        guideId: activeBooking.guideId,
+        touristId: user.uid,
+        touristName: `${user.firstName || 'Traveler'} ${user.lastName || ''}`.trim(),
+        rating: document.getElementById('revRating').value,
+        comment: document.getElementById('revComment').value
       });
       showToast(t('booking.reviewSubmittedToast'), 'success');
+      document.getElementById('reviewCard').style.display = 'none';
     });
 
-    document.getElementById('callGuideBtn').addEventListener('click', () => {
-      showToast(t('toasts.contactRelay', { name: currentBooking?.guideName || '' }), 'info');
-    });
-
-    document.getElementById('chatGuideBtn').addEventListener('click', () => {
-      showToast(t('toasts.chatOpened', { name: currentBooking?.guideName || '' }), 'info');
+    onAuthReady(async (user) => {
+      if (!user) return;
+      if (bookingIdParam) {
+        const b = await getBookingById(bookingIdParam);
+        if (!b) {
+          document.getElementById('notFoundState').style.display = 'block';
+          return;
+        }
+        renderTracking(b);
+        unsubscribe = subscribeToBooking(bookingIdParam, (updated) => {
+          if (updated) renderTracking(updated);
+        });
+      } else if (guideIdParam) {
+        await initCreateMode(guideIdParam);
+      } else {
+        document.getElementById('notFoundState').style.display = 'block';
+      }
     });
 
     document.addEventListener('tourguide:langchange', () => {
-      if (currentBooking) renderBooking(currentBooking);
+      if (activeBooking) renderTracking(activeBooking);
     });
   </script>
 </body>

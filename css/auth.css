@@ -1,164 +1,253 @@
-/* ==========================================================================
-   TourGuide — Authentication Stylesheet (Login & Registration)
-   Minimalist, Trust-focused, No Clutter
-   ========================================================================== */
+/* TourGuide Authentication Pages — Mobile-First (360px+) + Split Desktop */
 
-.auth-wrapper {
-  min-height: calc(100dvh - var(--header-height));
+.auth-body {
+  background: var(--bg-canvas);
+  min-height: 100dvh;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: var(--space-6) var(--space-4);
+  flex-direction: column;
 }
 
-.auth-card {
-  width: 100%;
-  max-width: 440px;
-  background: var(--bg-surface);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-xl);
-  padding: var(--space-8) var(--space-6);
-  box-shadow: var(--shadow-card);
-}
-
-@media (min-width: 480px) {
-  .auth-card {
-    padding: var(--space-10) var(--space-8);
-  }
-}
-
-.auth-header {
-  margin-bottom: var(--space-6);
-  text-align: center;
-}
-
-.auth-title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  color: var(--primary);
-  margin-bottom: var(--space-2);
-}
-
-.auth-subtitle {
-  font-size: 0.875rem;
-  color: var(--text-muted);
-}
-
-/* Role Selector Tabs (Tourist vs Guide) */
-.role-selector {
+.auth-shell {
+  flex: 1;
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-2);
-  background: var(--bg-subtle);
-  padding: 4px;
-  border-radius: var(--radius-md);
-  margin-bottom: var(--space-6);
+  grid-template-columns: 1fr;
 }
 
-.role-tab {
-  padding: 10px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  border-radius: var(--radius-sm);
-  text-align: center;
-  color: var(--text-muted);
-  transition: all 150ms ease;
+/* Visual Panel: Compact top strip on mobile, full-height left column on desktop */
+.auth-visual {
+  display: none;
 }
 
-.role-tab.active {
-  background: var(--bg-surface);
-  color: var(--text-primary);
-  box-shadow: var(--shadow-subtle);
-}
-
-/* Social Login Button */
-.btn-google {
-  background: var(--bg-surface);
-  color: var(--text-primary);
-  border: 1px solid var(--border-color);
-  width: 100%;
+.auth-mobile-bar {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 10px;
-  font-weight: 600;
-  font-size: 0.9rem;
-  min-height: 44px;
-  border-radius: var(--radius-md);
-  margin-bottom: var(--space-5);
-  transition: all 150ms ease;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-color);
 }
 
-.btn-google:hover {
-  background: var(--bg-subtle);
-  border-color: var(--border-hover);
+.auth-form-panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  padding: 24px 16px 36px;
+  width: 100%;
+  max-width: 480px;
+  margin-inline: auto;
 }
 
-.btn-google svg {
-  width: 18px;
-  height: 18px;
+.auth-card-head {
+  margin-bottom: 20px;
+}
+
+.auth-card-head h1 {
+  font-size: 1.625rem;
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+
+.auth-card-head p {
+  font-size: 0.9375rem;
+  color: var(--text-secondary);
 }
 
 .auth-divider {
   display: flex;
   align-items: center;
-  text-align: center;
-  margin-block: var(--space-5);
-  color: var(--text-light);
-  font-size: 0.8rem;
-  font-weight: 500;
+  gap: 12px;
+  margin-block: 18px;
+  color: var(--text-muted);
+  font-size: 0.8125rem;
+  font-weight: 600;
 }
 
 .auth-divider::before,
 .auth-divider::after {
   content: '';
   flex: 1;
-  border-bottom: 1px solid var(--border-color);
+  height: 1px;
+  background: var(--border-color);
 }
 
-.auth-divider span {
-  padding-inline: var(--space-3);
-}
-
-/* Remember me & forgot password */
-.form-options {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: var(--space-5);
-  font-size: 0.825rem;
-}
-
-.checkbox-label {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--text-secondary);
-  cursor: pointer;
-}
-
-.forgot-link {
-  color: var(--accent);
-  font-weight: 500;
-}
-
-.forgot-link:hover {
-  text-decoration: underline;
-}
-
-.auth-footer {
-  margin-top: var(--space-6);
-  text-align: center;
-  font-size: 0.85rem;
-  color: var(--text-muted);
-}
-
-.auth-footer a {
-  color: var(--primary);
+.btn-google {
+  width: 100%;
+  min-height: 46px;
+  background: var(--bg-surface);
+  color: var(--text-main);
+  border: 1px solid var(--border-strong);
   font-weight: 600;
 }
 
-.auth-footer a:hover {
+.btn-google:hover:not(:disabled) {
+  background: var(--bg-subtle);
+}
+
+.auth-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.auth-link {
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 0.875rem;
+  background: none;
+  border: none;
+  padding: 6px 0;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.auth-link:hover {
   text-decoration: underline;
+}
+
+.auth-switch-line {
+  margin-top: 18px;
+  text-align: center;
+  font-size: 0.9375rem;
+  color: var(--text-secondary);
+}
+
+/* Registration Step 1: Role Choice */
+.role-choice-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.role-choice-card {
+  width: 100%;
+  text-align: start;
+  padding: 18px;
+  border: 1.5px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--bg-surface);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.role-choice-card:hover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.role-choice-card strong {
+  font-family: var(--font-display);
+  font-size: 1.0625rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.role-choice-card span {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.reg-step-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+/* Guide Verification Pending State */
+.submitted-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 24px 20px;
+  text-align: start;
+}
+
+.submitted-card h2 {
+  font-size: 1.375rem;
+  font-weight: 800;
+  margin: 12px 0 8px;
+}
+
+.submitted-card p {
+  color: var(--text-secondary);
+  font-size: 0.9375rem;
+  margin-bottom: 20px;
+}
+
+@media (min-width: 1024px) {
+  .auth-shell {
+    grid-template-columns: 1fr 1fr;
+    min-height: 100dvh;
+  }
+
+  .auth-mobile-bar {
+    display: none;
+  }
+
+  .auth-visual {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 36px 40px;
+    color: #ffffff;
+    background: #0f172a;
+    overflow: hidden;
+  }
+
+  .auth-visual-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .auth-visual-scrim {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(15, 23, 42, 0.65) 0%, rgba(15, 23, 42, 0.86) 100%);
+  }
+
+  .auth-visual-top,
+  .auth-visual-bottom {
+    position: relative;
+    z-index: 2;
+  }
+
+  .auth-visual-top .brand-wordmark {
+    color: #ffffff;
+  }
+
+  .auth-visual-bottom h2 {
+    color: #ffffff;
+    font-size: 2rem;
+    font-weight: 800;
+    line-height: 1.2;
+    margin-bottom: 10px;
+    max-width: 420px;
+  }
+
+  .auth-visual-bottom p {
+    color: #cbd5e1;
+    font-size: 1rem;
+    max-width: 420px;
+  }
+
+  .auth-form-panel {
+    justify-content: center;
+    padding: 40px 32px;
+    max-width: 500px;
+  }
 }

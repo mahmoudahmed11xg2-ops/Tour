@@ -185,6 +185,36 @@
         "notes": { "type": "string", "maxLength": 500 }
       },
       "required": ["action", "timestamp"]
+    },
+    "Message": {
+      "title": "Message",
+      "description": "Real-time chat message between tourist and assigned guide for a booking.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 64 },
+        "bookingId": { "type": "string", "maxLength": 64 },
+        "touristId": { "type": "string", "maxLength": 128 },
+        "guideId": { "type": "string", "maxLength": 128 },
+        "senderId": { "type": "string", "maxLength": 128 },
+        "senderRole": { "type": "string", "enum": ["tourist", "guide", "admin"] },
+        "senderName": { "type": "string", "maxLength": 150 },
+        "text": { "type": "string", "maxLength": 1000 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "bookingId", "touristId", "guideId", "senderId", "text", "createdAt"]
+    },
+    "PlatformSettings": {
+      "title": "PlatformSettings",
+      "description": "Platform operational configuration managed by administrators.",
+      "type": "object",
+      "properties": {
+        "commissionPercent": { "type": "number" },
+        "freeCancellationHours": { "type": "number" },
+        "supportEmail": { "type": "string", "maxLength": 150 },
+        "supportPhone": { "type": "string", "maxLength": 40 },
+        "instantDispatchEnabled": { "type": "boolean" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      }
     }
   },
   "firestore": {
@@ -215,6 +245,14 @@
     "/auditLogs/{logId}": {
       "schema": { "$ref": "#/entities/AuditLog" },
       "description": "Administrative audit trail."
+    },
+    "/messages/{messageId}": {
+      "schema": { "$ref": "#/entities/Message" },
+      "description": "Booking-scoped chat messages between tourist and guide."
+    },
+    "/settings/{settingId}": {
+      "schema": { "$ref": "#/entities/PlatformSettings" },
+      "description": "Platform operational settings."
     }
   }
 }

@@ -2,236 +2,270 @@
 <html lang="en" dir="ltr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Admin Operations Console — TourGuide</title>
-  <link rel="stylesheet" href="/css/global.css">
-  <link rel="stylesheet" href="/css/admin.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="app-root" content="../">
+  <title>Admin Dashboard | TourGuide</title>
+  <link rel="stylesheet" href="../css/global.css">
+  <link rel="stylesheet" href="../css/admin.css">
 </head>
-<body>
+<body class="protected-page">
 
-  <!-- Top Header Navigation -->
-  <header class="site-header">
-    <div class="app-container header-inner">
-      <a href="/admin/index.html" class="brand-logo">
-        <div class="brand-icon" style="background: #1e40af;">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+  <!-- Mobile Admin Header -->
+  <header class="site-header admin-mobile-header">
+    <div class="header-inner">
+      <div class="header-left">
+        <button type="button" id="mobileMenuToggle" class="hamburger-btn" aria-label="Menu" aria-expanded="false" aria-controls="mobileDrawer">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
           </svg>
-        </div>
-        <span>TourGuide</span>
-        <span class="brand-badge" style="color: #1e40af;" data-i18n="brand.adminBadge">ADMIN</span>
-      </a>
-
-      <nav class="nav-links">
-        <a href="/admin/index.html" class="nav-link active" data-i18n="nav.dashboard">Dashboard</a>
-        <a href="/admin/guides.html" class="nav-link" data-i18n="nav.guides">Guides & Verification</a>
-        <a href="/admin/bookings.html" class="nav-link" data-i18n="nav.bookings">Bookings</a>
-        <a href="/admin/users.html" class="nav-link" data-i18n="nav.users">Users</a>
-        <a href="/admin/payments.html" class="nav-link" data-i18n="nav.payments">Payments</a>
-        <a href="/admin/reports.html" class="nav-link" data-i18n="nav.reports">Reports</a>
-        <a href="/tourist/index.html" class="nav-link" style="color: var(--text-muted);" data-i18n="nav.touristView">Tourist View</a>
-      </nav>
-
-      <div class="header-actions"></div>
+        </button>
+        <a href="./index.html" class="brand-wordmark">
+          <span class="brand-mark" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
+              <circle cx="12" cy="10" r="3"></circle>
+              <path d="M12 21.7C17.3 17 20 13 20 10a8 8 0 1 0-16 0c0 3 2.7 6.9 8 11.7z"></path>
+            </svg>
+          </span>
+          <span data-i18n="brand.name">TourGuide</span>
+        </a>
+      </div>
+      <div class="header-actions">
+        <button type="button" class="lang-toggle-btn" aria-label="Toggle language">
+          <span class="lang-label">العربية</span>
+        </button>
+      </div>
     </div>
   </header>
 
-  <main class="main-content">
-    <div class="app-container">
+  <div id="mobileDrawerBackdrop" class="mobile-drawer-backdrop"></div>
+  <aside id="mobileDrawer" class="mobile-drawer" aria-hidden="true">
+    <div class="drawer-header">
+      <strong class="brand-wordmark" data-i18n="brand.adminBadge">Admin</strong>
+      <button type="button" id="mobileDrawerClose" class="drawer-close-btn" aria-label="Close">&times;</button>
+    </div>
+    <nav class="drawer-nav" aria-label="Admin Mobile Drawer">
+      <a href="./index.html" class="drawer-link active" data-i18n="nav.dashboard">Dashboard</a>
+      <a href="./users.html" class="drawer-link" data-i18n="nav.users">Users</a>
+      <a href="./guides.html" class="drawer-link" data-i18n="nav.guides">Guides</a>
+      <a href="./bookings.html" class="drawer-link" data-i18n="nav.bookings">Bookings</a>
+      <a href="./payments.html" class="drawer-link" data-i18n="nav.payments">Payments</a>
+      <a href="./reports.html" class="drawer-link" data-i18n="nav.reports">Reports</a>
+      <a href="./settings.html" class="drawer-link" data-i18n="nav.settings">Settings</a>
+    </nav>
+    <div id="drawerAuthSlot" class="drawer-footer"></div>
+  </aside>
 
-      <div class="admin-header">
-        <div>
-          <h1 style="font-size: 1.6rem; font-weight: 800; color: var(--text-primary);" data-i18n="admin.dashboardTitle">Operations & Verification Console</h1>
-          <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 2px;" data-i18n="admin.dashboardSubtitle">
-            Real-time compliance, guide licensing, bookings dispatch & commission reports.
-          </p>
-        </div>
-
-        <div class="admin-nav-tabs">
-          <a href="/admin/index.html" class="admin-nav-btn active" data-i18n="nav.overview">Overview</a>
-          <a href="/admin/guides.html" class="admin-nav-btn" data-i18n="admin.verificationQueueTitle">Verification Queue</a>
-          <a href="/admin/bookings.html" class="admin-nav-btn" data-i18n="nav.bookings">Bookings</a>
-          <a href="/admin/payments.html" class="admin-nav-btn" data-i18n="nav.payments">Payments</a>
-        </div>
+  <div class="admin-shell">
+    <!-- Desktop Sidebar (Strictly Admin 7-item Nav) -->
+    <aside class="admin-sidebar" aria-label="Admin Sidebar">
+      <div class="admin-sidebar-brand">
+        <a href="./index.html" class="brand-wordmark">
+          <span class="brand-mark" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
+              <circle cx="12" cy="10" r="3"></circle>
+              <path d="M12 21.7C17.3 17 20 13 20 10a8 8 0 1 0-16 0c0 3 2.7 6.9 8 11.7z"></path>
+            </svg>
+          </span>
+          <span data-i18n="brand.name">TourGuide</span>
+        </a>
       </div>
 
-      <!-- Real KPI Numbers Grid -->
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--space-4); margin-bottom: var(--space-6);">
-        <div class="card">
-          <span style="font-size: 0.775rem; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 4px;" data-i18n="admin.activeGuides">Active Guides</span>
-          <div style="font-size: 1.75rem; font-weight: 800;" id="kpiActiveGuides">0</div>
-          <span style="font-size: 0.75rem; color: var(--success);" data-i18n="admin.approvedMarketplace">Approved on marketplace</span>
-        </div>
+      <nav class="admin-sidebar-nav">
+        <a href="./index.html" class="nav-link active" data-i18n="nav.dashboard">Dashboard</a>
+        <a href="./users.html" class="nav-link" data-i18n="nav.users">Users</a>
+        <a href="./guides.html" class="nav-link" data-i18n="nav.guides">Guides</a>
+        <a href="./bookings.html" class="nav-link" data-i18n="nav.bookings">Bookings</a>
+        <a href="./payments.html" class="nav-link" data-i18n="nav.payments">Payments</a>
+        <a href="./reports.html" class="nav-link" data-i18n="nav.reports">Reports</a>
+        <a href="./settings.html" class="nav-link" data-i18n="nav.settings">Settings</a>
+      </nav>
 
-        <div class="card">
-          <span style="font-size: 0.775rem; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 4px;" data-i18n="admin.pendingApprovals">Pending Approvals</span>
-          <div style="font-size: 1.75rem; font-weight: 800; color: var(--warning);" id="kpiPendingGuides">0</div>
-          <span style="font-size: 0.75rem; color: var(--text-muted);" data-i18n="admin.syndicateReview">Syndicate license review</span>
-        </div>
+      <div class="admin-sidebar-footer">
+        <button type="button" class="lang-toggle-btn btn-block" aria-label="Toggle language">
+          <span class="lang-label">العربية</span>
+        </button>
+        <button type="button" id="sidebarLogoutBtn" class="btn btn-outline btn-block btn-sm" data-i18n="nav.logout">Log out</button>
+      </div>
+    </aside>
 
-        <div class="card">
-          <span style="font-size: 0.775rem; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 4px;" data-i18n="admin.platformVolume">Platform Commission (15%)</span>
-          <div style="font-size: 1.75rem; font-weight: 800; color: var(--primary);" id="kpiCommission">$0.00</div>
-          <span style="font-size: 0.75rem; color: var(--text-muted);" data-i18n="admin.escrowCommissions">Net commission revenue</span>
-        </div>
-
-        <div class="card">
-          <span style="font-size: 0.775rem; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 4px;" data-i18n="admin.activeRides">Active Tours</span>
-          <div style="font-size: 1.75rem; font-weight: 800; color: var(--success);" id="kpiActiveTours">0</div>
-          <span style="font-size: 0.75rem; color: var(--success);" data-i18n="admin.inProgressDispatched">In-progress & dispatched</span>
-        </div>
+    <main class="admin-main">
+      <div class="page-header">
+        <h1 class="page-title" data-i18n="admin.dashboardTitle">Operations Dashboard</h1>
+        <p class="page-subtitle" data-i18n="admin.dashboardSubtitle">Guide verification, bookings pipeline, payments, and platform settings.</p>
       </div>
 
-      <!-- Guide Verification Queue -->
-      <section class="card" style="margin-bottom: var(--space-6);">
+      <section class="admin-kpi-grid">
+        <div class="card">
+          <div class="form-hint" data-i18n="admin.activeGuides">Verified Guides</div>
+          <div id="kpiVerified" class="tabular-nums" style="font-size:1.75rem; font-weight:800;">0</div>
+          <div class="form-hint" data-i18n="admin.approvedMarketplace">Live in marketplace</div>
+        </div>
+        <div class="card">
+          <div class="form-hint" data-i18n="admin.pendingApprovals">Pending Approvals</div>
+          <div id="kpiPending" class="tabular-nums" style="font-size:1.75rem; font-weight:800;">0</div>
+          <div class="form-hint" data-i18n="admin.syndicateReview">Awaiting review</div>
+        </div>
+        <div class="card">
+          <div class="form-hint" data-i18n="admin.platformVolume">Platform Fees (15%)</div>
+          <div id="kpiVolume" class="tabular-nums" style="font-size:1.75rem; font-weight:800;">$0</div>
+          <div class="form-hint" data-i18n="admin.escrowCommissions">Commission revenue</div>
+        </div>
+        <div class="card">
+          <div class="form-hint" data-i18n="admin.activeRides">Active Tours</div>
+          <div id="kpiActive" class="tabular-nums" style="font-size:1.75rem; font-weight:800;">0</div>
+          <div class="form-hint" data-i18n="admin.inProgressDispatched">Live &amp; dispatched</div>
+        </div>
+      </section>
+
+      <section class="card" style="margin-bottom:20px;">
         <div class="card-header">
           <div>
-            <h2 class="card-title" data-i18n="admin.verificationQueueTitle">Guide License Verification Queue</h2>
-            <span style="font-size: 0.8rem; color: var(--text-muted);" data-i18n="admin.verificationQueueSubtitle">Review government syndicate credentials before marketplace approval</span>
+            <h2 class="card-title" data-i18n="admin.verificationQueueTitle">Verification Queue</h2>
+            <p class="form-hint" data-i18n="admin.verificationQueueSubtitle">Review submitted guide applications before public listing</p>
           </div>
+          <span id="pendingBadge" class="status-label status-warning tabular-nums">0</span>
         </div>
-
-        <div id="verificationQueueList"></div>
+        <div id="verificationQueue" class="queue-list"></div>
       </section>
 
-      <!-- Recent Live Bookings Pipeline -->
       <section class="card">
         <div class="card-header">
-          <h2 class="card-title" data-i18n="admin.allBookingsTitle">Marketplace Bookings Pipeline</h2>
-          <a href="/admin/bookings.html" class="btn btn-outline btn-sm" data-i18n="explore.viewAll">View All</a>
+          <h2 class="card-title" data-i18n="admin.allBookingsTitle">Bookings</h2>
+          <a href="./bookings.html" class="btn btn-outline btn-sm" data-i18n="explore.viewAll">View All</a>
         </div>
-
-        <div class="table-responsive">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th data-i18n="admin.bookingIdCol">Booking ID</th>
-                <th data-i18n="admin.touristCol">Tourist</th>
-                <th data-i18n="admin.guideCol">Guide</th>
-                <th data-i18n="admin.locationCol">Location</th>
-                <th data-i18n="admin.totalCol">Total</th>
-                <th data-i18n="admin.feeCol">Commission (15%)</th>
-                <th data-i18n="admin.statusCol">Status</th>
-              </tr>
-            </thead>
-            <tbody id="bookingsTableBody"></tbody>
-          </table>
-        </div>
+        <div id="recentBookingsWrap"></div>
       </section>
+    </main>
+  </div>
 
-    </div>
-  </main>
-
+  <script type="module" src="../js/nav.js"></script>
   <script type="module">
-    import { db, COLLECTIONS } from '/js/firebase.js';
-    import { updateGuideVerification } from '/js/guides.js';
-    import { ACTIVE_OPERATIONAL_STATUSES } from '/js/booking.js';
-    import { showToast, t, getLocalizedStatus, formatCurrency } from '/js/utils.js';
-    import { enforceRouteProtection, onAuthReady } from '/js/auth.js';
+    import { enforceRouteProtection, logout, onAuthReady } from '../js/auth.js';
+    import { db, COLLECTIONS } from '../js/firebase.js';
+    import { fetchGuides, updateGuideVerification } from '../js/guides.js';
+    import { ACTIVE_OPERATIONAL_STATUSES } from '../js/booking.js';
+    import { applyTranslations, setupLanguageToggle, showToast, t, formatCurrency, getLocalizedStatus, escapeHtml } from '../js/utils.js';
 
     enforceRouteProtection({ allowedRoles: ['admin'] });
+    applyTranslations();
+    setupLanguageToggle();
+    document.getElementById('sidebarLogoutBtn')?.addEventListener('click', logout);
 
-    async function loadAdminData() {
-      const [guides, bookings] = await Promise.all([
-        db.getCollection(COLLECTIONS.GUIDES),
-        db.getCollection(COLLECTIONS.BOOKINGS)
-      ]);
+    let guidesCache = [];
+    let bookingsCache = [];
 
-      const pending = guides.filter(g => g.verificationStatus === 'pending' || g.verificationStatus === 'under_review');
-      const verified = guides.filter(g => g.verificationStatus === 'approved');
-      const activeTours = bookings.filter(b => ACTIVE_OPERATIONAL_STATUSES.includes(b.status) || b.status === 'pending');
-      const totalCommission = bookings
-        .filter(b => !['cancelled', 'rejected', 'expired', 'refunded'].includes(b.status))
+    function renderDashboard() {
+      const verifiedCount = guidesCache.filter(g => g.verificationStatus === 'approved').length;
+      const pendingGuides = guidesCache.filter(g => g.verificationStatus !== 'approved');
+      const activeCount = bookingsCache.filter(b => ACTIVE_OPERATIONAL_STATUSES.includes(b.status) || b.status === 'pending').length;
+      const feesTotal = bookingsCache
+        .filter(b => b.status === 'completed' || b.status === 'confirmed')
         .reduce((sum, b) => sum + Number(b.platformFee || 0), 0);
 
-      document.getElementById('kpiActiveGuides').textContent = String(verified.length);
-      document.getElementById('kpiPendingGuides').textContent = String(pending.length);
-      document.getElementById('kpiCommission').textContent = formatCurrency(totalCommission.toFixed(2));
-      document.getElementById('kpiActiveTours').textContent = String(activeTours.length);
+      document.getElementById('kpiVerified').textContent = String(verifiedCount);
+      document.getElementById('kpiPending').textContent = String(pendingGuides.length);
+      document.getElementById('kpiVolume').textContent = formatCurrency(Math.round(feesTotal * 100) / 100);
+      document.getElementById('kpiActive').textContent = String(activeCount);
+      document.getElementById('pendingBadge').textContent = t('admin.pendingReviewCount', { count: pendingGuides.length });
 
-      const queueContainer = document.getElementById('verificationQueueList');
-      if (pending.length === 0) {
-        queueContainer.innerHTML = `
-          <div class="empty-state" style="padding: var(--space-6);">
-            <div class="empty-state-title" style="color: var(--success);">${t('admin.queueClearTitle')}</div>
-            <div class="empty-state-desc">${t('admin.queueClearDesc')}</div>
+      const queueEl = document.getElementById('verificationQueue');
+      if (!pendingGuides.length) {
+        queueEl.innerHTML = `
+          <div class="empty-state">
+            <h3>${escapeHtml(t('admin.queueClearTitle'))}</h3>
+            <p>${escapeHtml(t('admin.queueClearDesc'))}</p>
           </div>
         `;
       } else {
-        queueContainer.innerHTML = pending.map(g => `
-          <div class="verification-card">
-            <div class="verification-meta">
-              <img src="${g.avatar}" alt="${g.name}" style="width: 56px; height: 56px; border-radius: var(--radius-md); object-fit: cover;">
-              <div>
-                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                  <h3 style="font-size: 1rem; font-weight: 700;">${g.name}</h3>
-                  <span class="badge badge-pending">${getLocalizedStatus(g.verificationStatus || 'pending', 'guide')}</span>
-                </div>
-                <span style="font-size: 0.8rem; color: var(--text-muted); display: block;">
-                  ${t('admin.locationCol')}: ${g.city || 'Cairo'} · ${g.experienceYears || 1} ${t('search.yearsExp')} · ${Array.isArray(g.languages) ? g.languages.join(', ') : g.languages}
-                </span>
-                <span style="font-size: 0.775rem; color: var(--accent); font-weight: 600;">
-                  ${t('admin.submittedDocument')}
-                </span>
+        queueEl.innerHTML = pendingGuides.map(g => `
+          <div class="queue-card">
+            <div>
+              <strong>${escapeHtml(g.name || 'Guide')}</strong>
+              <div class="meta-inline">
+                <span>${escapeHtml(g.city || 'Egypt')}</span>
+                <span class="meta-sep">&middot;</span>
+                <span>${escapeHtml(Array.isArray(g.languages) ? g.languages.join(', ') : '')}</span>
+                <span class="meta-sep">&middot;</span>
+                <span>${escapeHtml(g.email || '')}</span>
               </div>
+              <div class="form-hint">${escapeHtml(t('admin.submittedDocument'))}</div>
             </div>
-
-            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-              <button class="btn btn-outline btn-sm request-changes-btn" data-guide-id="${g.id}">${t('admin.requestChanges')}</button>
-              <button class="btn btn-outline btn-sm reject-guide-btn" data-guide-id="${g.id}" style="color: var(--error); border-color: var(--error-border);">${t('admin.reject')}</button>
-              <button class="btn btn-primary btn-sm approve-guide-btn" data-guide-id="${g.id}" style="background: var(--success);">${t('admin.approveLicense')}</button>
+            <div class="queue-actions">
+              <button type="button" class="btn btn-primary btn-sm" data-approve="${escapeHtml(g.id)}">${escapeHtml(t('admin.approveLicense'))}</button>
+              <button type="button" class="btn btn-outline btn-sm" data-review="${escapeHtml(g.id)}">${escapeHtml(t('admin.requestChanges'))}</button>
+              <button type="button" class="btn btn-danger btn-sm" data-reject="${escapeHtml(g.id)}">${escapeHtml(t('admin.reject'))}</button>
             </div>
           </div>
         `).join('');
 
-        document.querySelectorAll('.approve-guide-btn').forEach(btn => {
-          btn.addEventListener('click', async (e) => {
-            const guideId = e.currentTarget.getAttribute('data-guide-id');
-            await updateGuideVerification(guideId, 'approved', 'License verified with Egyptian syndicate registry.');
+        queueEl.querySelectorAll('[data-approve]').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            await updateGuideVerification(btn.dataset.approve, 'approved');
             showToast(t('toasts.guideApproved'), 'success');
-            await loadAdminData();
+            await reload();
           });
         });
-
-        document.querySelectorAll('.reject-guide-btn').forEach(btn => {
-          btn.addEventListener('click', async (e) => {
-            const guideId = e.currentTarget.getAttribute('data-guide-id');
-            await updateGuideVerification(guideId, 'rejected', 'Syndicate verification check failed.');
-            showToast(t('toasts.guideRejected'), 'error');
-            await loadAdminData();
-          });
-        });
-
-        document.querySelectorAll('.request-changes-btn').forEach(btn => {
-          btn.addEventListener('click', async (e) => {
-            const guideId = e.currentTarget.getAttribute('data-guide-id');
-            await updateGuideVerification(guideId, 'under_review', 'Requested higher resolution image of syndicate license card.');
+        queueEl.querySelectorAll('[data-review]').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            await updateGuideVerification(btn.dataset.review, 'under_review');
             showToast(t('toasts.guideChangesRequested'), 'info');
-            await loadAdminData();
+            await reload();
+          });
+        });
+        queueEl.querySelectorAll('[data-reject]').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            await updateGuideVerification(btn.dataset.reject, 'rejected');
+            showToast(t('toasts.guideRejected'), 'info');
+            await reload();
           });
         });
       }
 
-      const sorted = [...bookings].sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
-      const tbody = document.getElementById('bookingsTableBody');
-      tbody.innerHTML = sorted.slice(0, 6).map(b => `
-        <tr>
-          <td style="font-family: monospace; font-weight: 700;">${b.id}</td>
-          <td>${b.touristName || ''}</td>
-          <td>${b.guideName || ''}</td>
-          <td>${b.location || ''}</td>
-          <td style="font-weight: 700;">${formatCurrency(Number(b.total || 0).toFixed(2), b.currency || 'USD')}</td>
-          <td style="color: var(--success); font-weight: 700;">${formatCurrency(Number(b.platformFee || 0).toFixed(2), b.currency || 'USD')}</td>
-          <td><span class="badge ${b.status === 'completed' ? 'badge-gray' : b.status === 'rejected' || b.status === 'cancelled' ? 'badge-error' : 'badge-online'}">${getLocalizedStatus(b.status)}</span></td>
-        </tr>
-      `).join('');
+      const recent = bookingsCache.slice(0, 8);
+      document.getElementById('recentBookingsWrap').innerHTML = `
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>${escapeHtml(t('admin.bookingIdCol'))}</th>
+                <th>${escapeHtml(t('admin.touristCol'))}</th>
+                <th>${escapeHtml(t('admin.guideCol'))}</th>
+                <th>${escapeHtml(t('admin.totalCol'))}</th>
+                <th>${escapeHtml(t('admin.statusCol'))}</th>
+                <th>${escapeHtml(t('admin.actionCol'))}</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${recent.map(b => `
+                <tr>
+                  <td class="tabular-nums">#${escapeHtml(b.id)}</td>
+                  <td>${escapeHtml(b.touristName || '')}</td>
+                  <td>${escapeHtml(b.guideName || '')}</td>
+                  <td class="tabular-nums">${formatCurrency(b.total || 0, b.currency || 'USD')}</td>
+                  <td><span class="status-label status-neutral">${escapeHtml(getLocalizedStatus(b.status))}</span></td>
+                  <td><a href="../tourist/booking.html?id=${encodeURIComponent(b.id)}" class="btn btn-outline btn-sm">${escapeHtml(t('admin.inspectRide'))}</a></td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
     }
 
-    document.addEventListener('tourguide:langchange', loadAdminData);
+    async function reload() {
+      guidesCache = await fetchGuides();
+      bookingsCache = await db.getCollection(COLLECTIONS.BOOKINGS);
+      bookingsCache.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+      renderDashboard();
+    }
+
     onAuthReady((user) => {
-      if (user) loadAdminData();
+      if (user) reload();
     });
+
+    document.addEventListener('tourguide:langchange', renderDashboard);
   </script>
 </body>
 </html>

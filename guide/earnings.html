@@ -2,146 +2,200 @@
 <html lang="en" dir="ltr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Guide Earnings — TourGuide</title>
-  <link rel="stylesheet" href="/css/global.css">
-  <link rel="stylesheet" href="/css/guide.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="app-root" content="../">
+  <title>Earnings | TourGuide</title>
+  <link rel="stylesheet" href="../css/global.css">
+  <link rel="stylesheet" href="../css/guide.css">
 </head>
-<body>
+<body class="protected-page">
 
-  <!-- Top Header Navigation -->
   <header class="site-header">
-    <div class="app-container header-inner">
-      <a href="/guide/index.html" class="brand-logo">
-        <div class="brand-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <circle cx="12" cy="12" r="10"></circle>
-            <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
+    <div class="header-inner">
+      <div class="header-left">
+        <button type="button" id="mobileMenuToggle" class="hamburger-btn" aria-label="Menu" aria-expanded="false" aria-controls="mobileDrawer">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
           </svg>
-        </div>
-        <span>TourGuide</span>
-        <span class="brand-badge" data-i18n="brand.captainBadge">CAPTAIN</span>
-      </a>
+        </button>
+        <a href="./index.html" class="brand-wordmark">
+          <span class="brand-mark" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
+              <circle cx="12" cy="10" r="3"></circle>
+              <path d="M12 21.7C17.3 17 20 13 20 10a8 8 0 1 0-16 0c0 3 2.7 6.9 8 11.7z"></path>
+            </svg>
+          </span>
+          <span data-i18n="brand.name">TourGuide</span>
+        </a>
+      </div>
 
-      <nav class="nav-links">
-        <a href="/guide/index.html" class="nav-link" data-i18n="nav.overview">Overview</a>
-        <a href="/guide/requests.html" class="nav-link" data-i18n="nav.requests">Requests</a>
-        <a href="/guide/calendar.html" class="nav-link" data-i18n="nav.calendar">Calendar</a>
-        <a href="/guide/earnings.html" class="nav-link active" data-i18n="nav.earnings">Earnings</a>
-        <a href="/guide/profile.html" class="nav-link" data-i18n="nav.profile">Profile</a>
+      <nav class="header-nav" aria-label="Guide Navigation">
+        <a href="./index.html" class="nav-link" data-i18n="nav.home">Home</a>
+        <a href="./requests.html" class="nav-link" data-i18n="nav.requests">Requests</a>
+        <a href="./calendar.html" class="nav-link" data-i18n="nav.calendar">Calendar</a>
+        <a href="./earnings.html" class="nav-link active" data-i18n="nav.earnings">Earnings</a>
+        <a href="./messages.html" class="nav-link" data-i18n="nav.messages">Messages</a>
+        <a href="./profile.html" class="nav-link" data-i18n="nav.profile">Profile</a>
       </nav>
 
-      <div class="header-actions"></div>
+      <div class="header-actions">
+        <button type="button" class="lang-toggle-btn" aria-label="Toggle language">
+          <span class="lang-label">العربية</span>
+        </button>
+      </div>
     </div>
   </header>
 
-  <main class="main-content">
-    <div class="app-container" style="max-width: 900px;">
-
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-6); flex-wrap: wrap; gap: var(--space-3);">
-        <div>
-          <h1 style="font-size: 1.5rem; font-weight: 800;" data-i18n="guide.earningsTitle">Earnings & Payouts</h1>
-          <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 2px;" data-i18n="guide.earningsSubtitle">
-            Track your completed tours, platform fee deductions, and payouts.
-          </p>
-        </div>
-        <button id="requestPayoutBtn" class="btn btn-primary btn-sm" data-i18n="guide.requestPayoutBtn">Request Payout</button>
-      </div>
-
-      <!-- Financial Metrics Grid (Real Firestore Totals) -->
-      <div class="kpi-grid">
-        <div class="kpi-card">
-          <span class="kpi-label" data-i18n="guide.availablePayout">Available for Payout</span>
-          <div class="kpi-value" id="kpiNetPayout" style="color: var(--success);">$0.00</div>
-          <span class="kpi-subtext" data-i18n="guide.directBankNotice">Direct Bank / Vodafone Cash</span>
-        </div>
-        <div class="kpi-card">
-          <span class="kpi-label" data-i18n="guide.grossBookings">Gross Bookings</span>
-          <div class="kpi-value" id="kpiGross">$0.00</div>
-          <span class="kpi-subtext" data-i18n="guide.totalTouristPayments">Total tourist payments</span>
-        </div>
-        <div class="kpi-card">
-          <span class="kpi-label" data-i18n="guide.platformFeesTitle">Platform Fees (15%)</span>
-          <div class="kpi-value" id="kpiFees">$0.00</div>
-          <span class="kpi-subtext" data-i18n="guide.infraSupport">Infrastructure & support</span>
-        </div>
-        <div class="kpi-card">
-          <span class="kpi-label" data-i18n="guide.completedTours">Completed Tours</span>
-          <div class="kpi-value" id="kpiCompletedCount">0</div>
-          <span class="kpi-subtext" data-i18n="guide.thisQuarter">Total completed</span>
-        </div>
-      </div>
-
-      <!-- Real Completed Tour Ledger -->
-      <div class="card">
-        <div class="card-header">
-          <h2 class="card-title" data-i18n="guide.completedToursBreakdown">Completed Tours Breakdown</h2>
-          <span style="font-size: 0.8rem; color: var(--text-muted);" data-i18n="guide.last30Days">All completed tours</span>
-        </div>
-
-        <div id="earningsLedgerList" style="display: grid; gap: var(--space-3);"></div>
-      </div>
-
+  <div id="mobileDrawerBackdrop" class="mobile-drawer-backdrop"></div>
+  <aside id="mobileDrawer" class="mobile-drawer" aria-hidden="true">
+    <div class="drawer-header">
+      <strong class="brand-wordmark" data-i18n="guide.consoleTitle">Guide Console</strong>
+      <button type="button" id="mobileDrawerClose" class="drawer-close-btn" aria-label="Close">&times;</button>
     </div>
+    <nav class="drawer-nav" aria-label="Guide Mobile Drawer">
+      <a href="./index.html" class="drawer-link" data-i18n="nav.home">Home</a>
+      <a href="./requests.html" class="drawer-link" data-i18n="nav.requests">Requests</a>
+      <a href="./calendar.html" class="drawer-link" data-i18n="nav.calendar">Calendar</a>
+      <a href="./earnings.html" class="drawer-link active" data-i18n="nav.earnings">Earnings</a>
+      <a href="./messages.html" class="drawer-link" data-i18n="nav.messages">Messages</a>
+      <a href="./profile.html" class="drawer-link" data-i18n="nav.profile">Profile</a>
+    </nav>
+    <div id="drawerAuthSlot" class="drawer-footer"></div>
+  </aside>
+
+  <main class="container page-main">
+    <div class="explore-toolbar">
+      <div>
+        <h1 class="page-title" data-i18n="guide.earningsTitle">Earnings</h1>
+        <p class="page-subtitle" data-i18n="guide.earningsSubtitle">Track completed tours, platform fees, and payouts.</p>
+      </div>
+      <button type="button" id="requestPayoutBtn" class="btn btn-primary btn-sm" data-i18n="guide.requestPayoutBtn">Request Payout</button>
+    </div>
+
+    <section class="guide-kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label" data-i18n="guide.availablePayout">Available Payout</div>
+        <div id="kpiAvailablePayout" class="kpi-value">$0</div>
+        <div class="kpi-sub" data-i18n="guide.directBankNotice">Bank Transfer / Mobile Wallet</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label" data-i18n="guide.grossBookings">Gross Tours</div>
+        <div id="kpiGross" class="kpi-value">$0</div>
+        <div class="kpi-sub" data-i18n="guide.totalTouristPayments">Before platform fee</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label" data-i18n="guide.platformFeesTitle">Platform Fees (15%)</div>
+        <div id="kpiFees" class="kpi-value">$0</div>
+        <div class="kpi-sub" data-i18n="guide.infraSupport">Service &amp; escrow</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label" data-i18n="guide.completedTours">Completed Tours</div>
+        <div id="kpiCompletedCount" class="kpi-value">0</div>
+        <div class="kpi-sub" data-i18n="guide.thisQuarter">All-time</div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2 class="card-title" style="margin-bottom:14px;" data-i18n="guide.completedToursBreakdown">Completed Tours Ledger</h2>
+      <div id="ledgerContainer"></div>
+    </section>
   </main>
 
+  <nav class="bottom-nav" aria-label="Guide Mobile Navigation">
+    <a href="./index.html" class="bottom-nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+      <span data-i18n="nav.home">Home</span>
+    </a>
+    <a href="./requests.html" class="bottom-nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path></svg>
+      <span data-i18n="nav.requests">Requests</span>
+    </a>
+    <a href="./calendar.html" class="bottom-nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line></svg>
+      <span data-i18n="nav.calendar">Calendar</span>
+    </a>
+    <a href="./earnings.html" class="bottom-nav-item active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+      <span data-i18n="nav.earnings">Earnings</span>
+    </a>
+    <a href="./messages.html" class="bottom-nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+      <span data-i18n="nav.messages">Messages</span>
+    </a>
+  </nav>
+
+  <script type="module" src="../js/nav.js"></script>
   <script type="module">
-    import { onAuthReady, enforceRouteProtection } from '/js/auth.js';
-    import { BOOKING_STATUS, getBookingsForGuide } from '/js/booking.js';
-    import { showToast, t, formatCurrency, formatDuration } from '/js/utils.js';
+    import { enforceRouteProtection, onAuthReady } from '../js/auth.js';
+    import { getBookingsForGuide } from '../js/booking.js';
+    import { applyTranslations, setupLanguageToggle, showToast, t, formatCurrency, escapeHtml } from '../js/utils.js';
 
     enforceRouteProtection({ allowedRoles: ['guide', 'admin'] });
+    applyTranslations();
+    setupLanguageToggle();
 
-    let completedBookings = [];
+    let completedTours = [];
 
-    function renderEarnings() {
-      const gross = completedBookings.reduce((sum, b) => sum + Number(b.price || 0), 0);
-      const fees = completedBookings.reduce((sum, b) => sum + Number(b.platformFee || 0), 0);
-      const net = Math.max(0, gross - fees);
+    function renderLedger() {
+      const net = completedTours.reduce((s, b) => s + Number(b.price || 0), 0);
+      const fees = completedTours.reduce((s, b) => s + Number(b.platformFee || 0), 0);
+      const gross = completedTours.reduce((s, b) => s + Number(b.total || 0), 0);
 
-      document.getElementById('kpiNetPayout').textContent = formatCurrency(net.toFixed(2));
-      document.getElementById('kpiGross').textContent = formatCurrency(gross.toFixed(2));
-      document.getElementById('kpiFees').textContent = formatCurrency(fees.toFixed(2));
-      document.getElementById('kpiCompletedCount').textContent = String(completedBookings.length);
+      document.getElementById('kpiAvailablePayout').textContent = formatCurrency(Math.round(net * 100) / 100);
+      document.getElementById('kpiGross').textContent = formatCurrency(Math.round(gross * 100) / 100);
+      document.getElementById('kpiFees').textContent = formatCurrency(Math.round(fees * 100) / 100);
+      document.getElementById('kpiCompletedCount').textContent = String(completedTours.length);
 
-      const ledger = document.getElementById('earningsLedgerList');
-      if (completedBookings.length === 0) {
-        ledger.innerHTML = `<p style="font-size: 0.875rem; color: var(--text-muted);">${t('guide.noCompletedToursYet')}</p>`;
+      const container = document.getElementById('ledgerContainer');
+      if (!completedTours.length) {
+        container.innerHTML = `<p class="form-hint">${escapeHtml(t('guide.noCompletedToursYet'))}</p>`;
         return;
       }
 
-      ledger.innerHTML = completedBookings.map(b => {
-        const bGross = Number(b.price || 0);
-        const bFee = Number(b.platformFee || 0);
-        const bNet = Math.max(0, bGross - bFee);
-        const cur = b.currency || 'USD';
-        return `
-          <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border-color);">
-            <div>
-              <span style="font-weight: 700; font-size: 0.95rem; display: block;">${b.location} (${b.touristName})</span>
-              <span style="font-size: 0.775rem; color: var(--text-muted);">${b.id} · ${formatDuration(b.duration)} · ${b.date}</span>
-            </div>
-            <div style="text-align: end;">
-              <span style="font-weight: 800; font-size: 1rem; color: var(--success); display: block;">+${formatCurrency(bNet.toFixed(2), cur)}</span>
-              <span style="font-size: 0.75rem; color: var(--text-muted);">${t('guide.grossLabel')}: ${formatCurrency(bGross.toFixed(2), cur)} · ${t('guide.feeLabel')}: ${formatCurrency(bFee.toFixed(2), cur)}</span>
-            </div>
-          </div>
-        `;
-      }).join('');
+      container.innerHTML = `
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>${escapeHtml(t('admin.bookingIdCol'))}</th>
+                <th>${escapeHtml(t('admin.touristCol'))}</th>
+                <th>${escapeHtml(t('admin.dateTimeCol'))}</th>
+                <th>${escapeHtml(t('guide.grossLabel'))}</th>
+                <th>${escapeHtml(t('guide.feeLabel'))}</th>
+                <th>${escapeHtml(t('guide.estimatedEarnings'))}</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${completedTours.map(b => `
+                <tr>
+                  <td class="tabular-nums">#${escapeHtml(b.id)}</td>
+                  <td>${escapeHtml(b.touristName || '')}</td>
+                  <td class="tabular-nums">${escapeHtml(b.date || '')}</td>
+                  <td class="tabular-nums">${formatCurrency(b.total || 0, b.currency || 'USD')}</td>
+                  <td class="tabular-nums">${formatCurrency(b.platformFee || 0, b.currency || 'USD')}</td>
+                  <td class="tabular-nums"><strong>${formatCurrency(b.price || 0, b.currency || 'USD')}</strong></td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
     }
-
-    onAuthReady(async (user) => {
-      if (!user) return;
-      const bookings = await getBookingsForGuide(user.uid);
-      completedBookings = bookings.filter(b => b.status === BOOKING_STATUS.COMPLETED);
-      renderEarnings();
-    });
 
     document.getElementById('requestPayoutBtn').addEventListener('click', () => {
       showToast(t('toasts.payoutRequested'), 'success');
     });
 
-    document.addEventListener('tourguide:langchange', renderEarnings);
+    onAuthReady(async (user) => {
+      if (!user) return;
+      const all = await getBookingsForGuide(user.uid);
+      completedTours = all.filter(b => b.status === 'completed');
+      renderLedger();
+    });
+
+    document.addEventListener('tourguide:langchange', renderLedger);
   </script>
 </body>
 </html>

@@ -29,7 +29,7 @@ export const DEV_SEED_GUIDES = [
     currentLocationName: 'Giza Plateau First Gate',
     isOnline: true,
     instantAvailable: true,
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80',
+    avatar: 'assets/images/guide_portrait_ahmed_1794430336207.jpg',
     specialties: ['History', 'Architecture', 'Museum'],
     about: 'Certified Egyptologist and graduate of Faculty of Archaeology, Cairo University. Over 8 years guiding travelers through the pyramids, Sphinx, and the Grand Egyptian Museum.',
     weeklyAvailability: {
@@ -70,7 +70,7 @@ export const DEV_SEED_GUIDES = [
     currentLocationName: 'Tahrir Square / Downtown',
     isOnline: true,
     instantAvailable: true,
-    avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80',
+    avatar: 'assets/images/guide_portrait_sarah_1794430334163.jpg',
     specialties: ['Museum', 'History', 'Family'],
     about: 'PhD in Coptic & Islamic Heritage. Passionate about bringing ancient historical inscriptions to life for couples, solo travelers, and families.',
     weeklyAvailability: {
@@ -110,7 +110,7 @@ export const DEV_SEED_GUIDES = [
     currentLocationName: 'Karnak Temple',
     isOnline: false,
     instantAvailable: false,
-    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80',
+    avatar: 'assets/images/guide_portrait_ahmed_1794430336207.jpg',
     specialties: ['Desert', 'Local Experience', 'Food', 'History'],
     about: 'Specialized in Luxor West Bank royal tombs, temple hieroglyphics, and authentic culinary trails.',
     weeklyAvailability: {
