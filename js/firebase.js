@@ -117,6 +117,7 @@ export const COLLECTIONS = {
   DISPUTES: 'disputes',
   AUDIT_LOGS: 'auditLogs',
   SETTINGS: 'settings',
+  ADMINS: 'admins',
 };
 
 /**

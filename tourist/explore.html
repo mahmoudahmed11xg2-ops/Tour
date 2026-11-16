@@ -34,8 +34,14 @@
 
       <div class="header-actions">
         <button type="button" class="lang-toggle-btn" aria-label="Toggle language">
-          <span class="lang-label">العربية</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="2" y1="12" x2="22" y2="12"></line>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+          </svg>
+          <span class="lang-label">English</span>
         </button>
+        <span id="authHeaderSlot" class="auth-header-slot"></span>
       </div>
     </div>
   </header>
@@ -56,33 +62,33 @@
           <label for="fCity" class="form-label" data-i18n="explore.filterCity">City</label>
           <select id="fCity" class="form-control">
             <option value="all" data-i18n="explore.filterAllCities">All Cities</option>
-            <option value="Giza">Giza</option>
-            <option value="Cairo">Cairo</option>
-            <option value="Luxor">Luxor</option>
-            <option value="Aswan">Aswan</option>
+            <option value="Giza" data-i18n="cities.giza">Giza</option>
+            <option value="Cairo" data-i18n="cities.cairo">Cairo</option>
+            <option value="Luxor" data-i18n="cities.luxor">Luxor</option>
+            <option value="Aswan" data-i18n="cities.aswan">Aswan</option>
           </select>
         </div>
         <div class="form-group" style="margin-bottom:0;">
           <label for="fLanguage" class="form-label" data-i18n="explore.filterLanguage">Language</label>
           <select id="fLanguage" class="form-control">
             <option value="all" data-i18n="search.anyLanguage">Any Language</option>
-            <option value="English">English</option>
-            <option value="Arabic">Arabic</option>
-            <option value="French">French</option>
-            <option value="German">German</option>
-            <option value="Spanish">Spanish</option>
-            <option value="Italian">Italian</option>
+            <option value="English" data-i18n="languages.english">English</option>
+            <option value="Arabic" data-i18n="languages.arabic">Arabic</option>
+            <option value="French" data-i18n="languages.french">French</option>
+            <option value="German" data-i18n="languages.german">German</option>
+            <option value="Spanish" data-i18n="languages.spanish">Spanish</option>
+            <option value="Italian" data-i18n="languages.italian">Italian</option>
           </select>
         </div>
         <div class="form-group" style="margin-bottom:0;">
           <label for="fSpecialty" class="form-label" data-i18n="explore.filterSpecialty">Specialty</label>
           <select id="fSpecialty" class="form-control">
             <option value="all" data-i18n="explore.filterAllSpecialties">All Specialties</option>
-            <option value="History">History</option>
-            <option value="Architecture">Architecture</option>
-            <option value="Food">Food</option>
-            <option value="Local Experience">Local Experience</option>
-            <option value="Museum">Museum</option>
+            <option value="History" data-i18n="search.categoryHistory">History</option>
+            <option value="Architecture" data-i18n="search.categoryArchitecture">Architecture</option>
+            <option value="Food" data-i18n="search.categoryFood">Food</option>
+            <option value="Local Experience" data-i18n="search.categoryLocal">Local Experience</option>
+            <option value="Museum" data-i18n="search.categoryMuseum">Museum</option>
           </select>
         </div>
         <div class="form-group" style="margin-bottom:0;">
@@ -125,33 +131,33 @@
           <label for="mCity" class="form-label" data-i18n="explore.filterCity">City</label>
           <select id="mCity" class="form-control">
             <option value="all" data-i18n="explore.filterAllCities">All Cities</option>
-            <option value="Giza">Giza</option>
-            <option value="Cairo">Cairo</option>
-            <option value="Luxor">Luxor</option>
-            <option value="Aswan">Aswan</option>
+            <option value="Giza" data-i18n="cities.giza">Giza</option>
+            <option value="Cairo" data-i18n="cities.cairo">Cairo</option>
+            <option value="Luxor" data-i18n="cities.luxor">Luxor</option>
+            <option value="Aswan" data-i18n="cities.aswan">Aswan</option>
           </select>
         </div>
         <div class="form-group">
           <label for="mLanguage" class="form-label" data-i18n="explore.filterLanguage">Language</label>
           <select id="mLanguage" class="form-control">
             <option value="all" data-i18n="search.anyLanguage">Any Language</option>
-            <option value="English">English</option>
-            <option value="Arabic">Arabic</option>
-            <option value="French">French</option>
-            <option value="German">German</option>
-            <option value="Spanish">Spanish</option>
-            <option value="Italian">Italian</option>
+            <option value="English" data-i18n="languages.english">English</option>
+            <option value="Arabic" data-i18n="languages.arabic">Arabic</option>
+            <option value="French" data-i18n="languages.french">French</option>
+            <option value="German" data-i18n="languages.german">German</option>
+            <option value="Spanish" data-i18n="languages.spanish">Spanish</option>
+            <option value="Italian" data-i18n="languages.italian">Italian</option>
           </select>
         </div>
         <div class="form-group">
           <label for="mSpecialty" class="form-label" data-i18n="explore.filterSpecialty">Specialty</label>
           <select id="mSpecialty" class="form-control">
             <option value="all" data-i18n="explore.filterAllSpecialties">All Specialties</option>
-            <option value="History">History</option>
-            <option value="Architecture">Architecture</option>
-            <option value="Food">Food</option>
-            <option value="Local Experience">Local Experience</option>
-            <option value="Museum">Museum</option>
+            <option value="History" data-i18n="search.categoryHistory">History</option>
+            <option value="Architecture" data-i18n="search.categoryArchitecture">Architecture</option>
+            <option value="Food" data-i18n="search.categoryFood">Food</option>
+            <option value="Local Experience" data-i18n="search.categoryLocal">Local Experience</option>
+            <option value="Museum" data-i18n="search.categoryMuseum">Museum</option>
           </select>
         </div>
         <div class="form-group">
@@ -217,7 +223,7 @@
       escapeHtml
     } from '../js/utils.js';
 
-    enforceRouteProtection({ allowedRoles: ['tourist', 'admin'] });
+    enforceRouteProtection({ allowedRoles: ['tourist'] });
     applyTranslations();
     setupLanguageToggle();
 

@@ -23,7 +23,14 @@
         <a href="./index.html" class="brand-wordmark" data-i18n="brand.name">TourGuide</a>
       </div>
       <div class="header-actions">
-        <button type="button" class="lang-toggle-btn" aria-label="Toggle language"><span class="lang-label">العربية</span></button>
+        <button type="button" class="lang-toggle-btn" aria-label="Toggle language">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="2" y1="12" x2="22" y2="12"></line>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+          </svg>
+          <span class="lang-label">English</span>
+        </button>
       </div>
     </div>
   </header>
@@ -61,7 +68,14 @@
         <a href="./settings.html" class="nav-link" data-i18n="nav.settings">Settings</a>
       </nav>
       <div class="admin-sidebar-footer">
-        <button type="button" class="lang-toggle-btn btn-block"><span class="lang-label">العربية</span></button>
+        <button type="button" class="lang-toggle-btn btn-block" aria-label="Toggle language">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="2" y1="12" x2="22" y2="12"></line>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+          </svg>
+          <span class="lang-label">English</span>
+        </button>
         <button type="button" id="sidebarLogoutBtn" class="btn btn-outline btn-block btn-sm" data-i18n="nav.logout">Log out</button>
       </div>
     </aside>
@@ -109,7 +123,7 @@
                   <td>${escapeHtml(u.email || '')}</td>
                   <td><span class="status-label status-info">${escapeHtml(getLocalizedRole(u.role))}</span></td>
                   <td>${escapeHtml(u.country || '')}</td>
-                  <td>${escapeHtml(u.status || 'active')}</td>
+                  <td>${escapeHtml(u.status === 'pending' ? t('guide.pendingVerificationBadge') : t('admin.activeUserStatus'))}</td>
                 </tr>
               `).join('')}
             </tbody>

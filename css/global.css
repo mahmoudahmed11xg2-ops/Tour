@@ -245,6 +245,13 @@ html[dir="rtl"] h4 {
   flex-shrink: 0;
 }
 
+.auth-header-slot {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
 .user-chip {
   font-size: 0.875rem;
   font-weight: 600;
@@ -258,6 +265,7 @@ html[dir="rtl"] h4 {
   align-items: center;
   justify-content: center;
   gap: 6px;
+  min-width: 96px;
   min-height: 44px;
   padding-inline: 12px;
   border: 1px solid var(--border-color);
@@ -268,6 +276,7 @@ html[dir="rtl"] h4 {
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
+  flex-shrink: 0;
   transition: border-color 0.15s ease, background-color 0.15s ease;
 }
 

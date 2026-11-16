@@ -26,7 +26,7 @@ service cloud.firestore {
 
     function isAdmin() {
       return isSignedIn() && (
-        (request.auth.token.email == "ma1044853@gmail.com" && request.auth.token.email_verified == true) ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid)) ||
         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin")
       );
@@ -89,7 +89,30 @@ service cloud.firestore {
       data.status is string && data.status.size() <= 30;
     }
 
-    // 1. Users Collection
+    function isValidMessage(data, messageId) {
+      return data.keys().hasAll([
+        "id", "bookingId", "touristId", "guideId", "senderId", "text", "createdAt"
+      ]) &&
+      data.keys().hasOnly([
+        "id", "bookingId", "touristId", "guideId", "senderId", "senderRole", "senderName", "text", "createdAt"
+      ]) &&
+      data.id == messageId &&
+      data.bookingId is string && data.bookingId.size() <= 64 &&
+      data.touristId is string && data.touristId.size() <= 128 &&
+      data.guideId is string && data.guideId.size() <= 128 &&
+      data.senderId is string && data.senderId.size() <= 128 &&
+      data.text is string && data.text.size() >= 1 && data.text.size() <= 1000 &&
+      data.createdAt is string && data.createdAt.size() <= 64;
+    }
+
+    // 0. Admins Registry Collection (Console / Admin-SDK managed)
+    match /admins/{adminId} {
+      allow get: if isSignedIn() && (request.auth.uid == adminId || isAdmin());
+      allow list: if isAdmin();
+      allow write: if false;
+    }
+
+    // 1. Users Collection (Strict RBAC: users cannot promote role or modify status)
     match /users/{userId} {
       allow get: if isSignedIn() && (request.auth.uid == userId || isAdmin());
       allow list: if isAdmin();
@@ -104,7 +127,11 @@ service cloud.firestore {
         isAdmin() ||
         (request.auth.uid == userId &&
          incoming().uid == existing().uid &&
-         incoming().role == existing().role)
+         incoming().role == existing().role &&
+         incoming().status == existing().status &&
+         incoming().diff(existing()).affectedKeys().hasOnly([
+           "firstName", "lastName", "phone", "country", "preferredLanguage", "updatedAt"
+         ]))
       );
 
       allow delete: if isAdmin();
@@ -296,22 +323,6 @@ service cloud.firestore {
         resource.data.guideId == request.auth.uid
       );
       allow delete: if isAdmin();
-    }
-
-    function isValidMessage(data, messageId) {
-      return data.keys().hasAll([
-        "id", "bookingId", "touristId", "guideId", "senderId", "text", "createdAt"
-      ]) &&
-      data.keys().hasOnly([
-        "id", "bookingId", "touristId", "guideId", "senderId", "senderRole", "senderName", "text", "createdAt"
-      ]) &&
-      data.id == messageId &&
-      data.bookingId is string && data.bookingId.size() <= 64 &&
-      data.touristId is string && data.touristId.size() <= 128 &&
-      data.guideId is string && data.guideId.size() <= 128 &&
-      data.senderId is string && data.senderId.size() <= 128 &&
-      data.text is string && data.text.size() >= 1 && data.text.size() <= 1000 &&
-      data.createdAt is string && data.createdAt.size() <= 64;
     }
 
     // 9. Booking-Scoped Messages Collection

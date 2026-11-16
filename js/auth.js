@@ -45,31 +45,45 @@ export function onAuthReady(callback) {
   }
 }
 
+async function resolveAccountProfile(firebaseUser) {
+  const userRef = doc(db, COLLECTIONS.USERS, firebaseUser.uid);
+  const userSnap = await getDoc(userRef);
+
+  // Also check explicit /admins/{uid} registry managed outside self-signup
+  let isRegisteredAdmin = false;
+  try {
+    const adminSnap = await getDoc(doc(db, COLLECTIONS.ADMINS, firebaseUser.uid));
+    isRegisteredAdmin = adminSnap.exists();
+  } catch (e) {
+    // Non-admins receive permission-denied on unrelated reads; ignore silently on missing doc
+  }
+
+  if (userSnap.exists()) {
+    const data = userSnap.data();
+    return isRegisteredAdmin ? { ...data, role: 'admin' } : data;
+  }
+
+  const newProfile = {
+    uid: firebaseUser.uid,
+    email: firebaseUser.email,
+    firstName: firebaseUser.displayName ? firebaseUser.displayName.split(' ')[0] : t('touristProfile.memberBadge'),
+    lastName: firebaseUser.displayName ? firebaseUser.displayName.split(' ').slice(1).join(' ') : '',
+    role: isRegisteredAdmin ? 'admin' : 'tourist',
+    status: 'active',
+    country: 'Egypt',
+    phone: firebaseUser.phoneNumber || '',
+    preferredLanguage: 'English',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+  await setDoc(userRef, newProfile);
+  return newProfile;
+}
+
 onAuthStateChanged(auth, async (firebaseUser) => {
   if (firebaseUser) {
     try {
-      const userRef = doc(db, COLLECTIONS.USERS, firebaseUser.uid);
-      const userSnap = await getDoc(userRef);
-
-      if (userSnap.exists()) {
-        cachedUserDoc = userSnap.data();
-      } else {
-        const defaultRole = firebaseUser.email === 'ma1044853@gmail.com' ? 'admin' : 'tourist';
-        cachedUserDoc = {
-          uid: firebaseUser.uid,
-          email: firebaseUser.email,
-          firstName: firebaseUser.displayName ? firebaseUser.displayName.split(' ')[0] : 'Traveler',
-          lastName: firebaseUser.displayName ? firebaseUser.displayName.split(' ').slice(1).join(' ') : '',
-          role: defaultRole,
-          status: 'active',
-          country: 'International',
-          phone: firebaseUser.phoneNumber || '',
-          preferredLanguage: 'English',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        };
-        await setDoc(userRef, cachedUserDoc);
-      }
+      cachedUserDoc = await resolveAccountProfile(firebaseUser);
     } catch (err) {
       console.error('Error fetching user profile:', err);
     }
@@ -119,18 +133,7 @@ export async function login(email, password) {
 
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email.trim(), password);
-    const userRef = doc(db, COLLECTIONS.USERS, userCredential.user.uid);
-    const userSnap = await getDoc(userRef);
-
-    if (userSnap.exists()) {
-      cachedUserDoc = userSnap.data();
-    } else {
-      cachedUserDoc = {
-        uid: userCredential.user.uid,
-        email: userCredential.user.email,
-        role: userCredential.user.email === 'ma1044853@gmail.com' ? 'admin' : 'tourist'
-      };
-    }
+    cachedUserDoc = await resolveAccountProfile(userCredential.user);
 
     return {
       user: userCredential.user,
@@ -301,30 +304,7 @@ export async function loginWithGoogle() {
   try {
     const result = await signInWithPopup(auth, provider);
     const user = result.user;
-
-    const userRef = doc(db, COLLECTIONS.USERS, user.uid);
-    const userSnap = await getDoc(userRef);
-
-    if (!userSnap.exists()) {
-      const defaultRole = user.email === 'ma1044853@gmail.com' ? 'admin' : 'tourist';
-      const newProfile = {
-        uid: user.uid,
-        email: user.email,
-        firstName: user.displayName ? user.displayName.split(' ')[0] : 'Traveler',
-        lastName: user.displayName ? user.displayName.split(' ').slice(1).join(' ') : '',
-        role: defaultRole,
-        status: 'active',
-        country: 'International',
-        phone: user.phoneNumber || '',
-        preferredLanguage: 'English',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
-      await setDoc(userRef, newProfile);
-      cachedUserDoc = newProfile;
-    } else {
-      cachedUserDoc = userSnap.data();
-    }
+    cachedUserDoc = await resolveAccountProfile(user);
 
     return { user, profile: cachedUserDoc };
   } catch (err) {
@@ -391,48 +371,37 @@ export function enforceRouteProtection({ allowedRoles = ['tourist', 'guide', 'ad
 }
 
 /**
- * Update Header Actions (Language + Auth state) cleanly without breaking mobile menu trigger
+ * Update ONLY auth-specific controls inside header without touching the persistent language toggle
  */
 export function updateUIForAuth() {
   const user = getCurrentUser();
   const headerActions = document.querySelector('.header-actions');
-  if (!headerActions) return;
+  if (headerActions) {
+    let authSlot = headerActions.querySelector('#authHeaderSlot');
+    if (!authSlot) {
+      authSlot = document.createElement('span');
+      authSlot.id = 'authHeaderSlot';
+      authSlot.className = 'auth-header-slot';
+      headerActions.appendChild(authSlot);
+    }
 
-  const isPublicPage = document.body?.dataset?.surface === 'public';
+    const isPublicPage = document.body?.dataset?.surface === 'public';
 
-  const langBtnHtml = `
-    <button type="button" class="lang-toggle-btn" aria-label="Toggle language">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-        <circle cx="12" cy="12" r="10"></circle>
-        <line x1="2" y1="12" x2="22" y2="12"></line>
-        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
-      </svg>
-      <span class="lang-label"></span>
-    </button>
-  `;
-
-  if (user) {
-    const displayName = escapeHtml(user.firstName || user.email?.split('@')[0] || '');
-    const dashUrl = getDashboardUrlForRole(user.role || 'tourist');
-    headerActions.innerHTML = `
-      ${langBtnHtml}
-      ${isPublicPage
+    if (user) {
+      const displayName = escapeHtml(user.firstName || user.email?.split('@')[0] || '');
+      const dashUrl = getDashboardUrlForRole(user.role || 'tourist');
+      authSlot.innerHTML = isPublicPage
         ? `<a href="${dashUrl}" class="btn btn-primary btn-sm hide-mobile">${escapeHtml(t('nav.dashboard'))}</a>`
         : `<span class="user-chip hide-mobile">${displayName}</span>
-           <button type="button" id="logoutBtn" class="btn btn-outline btn-sm hide-mobile">${escapeHtml(t('nav.logout'))}</button>`
-      }
-    `;
+           <button type="button" id="logoutBtn" class="btn btn-outline btn-sm hide-mobile">${escapeHtml(t('nav.logout'))}</button>`;
 
-    const logoutBtn = document.getElementById('logoutBtn');
-    if (logoutBtn) {
-      logoutBtn.addEventListener('click', logout);
+      document.getElementById('logoutBtn')?.addEventListener('click', logout);
+    } else {
+      authSlot.innerHTML = `
+        <a href="${appUrl('login.html')}" class="btn btn-ghost btn-sm hide-mobile">${escapeHtml(t('nav.login'))}</a>
+        <a href="${appUrl('register.html')}" class="btn btn-primary btn-sm hide-mobile">${escapeHtml(t('nav.getStarted'))}</a>
+      `;
     }
-  } else {
-    headerActions.innerHTML = `
-      ${langBtnHtml}
-      <a href="${appUrl('login.html')}" class="btn btn-ghost btn-sm hide-mobile" data-i18n="nav.login">${escapeHtml(t('nav.login'))}</a>
-      <a href="${appUrl('register.html')}" class="btn btn-primary btn-sm hide-mobile" data-i18n="nav.getStarted">${escapeHtml(t('nav.getStarted'))}</a>
-    `;
   }
 
   // Update mobile drawer auth slot if present
@@ -450,9 +419,6 @@ export function updateUIForAuth() {
       `;
     }
   }
-
-  setupLanguageToggle();
-  import('./utils.js').then(u => u.updateLanguageToggleButtons());
 }
 
 if (typeof document !== 'undefined') {

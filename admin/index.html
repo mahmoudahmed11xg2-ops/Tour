@@ -33,7 +33,12 @@
       </div>
       <div class="header-actions">
         <button type="button" class="lang-toggle-btn" aria-label="Toggle language">
-          <span class="lang-label">العربية</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="2" y1="12" x2="22" y2="12"></line>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+          </svg>
+          <span class="lang-label">English</span>
         </button>
       </div>
     </div>
@@ -84,7 +89,12 @@
 
       <div class="admin-sidebar-footer">
         <button type="button" class="lang-toggle-btn btn-block" aria-label="Toggle language">
-          <span class="lang-label">العربية</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="2" y1="12" x2="22" y2="12"></line>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+          </svg>
+          <span class="lang-label">English</span>
         </button>
         <button type="button" id="sidebarLogoutBtn" class="btn btn-outline btn-block btn-sm" data-i18n="nav.logout">Log out</button>
       </div>
@@ -182,9 +192,9 @@
         queueEl.innerHTML = pendingGuides.map(g => `
           <div class="queue-card">
             <div>
-              <strong>${escapeHtml(g.name || 'Guide')}</strong>
+              <strong>${escapeHtml(g.name || t('booking.guideLabel'))}</strong>
               <div class="meta-inline">
-                <span>${escapeHtml(g.city || 'Egypt')}</span>
+                <span>${escapeHtml(g.city || '')}</span>
                 <span class="meta-sep">&middot;</span>
                 <span>${escapeHtml(Array.isArray(g.languages) ? g.languages.join(', ') : '')}</span>
                 <span class="meta-sep">&middot;</span>
@@ -245,7 +255,7 @@
                   <td>${escapeHtml(b.guideName || '')}</td>
                   <td class="tabular-nums">${formatCurrency(b.total || 0, b.currency || 'USD')}</td>
                   <td><span class="status-label status-neutral">${escapeHtml(getLocalizedStatus(b.status))}</span></td>
-                  <td><a href="../tourist/booking.html?id=${encodeURIComponent(b.id)}" class="btn btn-outline btn-sm">${escapeHtml(t('admin.inspectRide'))}</a></td>
+                  <td><a href="./booking.html?id=${encodeURIComponent(b.id)}" class="btn btn-outline btn-sm">${escapeHtml(t('admin.inspectRide'))}</a></td>
                 </tr>
               `).join('')}
             </tbody>

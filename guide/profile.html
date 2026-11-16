@@ -42,8 +42,14 @@
 
       <div class="header-actions">
         <button type="button" class="lang-toggle-btn" aria-label="Toggle language">
-          <span class="lang-label">العربية</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="2" y1="12" x2="22" y2="12"></line>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+          </svg>
+          <span class="lang-label">English</span>
         </button>
+        <span id="authHeaderSlot" class="auth-header-slot"></span>
       </div>
     </div>
   </header>
@@ -130,9 +136,9 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
       <span data-i18n="nav.earnings">Earnings</span>
     </a>
-    <a href="./messages.html" class="bottom-nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-      <span data-i18n="nav.messages">Messages</span>
+    <a href="./profile.html" class="bottom-nav-item active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+      <span data-i18n="nav.profile">Profile</span>
     </a>
   </nav>
 
@@ -143,7 +149,7 @@
     import { db, COLLECTIONS } from '../js/firebase.js';
     import { applyTranslations, setupLanguageToggle, showToast, t, getLocalizedStatus } from '../js/utils.js';
 
-    enforceRouteProtection({ allowedRoles: ['guide', 'admin'] });
+    enforceRouteProtection({ allowedRoles: ['guide'] });
     applyTranslations();
     setupLanguageToggle();
 
@@ -180,14 +186,18 @@
         .map(s => s.trim())
         .filter(Boolean);
 
-      await db.updateDocument(COLLECTIONS.GUIDES, currentUid, {
-        name: document.getElementById('gpFullName').value.trim(),
-        hourlyRate: Number(document.getElementById('gpRate').value || 25),
-        city: document.getElementById('gpCity').value.trim(),
-        languages: langs.length ? langs : ['Arabic', 'English'],
-        about: document.getElementById('gpAbout').value.trim()
-      });
-      showToast(t('toasts.profileUpdated'), 'success');
+      try {
+        await db.updateDocument(COLLECTIONS.GUIDES, currentUid, {
+          name: document.getElementById('gpFullName').value.trim(),
+          hourlyRate: Number(document.getElementById('gpRate').value || 25),
+          city: document.getElementById('gpCity').value.trim(),
+          languages: langs.length ? langs : ['Arabic', 'English'],
+          about: document.getElementById('gpAbout').value.trim()
+        });
+        showToast(t('toasts.profileUpdated'), 'success');
+      } catch (err) {
+        showToast(err.message || t('toasts.genericError'), 'error');
+      }
     });
 
     document.addEventListener('tourguide:langchange', updateBadge);

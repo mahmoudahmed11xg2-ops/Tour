@@ -35,8 +35,14 @@
 
       <div class="header-actions">
         <button type="button" class="lang-toggle-btn" aria-label="Toggle language">
-          <span class="lang-label">العربية</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="2" y1="12" x2="22" y2="12"></line>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+          </svg>
+          <span class="lang-label">English</span>
         </button>
+        <span id="authHeaderSlot" class="auth-header-slot"></span>
       </div>
     </div>
   </header>
@@ -60,11 +66,11 @@
       <div class="form-grid-2">
         <div class="form-group" style="margin-bottom:0;">
           <label for="searchLocation" class="form-label" data-i18n="search.currentLocation">Current location</label>
-          <input type="text" id="searchLocation" class="form-control" value="Giza" placeholder="Giza, Cairo, Luxor">
+          <input type="text" id="searchLocation" class="form-control" data-i18n-placeholder="search.currentLocationPlaceholder" placeholder="Giza, Cairo, Luxor">
         </div>
         <div class="form-group" style="margin-bottom:0;">
           <label for="searchDestination" class="form-label" data-i18n="search.destination">Destination</label>
-          <input type="text" id="searchDestination" class="form-control" value="Pyramids" placeholder="Pyramids, Museum, Karnak">
+          <input type="text" id="searchDestination" class="form-control" data-i18n-placeholder="search.destinationPlaceholder" placeholder="Pyramids, Museum, Karnak">
         </div>
       </div>
 
@@ -100,12 +106,12 @@
             <label for="searchLanguage" class="form-label" data-i18n="search.languageLabel">Language</label>
             <select id="searchLanguage" class="form-control">
               <option value="all" data-i18n="search.anyLanguage">Any Language</option>
-              <option value="English">English</option>
-              <option value="Arabic">Arabic</option>
-              <option value="French">French</option>
-              <option value="German">German</option>
-              <option value="Spanish">Spanish</option>
-              <option value="Italian">Italian</option>
+              <option value="English" data-i18n="languages.english">English</option>
+              <option value="Arabic" data-i18n="languages.arabic">Arabic</option>
+              <option value="French" data-i18n="languages.french">French</option>
+              <option value="German" data-i18n="languages.german">German</option>
+              <option value="Spanish" data-i18n="languages.spanish">Spanish</option>
+              <option value="Italian" data-i18n="languages.italian">Italian</option>
             </select>
           </div>
           <div class="form-group" style="margin-bottom:0;">
@@ -182,7 +188,7 @@
       getLocalizedStatus
     } from '../js/utils.js';
 
-    enforceRouteProtection({ allowedRoles: ['tourist', 'admin'] });
+    enforceRouteProtection({ allowedRoles: ['tourist'] });
     applyTranslations();
     setupLanguageToggle();
 
@@ -246,7 +252,7 @@
       grid.innerHTML = matches.map(({ guide, distanceKm }) => {
         const avatar = resolveAvatar(guide.avatar, guide.name);
         const langs = Array.isArray(guide.languages) ? guide.languages.join(', ') : '';
-        const city = escapeHtml(guide.city || 'Egypt');
+        const city = escapeHtml(guide.city || t('auth.defaultCountry'));
         return `
           <article class="guide-card">
             <div class="guide-card-top">

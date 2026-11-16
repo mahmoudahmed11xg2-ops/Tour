@@ -164,7 +164,7 @@ export async function createBooking({
         date: win.date,
         time: win.startTime
       }),
-      'guide/requests.html'
+      'guide/booking.html?id=' + bookingId
     );
 
     await addDoc(collection(db, COLLECTIONS.AUDIT_LOGS), {
@@ -311,7 +311,7 @@ export async function declineBooking(bookingId, guideId, reason = 'Guide decline
         next.id,
         t('notif.newInstantTitle'),
         t('notif.newInstantBody', { tourist: booking.touristName, location: booking.location, hours: booking.duration }),
-        'guide/requests.html'
+        'guide/booking.html?id=' + bookingId
       );
 
       await sendNotification(
@@ -419,7 +419,7 @@ export async function retryInstantBooking(bookingId, touristId) {
     best.id,
     t('notif.newInstantTitle'),
     t('notif.newInstantBody', { tourist: booking.touristName, location: booking.location, hours: win.duration }),
-    'guide/requests.html'
+    'guide/booking.html?id=' + bookingId
   );
 
   return { outcome: 'dispatched', booking: updated };
@@ -621,4 +621,40 @@ export function subscribeToTouristBookings(touristId, onUpdate, onError = null) 
       if (onError) onError(err);
     }
   );
+}
+
+export async function adminUpdateBookingStatus(bookingId, newStatus, adminId, notes = '') {
+  const ref = doc(db, COLLECTIONS.BOOKINGS, bookingId);
+  const snap = await getDoc(ref);
+  if (!snap.exists()) throw new Error(t('booking.errNotFound'));
+
+  const booking = { id: snap.id, ...snap.data() };
+  const nowIso = new Date().toISOString();
+
+  await updateDoc(ref, {
+    status: newStatus,
+    updatedAt: nowIso
+  });
+
+  if (['cancelled', 'rejected', 'completed', 'refunded', 'disputed'].includes(newStatus)) {
+    await releaseBusySlotForBooking(bookingId);
+  } else {
+    await syncBusySlotForBooking({ ...booking, status: newStatus });
+  }
+
+  if (newStatus === 'cancelled' || newStatus === 'refunded') {
+    await updatePaymentStatusForBooking(bookingId, 'refunded');
+  } else if (newStatus === 'completed') {
+    await updatePaymentStatusForBooking(bookingId, 'released_to_guide');
+  }
+
+  await addDoc(collection(db, COLLECTIONS.AUDIT_LOGS), {
+    action: `ADMIN_BOOKING_${String(newStatus).toUpperCase()}`,
+    bookingId,
+    userId: adminId,
+    timestamp: nowIso,
+    notes: notes || `Admin updated status to ${newStatus}`
+  });
+
+  return true;
 }

@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="app-root" content="../">
+  <title>Tour Assignment | TourGuide</title>
+  <link rel="stylesheet" href="../css/global.css">
+  <link rel="stylesheet" href="../css/tourist.css">
+  <link rel="stylesheet" href="../css/guide.css">
+</head>
+<body class="protected-page">
+
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="header-left">
+        <button type="button" id="mobileMenuToggle" class="hamburger-btn" aria-label="Menu" aria-expanded="false" aria-controls="mobileDrawer">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+        <a href="./index.html" class="brand-wordmark">
+          <span class="brand-mark" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
+              <circle cx="12" cy="10" r="3"></circle>
+              <path d="M12 21.7C17.3 17 20 13 20 10a8 8 0 1 0-16 0c0 3 2.7 6.9 8 11.7z"></path>
+            </svg>
+          </span>
+          <span data-i18n="brand.name">TourGuide</span>
+        </a>
+      </div>
+
+      <nav class="header-nav" aria-label="Guide Navigation">
+        <a href="./index.html" class="nav-link" data-i18n="nav.home">Home</a>
+        <a href="./requests.html" class="nav-link active" data-i18n="nav.requests">Requests</a>
+        <a href="./calendar.html" class="nav-link" data-i18n="nav.calendar">Calendar</a>
+        <a href="./earnings.html" class="nav-link" data-i18n="nav.earnings">Earnings</a>
+        <a href="./messages.html" class="nav-link" data-i18n="nav.messages">Messages</a>
+        <a href="./profile.html" class="nav-link" data-i18n="nav.profile">Profile</a>
+      </nav>
+
+      <div class="header-actions">
+        <button type="button" class="lang-toggle-btn" aria-label="Toggle language">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="2" y1="12" x2="22" y2="12"></line>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+          </svg>
+          <span class="lang-label">English</span>
+        </button>
+        <span id="authHeaderSlot" class="auth-header-slot"></span>
+      </div>
+    </div>
+  </header>
+
+  <div id="mobileDrawerBackdrop" class="mobile-drawer-backdrop"></div>
+  <aside id="mobileDrawer" class="mobile-drawer" aria-hidden="true">
+    <div class="drawer-header">
+      <strong class="brand-wordmark" data-i18n="guide.consoleTitle">Guide Console</strong>
+      <button type="button" id="mobileDrawerClose" class="drawer-close-btn" aria-label="Close">&times;</button>
+    </div>
+    <nav class="drawer-nav" aria-label="Guide Mobile Drawer">
+      <a href="./index.html" class="drawer-link" data-i18n="nav.home">Home</a>
+      <a href="./requests.html" class="drawer-link active" data-i18n="nav.requests">Requests</a>
+      <a href="./calendar.html" class="drawer-link" data-i18n="nav.calendar">Calendar</a>
+      <a href="./earnings.html" class="drawer-link" data-i18n="nav.earnings">Earnings</a>
+      <a href="./messages.html" class="drawer-link" data-i18n="nav.messages">Messages</a>
+      <a href="./profile.html" class="drawer-link" data-i18n="nav.profile">Profile</a>
+    </nav>
+    <div id="drawerAuthSlot" class="drawer-footer"></div>
+  </aside>
+
+  <main class="container-narrow page-main">
+    <div style="margin-bottom: 14px;">
+      <a href="./requests.html" class="btn btn-outline btn-sm" data-i18n="guide.backToRequests">Back to Requests</a>
+    </div>
+
+    <section id="assignmentSection" style="display:none;">
+      <div class="explore-toolbar">
+        <div>
+          <h1 id="gbTitle" class="page-title tabular-nums" data-i18n="guide.bookingDetailTitle">Tour Assignment</h1>
+          <p id="gbSubId" class="page-subtitle tabular-nums"></p>
+        </div>
+        <span id="gbStatusBadge" class="status-label status-info"></span>
+      </div>
+
+      <div id="gbTimeline" class="timeline-strip"></div>
+
+      <article class="card">
+        <div class="summary-row">
+          <span data-i18n="guide.touristLabel">Traveler</span>
+          <strong id="gbTourist"></strong>
+        </div>
+        <div class="summary-row">
+          <span data-i18n="guide.location">Location</span>
+          <strong id="gbLocation"></strong>
+        </div>
+        <div class="summary-row">
+          <span data-i18n="guide.dateTime">Date &amp; Time</span>
+          <strong id="gbDateTime" class="tabular-nums"></strong>
+        </div>
+        <div class="summary-row">
+          <span data-i18n="guide.duration">Duration</span>
+          <strong id="gbDuration" class="tabular-nums"></strong>
+        </div>
+        <div class="summary-row">
+          <span data-i18n="guide.language">Language</span>
+          <strong id="gbLanguage"></strong>
+        </div>
+        <div class="summary-row">
+          <span data-i18n="guide.guests">Guests</span>
+          <strong id="gbGuests" class="tabular-nums"></strong>
+        </div>
+        <div class="summary-row summary-total">
+          <span data-i18n="guide.netEarningsLabel">Your Net Earnings</span>
+          <strong id="gbEarnings" class="tabular-nums"></strong>
+        </div>
+
+        <div class="request-actions" style="margin-top: 18px;">
+          <button type="button" id="gbAcceptBtn" class="btn btn-primary btn-sm" data-i18n="guide.acceptTour" style="display:none;">Accept</button>
+          <button type="button" id="gbDeclineBtn" class="btn btn-outline btn-sm" data-i18n="guide.decline" style="display:none;">Decline</button>
+          <button type="button" id="gbAdvanceBtn" class="btn btn-primary btn-sm" style="display:none;"></button>
+          <a id="gbChatLink" href="./messages.html" class="btn btn-outline btn-sm" data-i18n="guide.contactTourist">Message Traveler</a>
+          <button type="button" id="gbCancelBtn" class="btn btn-outline btn-sm" data-i18n="booking.cancelBooking" style="display:none;">Cancel Booking</button>
+          <button type="button" id="gbDisputeBtn" class="btn btn-danger btn-sm" data-i18n="booking.openDispute" style="display:none;">Report Issue</button>
+        </div>
+      </article>
+    </section>
+
+    <div id="notFoundState" class="empty-state" style="display:none;">
+      <h3 data-i18n="booking.noBookingFound">Booking not found.</h3>
+      <a href="./requests.html" class="btn btn-primary" data-i18n="guide.backToRequests">Back to Requests</a>
+    </div>
+  </main>
+
+  <nav class="bottom-nav" aria-label="Guide Mobile Navigation">
+    <a href="./index.html" class="bottom-nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+      <span data-i18n="nav.home">Home</span>
+    </a>
+    <a href="./requests.html" class="bottom-nav-item active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path></svg>
+      <span data-i18n="nav.requests">Requests</span>
+    </a>
+    <a href="./calendar.html" class="bottom-nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line></svg>
+      <span data-i18n="nav.calendar">Calendar</span>
+    </a>
+    <a href="./earnings.html" class="bottom-nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+      <span data-i18n="nav.earnings">Earnings</span>
+    </a>
+    <a href="./profile.html" class="bottom-nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+      <span data-i18n="nav.profile">Profile</span>
+    </a>
+  </nav>
+
+  <script type="module" src="../js/nav.js"></script>
+  <script type="module">
+    import { enforceRouteProtection, getCurrentUser, onAuthReady } from '../js/auth.js';
+    import {
+      getBookingById,
+      subscribeToBooking,
+      acceptBooking,
+      declineBooking,
+      progressBookingStatus,
+      cancelBooking,
+      openDispute,
+      ALLOWED_GUIDE_TRANSITIONS,
+      TERMINAL_BOOKING_STATUSES
+    } from '../js/booking.js';
+    import {
+      applyTranslations,
+      setupLanguageToggle,
+      showToast,
+      confirmModal,
+      t,
+      getUrlParam,
+      formatCurrency,
+      formatBookingDateTime,
+      formatDuration,
+      getLocalizedStatus
+    } from '../js/utils.js';
+
+    enforceRouteProtection({ allowedRoles: ['guide'] });
+    applyTranslations();
+    setupLanguageToggle();
+
+    const bookingId = getUrlParam('id');
+    let activeBooking = null;
+    let currentUid = null;
+
+    const TIMELINE_STEPS = [
+      { key: 'pending', labelKey: 'booking.timeline.requested' },
+      { key: 'accepted', labelKey: 'booking.timeline.accepted' },
+      { key: 'confirmed', labelKey: 'booking.timeline.confirmed' },
+      { key: 'guide_arriving', labelKey: 'booking.timeline.arriving' },
+      { key: 'meeting_started', labelKey: 'booking.timeline.met' },
+      { key: 'in_progress', labelKey: 'booking.timeline.inProgress' },
+      { key: 'completed', labelKey: 'booking.timeline.completed' }
+    ];
+
+    function nextActionLabel(status) {
+      if (status === 'confirmed' || status === 'accepted') return t('guide.startArriving');
+      if (status === 'guide_arriving') return t('guide.markMet');
+      if (status === 'meeting_started') return t('guide.startTour');
+      if (status === 'in_progress') return t('guide.completeTour');
+      return '';
+    }
+
+    function renderAssignment(b) {
+      if (!b || (currentUid && b.guideId !== currentUid)) {
+        document.getElementById('assignmentSection').style.display = 'none';
+        document.getElementById('notFoundState').style.display = 'block';
+        return;
+      }
+
+      activeBooking = b;
+      document.getElementById('notFoundState').style.display = 'none';
+      document.getElementById('assignmentSection').style.display = 'block';
+
+      document.getElementById('gbSubId').textContent = `#${b.id}`;
+      const badge = document.getElementById('gbStatusBadge');
+      badge.textContent = getLocalizedStatus(b.status);
+      badge.className = `status-label ${b.status === 'completed' || b.status === 'confirmed' ? 'status-success' : b.status === 'cancelled' || b.status === 'rejected' || b.status === 'disputed' ? 'status-danger' : b.status === 'pending' ? 'status-warning' : 'status-info'}`;
+
+      const idx = TIMELINE_STEPS.findIndex(s => s.key === b.status);
+      document.getElementById('gbTimeline').innerHTML = TIMELINE_STEPS.map((s, i) => {
+        const cls = idx > i ? 'done' : idx === i ? 'active' : '';
+        return `<div class="timeline-step ${cls}">${t(s.labelKey)}</div>`;
+      }).join('');
+
+      document.getElementById('gbTourist').textContent = b.touristName || t('guide.touristLabel');
+      document.getElementById('gbLocation').textContent = b.location || '';
+      document.getElementById('gbDateTime').textContent = formatBookingDateTime(b.date, b.startTime, b.endTime);
+      document.getElementById('gbDuration').textContent = formatDuration(b.duration);
+      document.getElementById('gbLanguage').textContent = b.language || '';
+      document.getElementById('gbGuests').textContent = String(b.guests || 1);
+      document.getElementById('gbEarnings').textContent = formatCurrency(b.price || 0, b.currency || 'USD');
+
+      document.getElementById('gbChatLink').href = `./messages.html?bookingId=${encodeURIComponent(b.id)}`;
+
+      const isPending = b.status === 'pending';
+      const nextSt = ALLOWED_GUIDE_TRANSITIONS[b.status];
+      const isTerminal = TERMINAL_BOOKING_STATUSES.includes(b.status);
+
+      document.getElementById('gbAcceptBtn').style.display = isPending ? 'inline-flex' : 'none';
+      document.getElementById('gbDeclineBtn').style.display = isPending ? 'inline-flex' : 'none';
+
+      const advBtn = document.getElementById('gbAdvanceBtn');
+      if (nextSt) {
+        advBtn.style.display = 'inline-flex';
+        advBtn.textContent = nextActionLabel(b.status);
+      } else {
+        advBtn.style.display = 'none';
+      }
+
+      document.getElementById('gbCancelBtn').style.display = !isTerminal ? 'inline-flex' : 'none';
+      document.getElementById('gbDisputeBtn').style.display = (b.status === 'in_progress' || b.status === 'completed') ? 'inline-flex' : 'none';
+    }
+
+    document.getElementById('gbAcceptBtn').addEventListener('click', async () => {
+      if (!activeBooking || !currentUid) return;
+      const btn = document.getElementById('gbAcceptBtn');
+      btn.disabled = true;
+      try {
+        await acceptBooking(activeBooking.id, currentUid);
+        showToast(t('toasts.tourAccepted'), 'success');
+      } catch (err) {
+        showToast(err.message, 'error');
+      } finally {
+        btn.disabled = false;
+      }
+    });
+
+    document.getElementById('gbDeclineBtn').addEventListener('click', async () => {
+      if (!activeBooking || !currentUid) return;
+      const btn = document.getElementById('gbDeclineBtn');
+      btn.disabled = true;
+      try {
+        const res = await declineBooking(activeBooking.id, currentUid);
+        showToast(res.outcome === 'reassigned' ? t('toasts.tourReassigned') : t('toasts.tourDeclined'), 'info');
+      } catch (err) {
+        showToast(err.message, 'error');
+      } finally {
+        btn.disabled = false;
+      }
+    });
+
+    document.getElementById('gbAdvanceBtn').addEventListener('click', async () => {
+      if (!activeBooking || !currentUid) return;
+      const btn = document.getElementById('gbAdvanceBtn');
+      btn.disabled = true;
+      try {
+        const ns = await progressBookingStatus(activeBooking.id, currentUid);
+        showToast(t('toasts.statusUpdated', { status: getLocalizedStatus(ns) }), 'success');
+      } catch (err) {
+        showToast(err.message, 'error');
+      } finally {
+        btn.disabled = false;
+      }
+    });
+
+    document.getElementById('gbCancelBtn').addEventListener('click', async () => {
+      if (!activeBooking) return;
+      const ok = await confirmModal({
+        title: t('booking.cancelConfirmTitle'),
+        message: t('booking.cancelConfirmPrompt'),
+        danger: true
+      });
+      if (!ok) return;
+      const user = getCurrentUser();
+      await cancelBooking(activeBooking.id, user?.uid, 'Cancelled by guide');
+      showToast(t('booking.bookingCancelledToast'), 'info');
+    });
+
+    document.getElementById('gbDisputeBtn').addEventListener('click', async () => {
+      if (!activeBooking) return;
+      const ok = await confirmModal({
+        title: t('booking.disputeConfirmTitle'),
+        message: t('booking.disputeConfirmPrompt'),
+        danger: true
+      });
+      if (!ok) return;
+      const user = getCurrentUser();
+      await openDispute(activeBooking.id, user?.uid, 'Guide reported issue');
+      showToast(t('booking.disputeOpenedToast'), 'info');
+    });
+
+    onAuthReady(async (user) => {
+      if (!user) return;
+      currentUid = user.uid;
+      if (!bookingId) {
+        document.getElementById('notFoundState').style.display = 'block';
+        return;
+      }
+      const b = await getBookingById(bookingId);
+      renderAssignment(b);
+      if (b && b.guideId === currentUid) {
+        subscribeToBooking(bookingId, (updated) => {
+          if (updated) renderAssignment(updated);
+        });
+      }
+    });
+
+    document.addEventListener('tourguide:langchange', () => {
+      if (activeBooking) renderAssignment(activeBooking);
+    });
+  </script>
+</body>
+</html>

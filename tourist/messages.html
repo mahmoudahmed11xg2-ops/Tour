@@ -34,8 +34,14 @@
 
       <div class="header-actions">
         <button type="button" class="lang-toggle-btn" aria-label="Toggle language">
-          <span class="lang-label">العربية</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="2" y1="12" x2="22" y2="12"></line>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+          </svg>
+          <span class="lang-label">English</span>
         </button>
+        <span id="authHeaderSlot" class="auth-header-slot"></span>
       </div>
     </div>
   </header>
@@ -104,7 +110,7 @@
     import { getUserConversations, subscribeToBookingMessages, sendBookingMessage } from '../js/messages.js';
     import { applyTranslations, setupLanguageToggle, showToast, t, getUrlParam, escapeHtml, getLocalizedStatus } from '../js/utils.js';
 
-    enforceRouteProtection({ allowedRoles: ['tourist', 'admin'] });
+    enforceRouteProtection({ allowedRoles: ['tourist'] });
     applyTranslations();
     setupLanguageToggle();
 
@@ -116,7 +122,7 @@
       const panel = document.getElementById('conversationsPanel');
       panel.innerHTML = conversations.map(b => `
         <button type="button" class="conversation-item ${activeBooking?.id === b.id ? 'active' : ''}" data-booking-id="${escapeHtml(b.id)}">
-          <strong>${escapeHtml(b.guideName || 'Guide')}</strong>
+          <strong>${escapeHtml(b.guideName || t('booking.guideLabel'))}</strong>
           <span class="form-hint tabular-nums">${escapeHtml(b.location || '')} &middot; ${escapeHtml(getLocalizedStatus(b.status))}</span>
         </button>
       `).join('');
@@ -132,7 +138,7 @@
     function selectBooking(booking) {
       activeBooking = booking;
       renderConversations();
-      document.getElementById('chatPartnerName').textContent = booking.guideName || 'Guide';
+      document.getElementById('chatPartnerName').textContent = booking.guideName || t('booking.guideLabel');
       document.getElementById('chatBookingMeta').textContent = `#${booking.id} · ${booking.date || ''}`;
       document.getElementById('chatOpenBookingLink').href = `./booking.html?id=${encodeURIComponent(booking.id)}`;
       document.getElementById('chatInput').disabled = false;

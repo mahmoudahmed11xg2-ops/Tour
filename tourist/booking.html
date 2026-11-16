@@ -34,8 +34,14 @@
 
       <div class="header-actions">
         <button type="button" class="lang-toggle-btn" aria-label="Toggle language">
-          <span class="lang-label">العربية</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="2" y1="12" x2="22" y2="12"></line>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+          </svg>
+          <span class="lang-label">English</span>
         </button>
+        <span id="authHeaderSlot" class="auth-header-slot"></span>
       </div>
     </div>
   </header>
@@ -75,11 +81,11 @@
             <div class="form-group">
               <label for="bkLanguage" class="form-label" data-i18n="booking.languageLabel">Language</label>
               <select id="bkLanguage" class="form-control">
-                <option value="English">English</option>
-                <option value="Arabic">Arabic</option>
-                <option value="French">French</option>
-                <option value="German">German</option>
-                <option value="Spanish">Spanish</option>
+                <option value="English" data-i18n="languages.english">English</option>
+                <option value="Arabic" data-i18n="languages.arabic">Arabic</option>
+                <option value="French" data-i18n="languages.french">French</option>
+                <option value="German" data-i18n="languages.german">German</option>
+                <option value="Spanish" data-i18n="languages.spanish">Spanish</option>
               </select>
             </div>
             <div class="form-group">
@@ -155,6 +161,10 @@
             <span data-i18n="booking.durationAndLang">Duration &amp; Language</span>
             <strong id="trDurationLang" class="tabular-nums"></strong>
           </div>
+          <div class="summary-row">
+            <span data-i18n="booking.paymentStatusLabel">Payment Status</span>
+            <strong id="trPaymentStatus"></strong>
+          </div>
           <div class="summary-row summary-total">
             <span data-i18n="booking.totalLabel">Total</span>
             <strong id="trTotal" class="tabular-nums"></strong>
@@ -162,6 +172,7 @@
 
           <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:16px;">
             <a id="trMessageBtn" href="./messages.html" class="btn btn-primary btn-sm" data-i18n="booking.chatWithGuide">Message</a>
+            <button type="button" id="trCallBtn" class="btn btn-outline btn-sm" data-i18n="booking.call">Call</button>
             <button type="button" id="trCancelBtn" class="btn btn-outline btn-sm" data-i18n="booking.cancelBooking" style="display:none;">Cancel Booking</button>
             <button type="button" id="trDisputeBtn" class="btn btn-danger btn-sm" data-i18n="booking.openDispute" style="display:none;">Report Issue</button>
             <button type="button" id="trRetryBtn" class="btn btn-accent btn-sm" data-i18n="search.tryAgainBtn" style="display:none;">Try Again</button>
@@ -215,6 +226,7 @@
       setupLanguageToggle,
       showToast,
       confirmModal,
+      showInfoModal,
       t,
       getUrlParam,
       getTodayISODate,
@@ -225,8 +237,9 @@
       getLocalizedStatus,
       resolveAvatar
     } from '../js/utils.js';
+    import { db, COLLECTIONS } from '../js/firebase.js';
 
-    enforceRouteProtection({ allowedRoles: ['tourist', 'guide', 'admin'] });
+    enforceRouteProtection({ allowedRoles: ['tourist'] });
     applyTranslations();
     setupLanguageToggle();
 
@@ -245,13 +258,20 @@
       { key: 'completed', labelKey: 'booking.timeline.completed' }
     ];
 
-    function renderTracking(b) {
+    function localizedEscrowLabel(payStatus) {
+      if (payStatus === 'held_in_escrow') return t('booking.escrowHeld');
+      if (payStatus === 'released_to_guide') return t('booking.escrowReleased');
+      if (payStatus === 'refunded') return t('booking.escrowRefunded');
+      return t('booking.escrowPending');
+    }
+
+    async function renderTracking(b) {
       activeBooking = b;
       const trackSec = document.getElementById('trackBookingSection');
       trackSec.style.display = 'block';
 
       document.getElementById('trTitle').textContent = `#${b.id}`;
-      document.getElementById('trEta').textContent = t(`booking.eta.${b.status}`, { guide: b.guideName || 'Guide' });
+      document.getElementById('trEta').textContent = t(`booking.eta.${b.status}`, { guide: b.guideName || t('booking.guideLabel') });
       const badge = document.getElementById('trStatusBadge');
       badge.textContent = getLocalizedStatus(b.status);
       badge.className = `status-label ${b.status === 'completed' || b.status === 'confirmed' ? 'status-success' : b.status === 'cancelled' || b.status === 'rejected' ? 'status-danger' : 'status-info'}`;
@@ -262,11 +282,11 @@
       document.getElementById('trDurationLang').textContent = `${formatDuration(b.duration)} · ${b.language || 'English'}`;
       document.getElementById('trTotal').textContent = formatCurrency(b.total || b.price || 0, b.currency || 'USD');
 
+      const payDoc = await db.getDocument(COLLECTIONS.PAYMENTS, `PAY-${b.id}`);
+      document.getElementById('trPaymentStatus').textContent = localizedEscrowLabel(payDoc?.status);
+
       const user = getCurrentUser();
-      const msgHref = user?.role === 'guide'
-        ? `../guide/messages.html?bookingId=${encodeURIComponent(b.id)}`
-        : `./messages.html?bookingId=${encodeURIComponent(b.id)}`;
-      document.getElementById('trMessageBtn').href = msgHref;
+      document.getElementById('trMessageBtn').href = `./messages.html?bookingId=${encodeURIComponent(b.id)}`;
 
       const idx = TIMELINE_STEPS.findIndex(s => s.key === b.status);
       document.getElementById('timelineStrip').innerHTML = TIMELINE_STEPS.map((s, i) => {
@@ -365,6 +385,16 @@
         }
       });
     }
+
+    document.getElementById('trCallBtn').addEventListener('click', async () => {
+      if (!activeBooking) return;
+      const guide = await getGuideById(activeBooking.guideId);
+      const phone = guide?.phone || t('guide.noPhoneAvailable');
+      showInfoModal(
+        t('booking.callTitle'),
+        t('booking.callBody', { guide: activeBooking.guideName || '', phone, id: activeBooking.id })
+      );
+    });
 
     document.getElementById('trCancelBtn').addEventListener('click', async () => {
       if (!activeBooking) return;

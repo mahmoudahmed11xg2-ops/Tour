@@ -21,7 +21,12 @@
       <span data-i18n="brand.name">TourGuide</span>
     </a>
     <button type="button" class="lang-toggle-btn" aria-label="Toggle language">
-      <span class="lang-label">العربية</span>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="2" y1="12" x2="22" y2="12"></line>
+        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+      </svg>
+      <span class="lang-label">English</span>
     </button>
   </header>
 
@@ -51,7 +56,12 @@
     <section class="auth-form-panel">
       <div style="display: flex; justify-content: flex-end; margin-bottom: 12px;" class="hide-mobile">
         <button type="button" class="lang-toggle-btn" aria-label="Toggle language">
-          <span class="lang-label">العربية</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="2" y1="12" x2="22" y2="12"></line>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+          </svg>
+          <span class="lang-label">English</span>
         </button>
       </div>
 
@@ -130,7 +140,7 @@
             </div>
             <div class="form-group">
               <label for="tCountry" class="form-label" data-i18n="auth.homeCountry">Country</label>
-              <input type="text" id="tCountry" class="form-control" value="Egypt">
+              <input type="text" id="tCountry" class="form-control" data-i18n-placeholder="auth.defaultCountry" placeholder="Egypt">
             </div>
           </div>
 
@@ -180,7 +190,7 @@
             </div>
             <div class="form-group">
               <label for="gCountry" class="form-label" data-i18n="auth.homeCountry">Country</label>
-              <input type="text" id="gCountry" class="form-control" value="Egypt" required>
+              <input type="text" id="gCountry" class="form-control" data-i18n-placeholder="auth.defaultCountry" placeholder="Egypt" required>
             </div>
           </div>
 
@@ -192,7 +202,7 @@
           <div class="form-grid-2">
             <div class="form-group">
               <label for="gAreas" class="form-label" data-i18n="auth.primaryAreas">Areas</label>
-              <input type="text" id="gAreas" class="form-control" placeholder="Giza, Cairo, Luxor" required>
+              <input type="text" id="gAreas" class="form-control" data-i18n-placeholder="auth.areasPlaceholder" placeholder="Giza, Cairo, Luxor" required>
             </div>
             <div class="form-group">
               <label for="gExperience" class="form-label" data-i18n="auth.experienceYears">Experience (years)</label>
@@ -280,7 +290,7 @@
           email: document.getElementById('tEmail').value,
           password: document.getElementById('tPassword').value,
           phone: document.getElementById('tPhone').value,
-          country: document.getElementById('tCountry').value,
+          country: document.getElementById('tCountry').value.trim() || 'Egypt',
           preferredLanguage: document.getElementById('tLanguage').value
         });
         showToast(t('toasts.registrationSuccess'), 'success');
@@ -310,9 +320,9 @@
           email: document.getElementById('gEmail').value,
           password: document.getElementById('gPassword').value,
           phone: document.getElementById('gPhone').value,
-          country: document.getElementById('gCountry').value,
+          country: document.getElementById('gCountry').value.trim() || 'Egypt',
           languages: langs.length ? langs : ['Arabic', 'English'],
-          areas: document.getElementById('gAreas').value,
+          areas: document.getElementById('gAreas').value.trim() || 'Giza',
           experience: document.getElementById('gExperience').value
         });
 

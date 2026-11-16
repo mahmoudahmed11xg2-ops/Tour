@@ -102,8 +102,16 @@ function resolvePath(obj, path) {
   return path.split('.').reduce((curr, key) => (curr && curr[key] !== undefined ? curr[key] : undefined), obj);
 }
 
+function humanizeFallbackKey(key) {
+  const leaf = String(key || '').split('.').pop() || '';
+  return leaf
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
+    .replace(/[_-]+/g, ' ')
+    .replace(/^\w/, c => c.toUpperCase());
+}
+
 /**
- * Core translation function with parameter interpolation: {param}
+ * Core translation function with safe fallback (never leaks raw dotted keys to UI)
  */
 export function t(key, params = {}) {
   const lang = getActiveLang();
@@ -113,14 +121,18 @@ export function t(key, params = {}) {
     val = resolvePath(TRANSLATIONS.en, key);
   }
   if (val === undefined) {
-    val = TRANSLATIONS[lang]?.[key] || TRANSLATIONS.en?.[key] || key;
+    val = TRANSLATIONS[lang]?.[key] || TRANSLATIONS.en?.[key];
   }
 
-  if (typeof val === 'string' && params && typeof params === 'object') {
-    return val.replace(/\{(\w+)\}/g, (match, p) => (params[p] !== undefined ? params[p] : match));
+  if (typeof val === 'string') {
+    if (params && typeof params === 'object') {
+      return val.replace(/\{(\w+)\}/g, (match, p) => (params[p] !== undefined ? params[p] : match));
+    }
+    return val;
   }
 
-  return typeof val === 'string' ? val : key;
+  console.warn(`[TourGuide i18n] Missing translation key: "${key}"`);
+  return (params && typeof params.fallback === 'string') ? params.fallback : humanizeFallbackKey(key);
 }
 
 /**
@@ -254,7 +266,7 @@ export function updateLanguageToggleButtons(currentLang = getActiveLang()) {
   document.querySelectorAll('.lang-toggle-btn').forEach(btn => {
     const label = btn.querySelector('.lang-label') || btn.querySelector('#langLabel') || btn;
     if (label) {
-      label.textContent = currentLang === 'en' ? 'العربية' : 'English';
+      label.textContent = currentLang === 'ar' ? 'العربية' : 'English';
     }
     const title = currentLang === 'en' ? 'التحويل إلى العربية' : 'Switch to English';
     btn.setAttribute('title', title);
@@ -262,17 +274,21 @@ export function updateLanguageToggleButtons(currentLang = getActiveLang()) {
   });
 }
 
+let langListenerBound = false;
+
 export function setupLanguageToggle() {
-  document.querySelectorAll('.lang-toggle-btn').forEach(btn => {
-    if (btn.dataset.bound === 'true') return;
-    btn.dataset.bound = 'true';
-    btn.addEventListener('click', (e) => {
-      e.preventDefault();
-      const current = getActiveLang();
-      const next = current === 'en' ? 'ar' : 'en';
-      setActiveLang(next);
-      showToast(t('toasts.languageSwitched', { lang: next === 'ar' ? 'العربية' : 'English' }), 'info');
-    });
+  updateLanguageToggleButtons();
+  if (langListenerBound || typeof document === 'undefined') return;
+  langListenerBound = true;
+
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.lang-toggle-btn');
+    if (!btn) return;
+    e.preventDefault();
+    const current = getActiveLang();
+    const next = current === 'en' ? 'ar' : 'en';
+    setActiveLang(next);
+    showToast(t('toasts.languageSwitched', { lang: next === 'ar' ? 'العربية' : 'English' }), 'info');
   });
 }
 
