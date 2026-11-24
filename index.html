@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
-
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="app-root" content="./">
@@ -9,9 +8,21 @@
   <meta name="description" content="Explore the world with the right local guide. Book verified guides instantly or schedule private city tours in your preferred language.">
   <meta property="og:title" content="TourGuide | Uber for Tour Guides">
   <meta property="og:description" content="Find a verified local guide who knows the place, the story, and the experience.">
+
+  <!-- Import Map must appear BEFORE any <script type="module"> -->
+  <script type="importmap">
+    {
+      "imports": {
+        "firebase/app": "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js",
+        "firebase/auth": "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js",
+        "firebase/firestore": "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js",
+        "firebase/storage": "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js"
+      }
+    }
+  </script>
+
   <link rel="stylesheet" href="./css/global.css">
   <link rel="stylesheet" href="./css/landing.css">
-  
 </head>
 <body data-surface="public">
 
@@ -337,12 +348,7 @@
         redirectByRole(profile);
       }
     });
-<script type="importmap">
-    {
-      "imports": {
-        "firebase/app": "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js",
-        "firebase/auth": "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"
-      }
+
     // Footer info modals
     document.querySelectorAll('[data-info-modal]').forEach(btn => {
       btn.addEventListener('click', () => {
