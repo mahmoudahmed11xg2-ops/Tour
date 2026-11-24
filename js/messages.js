@@ -11,15 +11,19 @@ import {
   where,
   onSnapshot
 } from 'firebase/firestore';
-import { db, COLLECTIONS, handleFirestoreError } from './firebase.js';
+import { db, COLLECTIONS, isFirebaseConfigured, handleFirestoreError } from './firebase.js';
 import { getBookingsForTourist, getBookingsForGuide } from './booking.js';
+import { sendNotification } from './notifications.js';
 import { t } from './utils.js';
 
 /**
  * Subscribe to real-time messages for a specific booking
  */
 export function subscribeToBookingMessages(bookingId, onUpdate, onError = null) {
-  if (!bookingId) return () => {};
+  if (!isFirebaseConfigured() || !bookingId) {
+    onUpdate([]);
+    return () => {};
+  }
   const q = query(
     collection(db, COLLECTIONS.MESSAGES),
     where('bookingId', '==', bookingId)
@@ -43,6 +47,9 @@ export function subscribeToBookingMessages(bookingId, onUpdate, onError = null) 
  * Send a booking-scoped message
  */
 export async function sendBookingMessage({ booking, senderId, senderRole, senderName, text }) {
+  if (!isFirebaseConfigured()) {
+    throw new Error(t('auth.errFirebaseNotConfigured'));
+  }
   const cleanText = String(text || '').trim();
   if (!cleanText) {
     throw new Error(t('messages.errEmptyMessage'));
@@ -66,6 +73,21 @@ export async function sendBookingMessage({ booking, senderId, senderRole, sender
 
   try {
     await setDoc(doc(db, COLLECTIONS.MESSAGES, messageId), payload);
+
+    const recipientId = senderId === booking.touristId ? booking.guideId : booking.touristId;
+    if (recipientId) {
+      const link = senderId === booking.touristId
+        ? `guide/messages.html?bookingId=${booking.id}`
+        : `tourist/messages.html?bookingId=${booking.id}`;
+      await sendNotification(
+        recipientId,
+        t('notif.newMessageTitle'),
+        t('notif.newMessageBody', { sender: payload.senderName || t('nav.messages'), preview: cleanText.slice(0, 80) }),
+        link,
+        { type: 'new_message', bookingId: booking.id, senderId }
+      );
+    }
+
     return payload;
   } catch (err) {
     handleFirestoreError(err, 'create', `${COLLECTIONS.MESSAGES}/${messageId}`);
@@ -77,7 +99,7 @@ export async function sendBookingMessage({ booking, senderId, senderRole, sender
  * Fetch user's booking threads for Tourist or Guide
  */
 export async function getUserConversations(userId, role = 'tourist') {
-  if (!userId) return [];
+  if (!isFirebaseConfigured() || !userId) return [];
   const bookings = role === 'guide'
     ? await getBookingsForGuide(userId)
     : await getBookingsForTourist(userId);

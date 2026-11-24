@@ -161,6 +161,7 @@
   <script type="module" src="../js/nav.js"></script>
   <script type="module">
     import { enforceRouteProtection, getCurrentUser, onAuthReady } from '../js/auth.js';
+    import { getGuideById } from '../js/guides.js';
     import {
       getBookingById,
       subscribeToBooking,
@@ -192,6 +193,7 @@
     const bookingId = getUrlParam('id');
     let activeBooking = null;
     let currentUid = null;
+    let guideDoc = null;
 
     const TIMELINE_STEPS = [
       { key: 'pending', labelKey: 'booking.timeline.requested' },
@@ -247,7 +249,15 @@
       const nextSt = ALLOWED_GUIDE_TRANSITIONS[b.status];
       const isTerminal = TERMINAL_BOOKING_STATUSES.includes(b.status);
 
-      document.getElementById('gbAcceptBtn').style.display = isPending ? 'inline-flex' : 'none';
+      const isApproved = guideDoc?.verificationStatus === 'approved' && guideDoc?.verified === true;
+      const acceptBtn = document.getElementById('gbAcceptBtn');
+      acceptBtn.style.display = isPending ? 'inline-flex' : 'none';
+      acceptBtn.disabled = !isApproved;
+      if (!isApproved) {
+        acceptBtn.title = t('guide.approvalRequiredBannerAction');
+      } else {
+        acceptBtn.removeAttribute('title');
+      }
       document.getElementById('gbDeclineBtn').style.display = isPending ? 'inline-flex' : 'none';
 
       const advBtn = document.getElementById('gbAdvanceBtn');
@@ -333,6 +343,7 @@
     onAuthReady(async (user) => {
       if (!user) return;
       currentUid = user.uid;
+      guideDoc = await getGuideById(user.uid);
       if (!bookingId) {
         document.getElementById('notFoundState').style.display = 'block';
         return;

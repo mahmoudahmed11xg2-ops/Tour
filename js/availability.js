@@ -13,7 +13,7 @@ import {
   query,
   where
 } from 'firebase/firestore';
-import { db, COLLECTIONS } from './firebase.js';
+import { db, COLLECTIONS, isFirebaseConfigured } from './firebase.js';
 import { getTodayISODate, getCurrentTimeHHMM } from './utils.js';
 
 export const BLOCKING_BOOKING_STATUSES = [
@@ -142,6 +142,7 @@ export function isWithinGuideSchedule(guide, date, startTime, durationHours = 2)
  * Fetch all active busy slots from Firestore (optionally filtered by guideId)
  */
 export async function getAllActiveBusySlots() {
+  if (!isFirebaseConfigured()) return [];
   try {
     const snap = await getDocs(collection(db, COLLECTIONS.GUIDE_BUSY_SLOTS));
     const slots = [];
@@ -159,7 +160,7 @@ export async function getAllActiveBusySlots() {
 }
 
 export async function getGuideBusySlots(guideId, date = null) {
-  if (!guideId) return [];
+  if (!isFirebaseConfigured() || !guideId) return [];
   try {
     const q = query(
       collection(db, COLLECTIONS.GUIDE_BUSY_SLOTS),
@@ -256,7 +257,7 @@ export async function checkGuideAvailability(guideOrId, date, startTime, duratio
  * Sync non-PII busy slot alongside booking creation/update
  */
 export async function syncBusySlotForBooking(booking) {
-  if (!booking || !booking.id) return;
+  if (!isFirebaseConfigured() || !booking || !booking.id) return;
   const slotRef = doc(db, COLLECTIONS.GUIDE_BUSY_SLOTS, booking.id);
 
   if (BLOCKING_BOOKING_STATUSES.includes(booking.status) && booking.guideId) {

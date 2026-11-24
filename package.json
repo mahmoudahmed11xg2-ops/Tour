@@ -8,7 +8,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "clean": "rm -rf dist",
-    "lint": "node --check js/*.js js/locales/*.js scripts/*.js"
+    "lint": "node --check firebase-config.js js/*.js js/locales/*.js"
   },
   "dependencies": {
     "firebase": "^13.3.0"

@@ -1,12 +1,15 @@
 /**
  * TourGuide — Production Firebase Authentication & Role-Isolated Route Guard
- * Real Email/Password, Google Sign-in, Password Reset, Email Verification & Role Redirects.
+ * Real Email/Password, Google Sign-in, Password Reset, Email Verification,
+ * Tourist/Guide profile synchronization, Suspended Account Blocking,
+ * and Request-Based Account Deletion Lifecycle.
  */
 
 import {
   auth,
   db,
   COLLECTIONS,
+  isFirebaseConfigured,
   handleFirestoreError
 } from './firebase.js';
 import {
@@ -22,14 +25,16 @@ import {
 import {
   doc,
   getDoc,
-  setDoc
+  setDoc,
+  updateDoc,
+  addDoc,
+  collection
 } from 'firebase/firestore';
 import {
   showToast,
   t,
   appUrl,
   DEFAULT_AVATAR_PATH,
-  setupLanguageToggle,
   escapeHtml
 } from './utils.js';
 
@@ -38,6 +43,14 @@ let isAuthReady = false;
 const authReadyListeners = [];
 
 export function onAuthReady(callback) {
+  if (!isFirebaseConfigured()) {
+    isAuthReady = true;
+    cachedUserDoc = null;
+    updateUIForAuth();
+    callback(null, null);
+    return;
+  }
+
   if (isAuthReady) {
     callback(auth.currentUser, cachedUserDoc);
   } else {
@@ -45,63 +58,90 @@ export function onAuthReady(callback) {
   }
 }
 
+async function ensureTouristRecord(uid, preferredLanguage = 'English') {
+  const touristRef = doc(db, COLLECTIONS.TOURISTS, uid);
+  const snap = await getDoc(touristRef);
+  if (!snap.exists()) {
+    const nowIso = new Date().toISOString();
+    await setDoc(touristRef, {
+      uid,
+      userId: uid,
+      travelPreferences: [],
+      preferredLanguages: [preferredLanguage || 'English'],
+      favoriteDestinations: [],
+      createdAt: nowIso,
+      updatedAt: nowIso
+    });
+  }
+}
+
 async function resolveAccountProfile(firebaseUser) {
   const userRef = doc(db, COLLECTIONS.USERS, firebaseUser.uid);
   const userSnap = await getDoc(userRef);
 
-  // Also check explicit /admins/{uid} registry managed outside self-signup
+  // Admins are controlled solely via /admins/{uid} managed outside client self-signup
   let isRegisteredAdmin = false;
   try {
     const adminSnap = await getDoc(doc(db, COLLECTIONS.ADMINS, firebaseUser.uid));
     isRegisteredAdmin = adminSnap.exists();
   } catch (e) {
-    // Non-admins receive permission-denied on unrelated reads; ignore silently on missing doc
+    // Expected for non-admins or missing admin doc
   }
 
   if (userSnap.exists()) {
     const data = userSnap.data();
-    return isRegisteredAdmin ? { ...data, role: 'admin' } : data;
+    return isRegisteredAdmin ? { ...data, role: 'admin', status: data.status || 'active' } : data;
   }
 
+  const nowIso = new Date().toISOString();
+  const role = isRegisteredAdmin ? 'admin' : 'tourist';
   const newProfile = {
     uid: firebaseUser.uid,
     email: firebaseUser.email,
     firstName: firebaseUser.displayName ? firebaseUser.displayName.split(' ')[0] : t('touristProfile.memberBadge'),
     lastName: firebaseUser.displayName ? firebaseUser.displayName.split(' ').slice(1).join(' ') : '',
-    role: isRegisteredAdmin ? 'admin' : 'tourist',
+    role,
     status: 'active',
     country: 'Egypt',
     phone: firebaseUser.phoneNumber || '',
     preferredLanguage: 'English',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
+    photoURL: firebaseUser.photoURL || '',
+    createdAt: nowIso,
+    updatedAt: nowIso
   };
   await setDoc(userRef, newProfile);
+
+  if (role === 'tourist') {
+    await ensureTouristRecord(firebaseUser.uid, newProfile.preferredLanguage);
+  }
+
   return newProfile;
 }
 
-onAuthStateChanged(auth, async (firebaseUser) => {
-  if (firebaseUser) {
-    try {
-      cachedUserDoc = await resolveAccountProfile(firebaseUser);
-    } catch (err) {
-      console.error('Error fetching user profile:', err);
+if (isFirebaseConfigured()) {
+  onAuthStateChanged(auth, async (firebaseUser) => {
+    if (firebaseUser) {
+      try {
+        cachedUserDoc = await resolveAccountProfile(firebaseUser);
+      } catch (err) {
+        console.error('Error fetching user profile:', err);
+      }
+    } else {
+      cachedUserDoc = null;
     }
-  } else {
-    cachedUserDoc = null;
-  }
 
-  isAuthReady = true;
-  updateUIForAuth();
+    isAuthReady = true;
+    updateUIForAuth();
 
-  while (authReadyListeners.length > 0) {
-    const fn = authReadyListeners.shift();
-    fn(firebaseUser, cachedUserDoc);
-  }
-});
+    while (authReadyListeners.length > 0) {
+      const fn = authReadyListeners.shift();
+      fn(firebaseUser, cachedUserDoc);
+    }
+  });
+}
 
 export function getCurrentUser() {
-  if (!auth.currentUser) return null;
+  if (!isFirebaseConfigured() || !auth.currentUser) return null;
   return {
     ...auth.currentUser,
     ...cachedUserDoc,
@@ -111,7 +151,7 @@ export function getCurrentUser() {
 }
 
 export async function getCurrentUserProfile() {
-  if (!auth.currentUser) return null;
+  if (!isFirebaseConfigured() || !auth.currentUser) return null;
   if (cachedUserDoc) return cachedUserDoc;
 
   try {
@@ -126,20 +166,42 @@ export async function getCurrentUserProfile() {
   return null;
 }
 
+function assertAccountActive(profile) {
+  if (!profile) return;
+  if (profile.status === 'suspended') {
+    throw new Error(t('auth.errAccountSuspended'));
+  }
+  if (profile.status === 'deletion_requested') {
+    throw new Error(t('auth.errAccountDeletionPending'));
+  }
+}
+
 export async function login(email, password) {
+  if (!isFirebaseConfigured()) {
+    throw new Error(t('auth.errFirebaseNotConfigured'));
+  }
   if (!email || !password) {
     throw new Error(t('auth.errMissingCreds'));
   }
 
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email.trim(), password);
-    cachedUserDoc = await resolveAccountProfile(userCredential.user);
+    const profile = await resolveAccountProfile(userCredential.user);
+    if (profile?.status === 'suspended' || profile?.status === 'deletion_requested') {
+      await signOut(auth);
+      cachedUserDoc = null;
+      assertAccountActive(profile);
+    }
+    cachedUserDoc = profile;
 
     return {
       user: userCredential.user,
       profile: cachedUserDoc
     };
   } catch (err) {
+    if (err.message === t('auth.errAccountSuspended') || err.message === t('auth.errAccountDeletionPending')) {
+      throw err;
+    }
     let friendlyMessage = t('auth.errLoginFailed');
     if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password') {
       friendlyMessage = t('auth.errInvalidCreds');
@@ -155,6 +217,9 @@ export async function login(email, password) {
 }
 
 export async function registerTourist({ firstName, lastName, email, password, country, phone, preferredLanguage }) {
+  if (!isFirebaseConfigured()) {
+    throw new Error(t('auth.errFirebaseNotConfigured'));
+  }
   if (!email || !password) {
     throw new Error(t('auth.errEmailPasswordRequired'));
   }
@@ -172,24 +237,48 @@ export async function registerTourist({ firstName, lastName, email, password, co
       console.warn('Email verification dispatch notice:', e.message);
     }
 
+    const nowIso = new Date().toISOString();
+    const cleanFirst = (firstName || '').trim();
+    const cleanLast = (lastName || '').trim();
+    const cleanLang = preferredLanguage || 'English';
+
     const userDoc = {
       uid: user.uid,
       email: user.email,
-      firstName: firstName.trim(),
-      lastName: lastName.trim(),
+      firstName: cleanFirst,
+      lastName: cleanLast,
       phone: phone ? phone.trim() : '',
       country: country || 'International',
       role: 'tourist',
       status: 'active',
-      preferredLanguage: preferredLanguage || 'English',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      preferredLanguage: cleanLang,
+      photoURL: user.photoURL || '',
+      createdAt: nowIso,
+      updatedAt: nowIso
     };
 
     await setDoc(doc(db, COLLECTIONS.USERS, user.uid), userDoc);
-    cachedUserDoc = userDoc;
 
-    return { user, profile: userDoc };
+    const touristDoc = {
+      uid: user.uid,
+      userId: user.uid,
+      travelPreferences: [],
+      preferredLanguages: [cleanLang],
+      favoriteDestinations: [],
+      createdAt: nowIso,
+      updatedAt: nowIso
+    };
+    await setDoc(doc(db, COLLECTIONS.TOURISTS, user.uid), touristDoc);
+
+    await addDoc(collection(db, COLLECTIONS.AUDIT_LOGS), {
+      action: 'TOURIST_REGISTERED',
+      actorId: user.uid,
+      targetId: user.uid,
+      timestamp: nowIso
+    });
+
+    cachedUserDoc = userDoc;
+    return { user, profile: userDoc, tourist: touristDoc };
   } catch (err) {
     let msg = err.message;
     if (err.code === 'auth/email-already-in-use') {
@@ -204,6 +293,9 @@ export async function registerTourist({ firstName, lastName, email, password, co
 }
 
 export async function registerGuide({ name, email, password, phone, country, languages, areas, experience }) {
+  if (!isFirebaseConfigured()) {
+    throw new Error(t('auth.errFirebaseNotConfigured'));
+  }
   if (!email || !password) {
     throw new Error(t('auth.errEmailPasswordRequired'));
   }
@@ -221,49 +313,73 @@ export async function registerGuide({ name, email, password, phone, country, lan
       console.warn('Email verification dispatch notice:', e.message);
     }
 
-    const firstName = name.split(' ')[0] || name;
-    const lastName = name.split(' ').slice(1).join(' ') || '';
+    const nowIso = new Date().toISOString();
+    const cleanName = (name || '').trim();
+    const firstName = cleanName.split(' ')[0] || cleanName;
+    const lastName = cleanName.split(' ').slice(1).join(' ') || '';
+    const areaList = String(areas || 'Giza').split(',').map(s => s.trim()).filter(Boolean);
+    const primaryCity = areaList[0] || 'Giza';
+    const bioText = 'New guide registration. License credentials submitted and awaiting operations verification.';
 
     const userDoc = {
       uid: user.uid,
       email: user.email,
       firstName,
       lastName,
-      phone: phone || '',
+      phone: phone ? phone.trim() : '',
       country: country || 'Egypt',
       role: 'guide',
       status: 'pending',
       preferredLanguage: 'Arabic',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      photoURL: DEFAULT_AVATAR_PATH,
+      createdAt: nowIso,
+      updatedAt: nowIso
     };
     await setDoc(doc(db, COLLECTIONS.USERS, user.uid), userDoc);
 
     const guideDoc = {
       id: user.uid,
-      name: name.trim(),
+      uid: user.uid,
+      userId: user.uid,
+      firstName,
+      lastName,
+      name: cleanName,
       email: user.email,
-      phone: phone || '',
+      phone: phone ? phone.trim() : '',
       country: country || 'Egypt',
-      verified: false,
-      verificationStatus: 'pending',
-      rating: 0,
-      reviewsCount: 0,
+      photoURL: DEFAULT_AVATAR_PATH,
+      avatar: DEFAULT_AVATAR_PATH,
+      bio: bioText,
+      about: bioText,
       languages: Array.isArray(languages) ? languages : [languages],
-      experienceYears: Number(experience) || 1,
-      city: areas || 'Giza',
-      currentLocationName: areas || 'Giza',
-      isOnline: false,
+      specialties: ['History', 'Local Experience'],
+      cities: areaList.length ? areaList : [primaryCity],
+      city: primaryCity,
+      serviceAreas: areaList.length ? areaList : [primaryCity],
+      currentLocationName: primaryCity,
       hourlyRate: 25,
       currency: 'USD',
-      avatar: DEFAULT_AVATAR_PATH,
-      specialties: ['History', 'Local Experience'],
-      about: 'New guide registration. License credentials submitted and awaiting operations verification.',
+      experienceYears: Number(experience) || 1,
+      verificationStatus: 'pending',
+      isApproved: false,
+      verified: false,
+      isOnline: false,
+      instantAvailable: true,
+      rating: 0,
+      reviewCount: 0,
+      reviewsCount: 0,
       packages: [],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      createdAt: nowIso,
+      updatedAt: nowIso
     };
     await setDoc(doc(db, COLLECTIONS.GUIDES, user.uid), guideDoc);
+
+    await addDoc(collection(db, COLLECTIONS.AUDIT_LOGS), {
+      action: 'GUIDE_REGISTERED',
+      actorId: user.uid,
+      targetId: user.uid,
+      timestamp: nowIso
+    });
 
     cachedUserDoc = userDoc;
     return { user, profile: userDoc, guide: guideDoc };
@@ -281,6 +397,9 @@ export async function registerGuide({ name, email, password, phone, country, lan
 }
 
 export async function sendResetPassword(email) {
+  if (!isFirebaseConfigured()) {
+    throw new Error(t('auth.errFirebaseNotConfigured'));
+  }
   if (!email) {
     throw new Error(t('auth.errResetEmailRequired'));
   }
@@ -300,11 +419,20 @@ export async function sendResetPassword(email) {
 }
 
 export async function loginWithGoogle() {
+  if (!isFirebaseConfigured()) {
+    throw new Error(t('auth.errFirebaseNotConfigured'));
+  }
   const provider = new GoogleAuthProvider();
   try {
     const result = await signInWithPopup(auth, provider);
     const user = result.user;
-    cachedUserDoc = await resolveAccountProfile(user);
+    const profile = await resolveAccountProfile(user);
+    if (profile?.status === 'suspended' || profile?.status === 'deletion_requested') {
+      await signOut(auth);
+      cachedUserDoc = null;
+      assertAccountActive(profile);
+    }
+    cachedUserDoc = profile;
 
     return { user, profile: cachedUserDoc };
   } catch (err) {
@@ -315,9 +443,44 @@ export async function loginWithGoogle() {
   }
 }
 
+export async function requestAccountDeletion(reason = 'User requested account deletion') {
+  if (!isFirebaseConfigured() || !auth.currentUser) {
+    throw new Error(t('auth.errFirebaseNotConfigured'));
+  }
+  const uid = auth.currentUser.uid;
+  const nowIso = new Date().toISOString();
+
+  await updateDoc(doc(db, COLLECTIONS.USERS, uid), {
+    status: 'deletion_requested',
+    deletionRequestedAt: nowIso,
+    updatedAt: nowIso
+  });
+
+  if (cachedUserDoc?.role === 'guide') {
+    await updateDoc(doc(db, COLLECTIONS.GUIDES, uid), {
+      isOnline: false,
+      updatedAt: nowIso
+    });
+  }
+
+  await addDoc(collection(db, COLLECTIONS.AUDIT_LOGS), {
+    action: 'ACCOUNT_DELETION_REQUESTED',
+    actorId: uid,
+    targetId: uid,
+    timestamp: nowIso,
+    notes: String(reason || '').slice(0, 300)
+  });
+
+  await signOut(auth);
+  cachedUserDoc = null;
+  return true;
+}
+
 export async function logout() {
   try {
-    await signOut(auth);
+    if (isFirebaseConfigured()) {
+      await signOut(auth);
+    }
     cachedUserDoc = null;
     showToast(t('toasts.logoutSuccess'), 'info');
     setTimeout(() => {
@@ -343,10 +506,10 @@ export function redirectByRole(profile) {
 }
 
 /**
- * Role-isolated Route Protection Guard
+ * Role-isolated & account-status-enforced Route Protection Guard
  */
 export function enforceRouteProtection({ allowedRoles = ['tourist', 'guide', 'admin'] } = {}) {
-  onAuthReady((firebaseUser, profile) => {
+  onAuthReady(async (firebaseUser, profile) => {
     const currentHref = window.location.href;
 
     if (!firebaseUser) {
@@ -354,6 +517,17 @@ export function enforceRouteProtection({ allowedRoles = ['tourist', 'guide', 'ad
       setTimeout(() => {
         window.location.href = `${appUrl('login.html')}?redirect=${encodeURIComponent(currentHref)}`;
       }, 250);
+      return;
+    }
+
+    if (profile?.status === 'suspended' || profile?.status === 'deletion_requested') {
+      const msgKey = profile.status === 'suspended' ? 'auth.errAccountSuspended' : 'auth.errAccountDeletionPending';
+      showToast(t(msgKey), 'error');
+      await signOut(auth);
+      cachedUserDoc = null;
+      setTimeout(() => {
+        window.location.href = appUrl('login.html');
+      }, 350);
       return;
     }
 
@@ -404,7 +578,6 @@ export function updateUIForAuth() {
     }
   }
 
-  // Update mobile drawer auth slot if present
   const drawerAuth = document.getElementById('drawerAuthSlot');
   if (drawerAuth) {
     if (user) {

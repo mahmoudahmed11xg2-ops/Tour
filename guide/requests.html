@@ -104,6 +104,7 @@
   <script type="module" src="../js/nav.js"></script>
   <script type="module">
     import { enforceRouteProtection, onAuthReady } from '../js/auth.js';
+    import { getGuideById } from '../js/guides.js';
     import {
       subscribeToGuideBookings,
       acceptBooking,
@@ -129,6 +130,7 @@
 
     let allBookings = [];
     let currentUid = null;
+    let guideDoc = null;
 
     function nextBtnLabel(status) {
       if (status === 'confirmed' || status === 'accepted') return t('guide.startArriving');
@@ -150,6 +152,7 @@
         return;
       }
 
+      const isApproved = guideDoc?.verificationStatus === 'approved' && guideDoc?.verified === true;
       feed.innerHTML = allBookings.map(b => {
         const isPending = b.status === 'pending';
         const nextSt = ALLOWED_GUIDE_TRANSITIONS[b.status];
@@ -174,7 +177,7 @@
             <div class="form-hint tabular-nums">${escapeHtml(formatBookingDateTime(b.date, b.startTime, b.endTime))}</div>
             <div class="request-actions">
               ${isPending ? `
-                <button type="button" class="btn btn-primary btn-sm" data-accept="${escapeHtml(b.id)}">${escapeHtml(t('guide.acceptTour'))}</button>
+                <button type="button" class="btn btn-primary btn-sm" data-accept="${escapeHtml(b.id)}" ${!isApproved ? `disabled title="${escapeHtml(t('guide.approvalRequiredBannerAction'))}"` : ''}>${escapeHtml(t('guide.acceptTour'))}</button>
                 <button type="button" class="btn btn-outline btn-sm" data-decline="${escapeHtml(b.id)}">${escapeHtml(t('guide.decline'))}</button>
               ` : ''}
               ${nextSt ? `<button type="button" class="btn btn-primary btn-sm" data-advance="${escapeHtml(b.id)}">${escapeHtml(nextBtnLabel(b.status))}</button>` : ''}
@@ -225,9 +228,10 @@
       });
     }
 
-    onAuthReady((user) => {
+    onAuthReady(async (user) => {
       if (!user) return;
       currentUid = user.uid;
+      guideDoc = await getGuideById(user.uid);
       subscribeToGuideBookings(user.uid, (list) => {
         allBookings = list;
         renderFeed();

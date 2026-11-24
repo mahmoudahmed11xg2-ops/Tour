@@ -1,12 +1,14 @@
 /**
- * TourGuide — Real Booking Lifecycle, Dispatch & State Machine Engine
- * Strictly Firestore-backed with conflict checking, guide accept/decline,
- * instant fallback dispatch, and role-enforced operational progression.
+ * TourGuide — Real Booking Lifecycle, Dispatch, Disputes & State Machine Engine
+ * Strictly Firestore-backed with conflict checking, guide verification gate,
+ * instant fallback dispatch, disputes collection, notifications, and audit logging.
  */
 
 import {
+  auth,
   db,
   COLLECTIONS,
+  isFirebaseConfigured,
   handleFirestoreError
 } from './firebase.js';
 import {
@@ -93,6 +95,7 @@ export async function createBooking({
   bookingType = 'instant',
   candidateGuideIds = []
 }) {
+  if (!isFirebaseConfigured()) throw new Error(t('auth.errFirebaseNotConfigured'));
   if (!touristId) throw new Error(t('booking.errAuthRequired'));
   if (!guideId) throw new Error(t('booking.errNoGuideSelected'));
 
@@ -164,11 +167,13 @@ export async function createBooking({
         date: win.date,
         time: win.startTime
       }),
-      'guide/booking.html?id=' + bookingId
+      `guide/booking.html?id=${bookingId}`,
+      { type: 'booking_request', bookingId, senderId: touristId }
     );
 
     await addDoc(collection(db, COLLECTIONS.AUDIT_LOGS), {
       action: 'BOOKING_CREATED',
+      actorId: auth.currentUser?.uid || touristId,
       bookingId,
       touristId,
       guideId,
@@ -184,6 +189,14 @@ export async function createBooking({
 }
 
 export async function acceptBooking(bookingId, guideId) {
+  if (!isFirebaseConfigured()) throw new Error(t('auth.errFirebaseNotConfigured'));
+
+  const guideSnap = await getDoc(doc(db, COLLECTIONS.GUIDES, guideId));
+  const guideData = guideSnap.exists() ? guideSnap.data() : null;
+  if (!guideData || guideData.verificationStatus !== 'approved' || guideData.verified !== true) {
+    throw new Error(t('toasts.guideApprovalRequiredOnline'));
+  }
+
   const ref = doc(db, COLLECTIONS.BOOKINGS, bookingId);
   const snap = await getDoc(ref);
   if (!snap.exists()) throw new Error(t('booking.errNotFound'));
@@ -228,11 +241,13 @@ export async function acceptBooking(bookingId, guideId) {
     booking.touristId,
     t('notif.bookingConfirmedTitle'),
     t('notif.bookingConfirmedBody', { guide: booking.guideName, location: booking.location }),
-    `tourist/booking.html?id=${bookingId}`
+    `tourist/booking.html?id=${bookingId}`,
+    { type: 'booking_confirmed', bookingId, senderId: guideId }
   );
 
   await addDoc(collection(db, COLLECTIONS.AUDIT_LOGS), {
     action: 'BOOKING_ACCEPTED_CONFIRMED',
+    actorId: auth.currentUser?.uid || guideId,
     bookingId,
     guideId,
     touristId: booking.touristId,
@@ -243,6 +258,7 @@ export async function acceptBooking(bookingId, guideId) {
 }
 
 export async function declineBooking(bookingId, guideId, reason = 'Guide declined') {
+  if (!isFirebaseConfigured()) throw new Error(t('auth.errFirebaseNotConfigured'));
   const ref = doc(db, COLLECTIONS.BOOKINGS, bookingId);
   const snap = await getDoc(ref);
   if (!snap.exists()) throw new Error(t('booking.errNotFound'));
@@ -311,18 +327,21 @@ export async function declineBooking(bookingId, guideId, reason = 'Guide decline
         next.id,
         t('notif.newInstantTitle'),
         t('notif.newInstantBody', { tourist: booking.touristName, location: booking.location, hours: booking.duration }),
-        'guide/booking.html?id=' + bookingId
+        `guide/booking.html?id=${bookingId}`,
+        { type: 'booking_request', bookingId, senderId: guideId }
       );
 
       await sendNotification(
         booking.touristId,
         t('notif.reassignedTitle'),
         t('notif.reassignedBody', { guide: next.name }),
-        `tourist/booking.html?id=${bookingId}`
+        `tourist/booking.html?id=${bookingId}`,
+        { type: 'booking_reassigned', bookingId, senderId: guideId }
       );
 
       await addDoc(collection(db, COLLECTIONS.AUDIT_LOGS), {
         action: 'BOOKING_INSTANT_FALLBACK_REASSIGNED',
+        actorId: auth.currentUser?.uid || guideId,
         bookingId,
         previousGuideId: guideId,
         nextGuideId: next.id,
@@ -348,11 +367,13 @@ export async function declineBooking(bookingId, guideId, reason = 'Guide decline
     booking.bookingType === 'instant'
       ? t('notif.noGuideInstantBody')
       : t('notif.noGuideScheduledBody', { guide: booking.guideName }),
-    `tourist/booking.html?id=${bookingId}`
+    `tourist/booking.html?id=${bookingId}`,
+    { type: 'booking_rejected', bookingId, senderId: guideId }
   );
 
   await addDoc(collection(db, COLLECTIONS.AUDIT_LOGS), {
     action: 'BOOKING_REJECTED',
+    actorId: auth.currentUser?.uid || guideId,
     bookingId,
     guideId,
     reason: booking.bookingType === 'instant' ? 'no_guide_available' : reason,
@@ -363,6 +384,7 @@ export async function declineBooking(bookingId, guideId, reason = 'Guide decline
 }
 
 export async function retryInstantBooking(bookingId, touristId) {
+  if (!isFirebaseConfigured()) throw new Error(t('auth.errFirebaseNotConfigured'));
   const ref = doc(db, COLLECTIONS.BOOKINGS, bookingId);
   const snap = await getDoc(ref);
   if (!snap.exists()) throw new Error(t('booking.errNotFound'));
@@ -419,13 +441,15 @@ export async function retryInstantBooking(bookingId, touristId) {
     best.id,
     t('notif.newInstantTitle'),
     t('notif.newInstantBody', { tourist: booking.touristName, location: booking.location, hours: win.duration }),
-    'guide/booking.html?id=' + bookingId
+    `guide/booking.html?id=${bookingId}`,
+    { type: 'booking_request', bookingId, senderId: touristId }
   );
 
   return { outcome: 'dispatched', booking: updated };
 }
 
 export async function progressBookingStatus(bookingId, guideId, targetStatus = null) {
+  if (!isFirebaseConfigured()) throw new Error(t('auth.errFirebaseNotConfigured'));
   const ref = doc(db, COLLECTIONS.BOOKINGS, bookingId);
   const snap = await getDoc(ref);
   if (!snap.exists()) throw new Error(t('booking.errNotFound'));
@@ -462,33 +486,53 @@ export async function progressBookingStatus(bookingId, guideId, targetStatus = n
     booking.touristId,
     t('notif.statusUpdatedTitle'),
     t('notif.statusUpdatedBody', { status: getLocalizedStatus(nextStatus) }),
-    `tourist/booking.html?id=${bookingId}`
+    `tourist/booking.html?id=${bookingId}`,
+    { type: 'booking_status', bookingId, senderId: guideId }
   );
 
   return nextStatus;
 }
 
 export async function cancelBooking(bookingId, actorId = null, reason = 'Cancelled by user') {
+  if (!isFirebaseConfigured()) return false;
   const ref = doc(db, COLLECTIONS.BOOKINGS, bookingId);
   const snap = await getDoc(ref);
   if (!snap.exists()) return false;
 
+  const booking = { id: snap.id, ...snap.data() };
   const nowIso = new Date().toISOString();
+  const effectiveActor = actorId || auth.currentUser?.uid || null;
 
   await updateDoc(ref, {
     status: BOOKING_STATUS.CANCELLED,
     cancelReason: reason,
-    cancelledBy: actorId,
+    cancelledBy: effectiveActor,
     updatedAt: nowIso
   });
 
   await releaseBusySlotForBooking(bookingId);
   await updatePaymentStatusForBooking(bookingId, 'refunded');
 
+  const notifyTarget = effectiveActor === booking.touristId ? booking.guideId : booking.touristId;
+  const notifyLink = effectiveActor === booking.touristId
+    ? `guide/booking.html?id=${bookingId}`
+    : `tourist/booking.html?id=${bookingId}`;
+
+  if (notifyTarget) {
+    await sendNotification(
+      notifyTarget,
+      t('notif.bookingCancelledTitle'),
+      t('notif.bookingCancelledBody', { id: bookingId }),
+      notifyLink,
+      { type: 'booking_cancelled', bookingId, senderId: effectiveActor }
+    );
+  }
+
   await addDoc(collection(db, COLLECTIONS.AUDIT_LOGS), {
     action: 'BOOKING_CANCELLED',
+    actorId: effectiveActor,
     bookingId,
-    userId: actorId,
+    userId: effectiveActor,
     timestamp: nowIso,
     notes: reason
   });
@@ -497,21 +541,58 @@ export async function cancelBooking(bookingId, actorId = null, reason = 'Cancell
 }
 
 export async function openDispute(bookingId, actorId, reason = 'Issue reported') {
+  if (!isFirebaseConfigured()) return false;
   const ref = doc(db, COLLECTIONS.BOOKINGS, bookingId);
+  const snap = await getDoc(ref);
+  if (!snap.exists()) return false;
+
+  const booking = { id: snap.id, ...snap.data() };
   const nowIso = new Date().toISOString();
+  const effectiveActor = actorId || auth.currentUser?.uid || null;
+  const disputeId = `DSP-${bookingId}`;
+
+  await setDoc(doc(db, COLLECTIONS.DISPUTES, disputeId), {
+    id: disputeId,
+    disputeId,
+    bookingId,
+    touristId: booking.touristId,
+    guideId: booking.guideId,
+    openedBy: effectiveActor,
+    reason: String(reason || 'Issue reported').slice(0, 500),
+    status: 'open',
+    createdAt: nowIso,
+    updatedAt: nowIso
+  });
+
   await updateDoc(ref, {
     status: BOOKING_STATUS.DISPUTED,
     disputeReason: reason,
-    disputedBy: actorId,
+    disputedBy: effectiveActor,
     updatedAt: nowIso
   });
 
   await releaseBusySlotForBooking(bookingId);
 
+  const otherParty = effectiveActor === booking.touristId ? booking.guideId : booking.touristId;
+  const otherLink = effectiveActor === booking.touristId
+    ? `guide/booking.html?id=${bookingId}`
+    : `tourist/booking.html?id=${bookingId}`;
+  if (otherParty) {
+    await sendNotification(
+      otherParty,
+      t('notif.disputeOpenedTitle'),
+      t('notif.disputeOpenedBody', { id: bookingId }),
+      otherLink,
+      { type: 'dispute_opened', bookingId, senderId: effectiveActor }
+    );
+  }
+
   await addDoc(collection(db, COLLECTIONS.AUDIT_LOGS), {
     action: 'BOOKING_DISPUTED',
+    actorId: effectiveActor,
     bookingId,
-    userId: actorId,
+    disputeId,
+    userId: effectiveActor,
     timestamp: nowIso,
     notes: reason
   });
@@ -519,8 +600,27 @@ export async function openDispute(bookingId, actorId, reason = 'Issue reported')
   return true;
 }
 
+export async function resolveDispute(disputeId, resolutionStatus, adminId, notes = '') {
+  if (!isFirebaseConfigured() || !disputeId) return false;
+  const nowIso = new Date().toISOString();
+  await updateDoc(doc(db, COLLECTIONS.DISPUTES, disputeId), {
+    status: resolutionStatus,
+    resolvedBy: adminId || auth.currentUser?.uid || null,
+    resolutionNotes: String(notes || '').slice(0, 500),
+    updatedAt: nowIso
+  });
+  await addDoc(collection(db, COLLECTIONS.AUDIT_LOGS), {
+    action: `DISPUTE_${String(resolutionStatus).toUpperCase()}`,
+    actorId: auth.currentUser?.uid || adminId || null,
+    targetId: disputeId,
+    timestamp: nowIso,
+    notes
+  });
+  return true;
+}
+
 export async function getBookingById(bookingId) {
-  if (!bookingId) return null;
+  if (!isFirebaseConfigured() || !bookingId) return null;
   try {
     const snap = await getDoc(doc(db, COLLECTIONS.BOOKINGS, bookingId));
     return snap.exists() ? { id: snap.id, ...snap.data() } : null;
@@ -531,7 +631,7 @@ export async function getBookingById(bookingId) {
 }
 
 export async function getActiveBookingForTourist(touristId) {
-  if (!touristId) return null;
+  if (!isFirebaseConfigured() || !touristId) return null;
   try {
     const q = query(collection(db, COLLECTIONS.BOOKINGS), where('touristId', '==', touristId));
     const snap = await getDocs(q);
@@ -547,7 +647,7 @@ export async function getActiveBookingForTourist(touristId) {
 }
 
 export async function getBookingsForTourist(touristId) {
-  if (!touristId) return [];
+  if (!isFirebaseConfigured() || !touristId) return [];
   try {
     const q = query(collection(db, COLLECTIONS.BOOKINGS), where('touristId', '==', touristId));
     const snap = await getDocs(q);
@@ -562,7 +662,7 @@ export async function getBookingsForTourist(touristId) {
 }
 
 export async function getBookingsForGuide(guideId) {
-  if (!guideId) return [];
+  if (!isFirebaseConfigured() || !guideId) return [];
   try {
     const q = query(collection(db, COLLECTIONS.BOOKINGS), where('guideId', '==', guideId));
     const snap = await getDocs(q);
@@ -577,6 +677,7 @@ export async function getBookingsForGuide(guideId) {
 }
 
 export function subscribeToBooking(bookingId, onUpdate, onError = null) {
+  if (!isFirebaseConfigured() || !bookingId) return () => {};
   return onSnapshot(
     doc(db, COLLECTIONS.BOOKINGS, bookingId),
     (snap) => {
@@ -590,6 +691,10 @@ export function subscribeToBooking(bookingId, onUpdate, onError = null) {
 }
 
 export function subscribeToGuideBookings(guideId, onUpdate, onError = null) {
+  if (!isFirebaseConfigured() || !guideId) {
+    onUpdate([]);
+    return () => {};
+  }
   const q = query(collection(db, COLLECTIONS.BOOKINGS), where('guideId', '==', guideId));
   return onSnapshot(
     q,
@@ -607,6 +712,10 @@ export function subscribeToGuideBookings(guideId, onUpdate, onError = null) {
 }
 
 export function subscribeToTouristBookings(touristId, onUpdate, onError = null) {
+  if (!isFirebaseConfigured() || !touristId) {
+    onUpdate([]);
+    return () => {};
+  }
   const q = query(collection(db, COLLECTIONS.BOOKINGS), where('touristId', '==', touristId));
   return onSnapshot(
     q,
@@ -624,6 +733,7 @@ export function subscribeToTouristBookings(touristId, onUpdate, onError = null) 
 }
 
 export async function adminUpdateBookingStatus(bookingId, newStatus, adminId, notes = '') {
+  if (!isFirebaseConfigured()) return false;
   const ref = doc(db, COLLECTIONS.BOOKINGS, bookingId);
   const snap = await getDoc(ref);
   if (!snap.exists()) throw new Error(t('booking.errNotFound'));
@@ -650,8 +760,9 @@ export async function adminUpdateBookingStatus(bookingId, newStatus, adminId, no
 
   await addDoc(collection(db, COLLECTIONS.AUDIT_LOGS), {
     action: `ADMIN_BOOKING_${String(newStatus).toUpperCase()}`,
+    actorId: auth.currentUser?.uid || adminId || null,
     bookingId,
-    userId: adminId,
+    userId: adminId || auth.currentUser?.uid || null,
     timestamp: nowIso,
     notes: notes || `Admin updated status to ${newStatus}`
   });

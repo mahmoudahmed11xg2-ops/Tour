@@ -114,7 +114,10 @@
           <textarea id="gpAbout" class="form-control"></textarea>
         </div>
 
-        <button type="submit" class="btn btn-primary" data-i18n="guide.saveChanges">Save Changes</button>
+        <div style="display:flex; flex-wrap:wrap; gap:10px;">
+          <button type="submit" class="btn btn-primary" data-i18n="guide.saveChanges">Save Changes</button>
+          <button type="button" id="gpDeleteAccountBtn" class="btn btn-danger" data-i18n="auth.requestAccountDeletionBtn">Request Account Deletion</button>
+        </div>
       </form>
     </section>
   </main>
@@ -144,10 +147,10 @@
 
   <script type="module" src="../js/nav.js"></script>
   <script type="module">
-    import { enforceRouteProtection, onAuthReady } from '../js/auth.js';
+    import { enforceRouteProtection, requestAccountDeletion, onAuthReady } from '../js/auth.js';
     import { getGuideById } from '../js/guides.js';
     import { db, COLLECTIONS } from '../js/firebase.js';
-    import { applyTranslations, setupLanguageToggle, showToast, t, getLocalizedStatus } from '../js/utils.js';
+    import { applyTranslations, setupLanguageToggle, showToast, confirmModal, appUrl, t, getLocalizedStatus } from '../js/utils.js';
 
     enforceRouteProtection({ allowedRoles: ['guide'] });
     applyTranslations();
@@ -174,7 +177,7 @@
         document.getElementById('gpRate').value = Number(currentGuide.hourlyRate || 25);
         document.getElementById('gpCity').value = currentGuide.city || '';
         document.getElementById('gpLanguages').value = Array.isArray(currentGuide.languages) ? currentGuide.languages.join(', ') : '';
-        document.getElementById('gpAbout').value = currentGuide.about || '';
+        document.getElementById('gpAbout').value = currentGuide.about || currentGuide.bio || '';
       }
     });
 
@@ -185,16 +188,41 @@
         .split(',')
         .map(s => s.trim())
         .filter(Boolean);
+      const fullName = document.getElementById('gpFullName').value.trim();
+      const firstName = fullName.split(' ')[0] || fullName;
+      const lastName = fullName.split(' ').slice(1).join(' ') || '';
+      const cityVal = document.getElementById('gpCity').value.trim();
+      const bioVal = document.getElementById('gpAbout').value.trim();
 
       try {
         await db.updateDocument(COLLECTIONS.GUIDES, currentUid, {
-          name: document.getElementById('gpFullName').value.trim(),
+          name: fullName,
+          firstName,
+          lastName,
           hourlyRate: Number(document.getElementById('gpRate').value || 25),
-          city: document.getElementById('gpCity').value.trim(),
+          city: cityVal,
+          cities: cityVal ? [cityVal] : [],
           languages: langs.length ? langs : ['Arabic', 'English'],
-          about: document.getElementById('gpAbout').value.trim()
+          about: bioVal,
+          bio: bioVal
         });
         showToast(t('toasts.profileUpdated'), 'success');
+      } catch (err) {
+        showToast(err.message || t('toasts.genericError'), 'error');
+      }
+    });
+
+    document.getElementById('gpDeleteAccountBtn').addEventListener('click', async () => {
+      const ok = await confirmModal({
+        title: t('auth.deleteAccountConfirmTitle'),
+        message: t('auth.deleteAccountConfirmBody'),
+        danger: true
+      });
+      if (!ok) return;
+      try {
+        await requestAccountDeletion();
+        showToast(t('auth.deleteAccountSubmittedToast'), 'info');
+        setTimeout(() => { window.location.href = appUrl('login.html'); }, 350);
       } catch (err) {
         showToast(err.message || t('toasts.genericError'), 'error');
       }

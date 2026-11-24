@@ -2,7 +2,7 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Default deny all access
+    // Default deny all access unless explicitly matched below
     match /{document=**} {
       allow read, write: if false;
     }
@@ -24,12 +24,26 @@ service cloud.firestore {
       return resource.data;
     }
 
+    // Admin access is controlled strictly via /admins/{uid} (or Firebase Custom Claim),
+    // never via client-writable /users/{uid}.role
     function isAdmin() {
       return isSignedIn() && (
-        exists(/databases/$(database)/documents/admins/$(request.auth.uid)) ||
-        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin")
+        request.auth.token.admin == true ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
       );
+    }
+
+    function isBookingParticipant(bookingId) {
+      return exists(/databases/$(database)/documents/bookings/$(bookingId)) && (
+        get(/databases/$(database)/documents/bookings/$(bookingId)).data.touristId == request.auth.uid ||
+        get(/databases/$(database)/documents/bookings/$(bookingId)).data.guideId == request.auth.uid
+      );
+    }
+
+    function isApprovedGuide(guideId) {
+      return exists(/databases/$(database)/documents/guides/$(guideId)) &&
+        get(/databases/$(database)/documents/guides/$(guideId)).data.verificationStatus == "approved" &&
+        get(/databases/$(database)/documents/guides/$(guideId)).data.verified == true;
     }
 
     function isValidBookingStatus(status) {
@@ -105,14 +119,14 @@ service cloud.firestore {
       data.createdAt is string && data.createdAt.size() <= 64;
     }
 
-    // 0. Admins Registry Collection (Console / Admin-SDK managed)
+    // 1. Admins Collection (Console / Admin-SDK managed ONLY)
     match /admins/{adminId} {
       allow get: if isSignedIn() && (request.auth.uid == adminId || isAdmin());
       allow list: if isAdmin();
       allow write: if false;
     }
 
-    // 1. Users Collection (Strict RBAC: users cannot promote role or modify status)
+    // 2. Users Collection (Strict RBAC: self cannot promote role or activate/unblock status)
     match /users/{userId} {
       allow get: if isSignedIn() && (request.auth.uid == userId || isAdmin());
       allow list: if isAdmin();
@@ -120,33 +134,74 @@ service cloud.firestore {
       allow create: if isSignedIn() &&
                     isValidId(userId) &&
                     request.auth.uid == userId &&
-                    incoming().uid == userId &&
-                    (incoming().role == "tourist" || incoming().role == "guide" || isAdmin());
+                    incoming().uid == userId && (
+                      isAdmin() ||
+                      (incoming().role in ["tourist", "guide"] &&
+                       incoming().status == (incoming().role == "guide" ? "pending" : "active"))
+                    );
 
       allow update: if isSignedIn() && (
         isAdmin() ||
         (request.auth.uid == userId &&
          incoming().uid == existing().uid &&
-         incoming().role == existing().role &&
-         incoming().status == existing().status &&
-         incoming().diff(existing()).affectedKeys().hasOnly([
-           "firstName", "lastName", "phone", "country", "preferredLanguage", "updatedAt"
-         ]))
+         incoming().role == existing().role && (
+           // Standard profile fields update
+           (incoming().status == existing().status &&
+            incoming().diff(existing()).affectedKeys().hasOnly([
+              "firstName", "lastName", "phone", "country", "preferredLanguage", "photoURL", "updatedAt"
+            ])) ||
+           // Request-based account deletion
+           (existing().status != "deletion_requested" &&
+            incoming().status == "deletion_requested" &&
+            incoming().diff(existing()).affectedKeys().hasOnly([
+              "status", "deletionRequestedAt", "updatedAt"
+            ]))
+         ))
       );
 
       allow delete: if isAdmin();
     }
 
-    // 2. Guides Marketplace Collection
+    // 3. Tourists Profiles Collection
+    match /tourists/{touristId} {
+      allow get: if isSignedIn() && (request.auth.uid == touristId || isAdmin());
+      allow list: if isAdmin();
+
+      allow create: if isSignedIn() &&
+                    isValidId(touristId) && (
+                      isAdmin() ||
+                      (request.auth.uid == touristId &&
+                       incoming().uid == touristId &&
+                       incoming().userId == touristId)
+                    );
+
+      allow update: if isSignedIn() && (
+        isAdmin() ||
+        (request.auth.uid == touristId &&
+         incoming().uid == existing().uid &&
+         incoming().userId == existing().userId &&
+         incoming().createdAt == existing().createdAt)
+      );
+
+      allow delete: if isAdmin();
+    }
+
+    // 4. Guides Marketplace Collection
     match /guides/{guideId} {
-      allow get, list: if true;
+      allow get, list: if isSignedIn() && (
+        existing().verificationStatus == "approved" ||
+        request.auth.uid == guideId ||
+        isAdmin()
+      );
 
       allow create: if isSignedIn() && isValidId(guideId) && (
         isAdmin() ||
         (request.auth.uid == guideId &&
          incoming().id == guideId &&
          incoming().verificationStatus == "pending" &&
-         incoming().verified == false)
+         incoming().verified == false &&
+         (!("isApproved" in incoming()) || incoming().isApproved == false) &&
+         incoming().isOnline == false)
       );
 
       allow update: if isSignedIn() && (
@@ -154,21 +209,23 @@ service cloud.firestore {
         (request.auth.uid == guideId &&
          incoming().id == existing().id &&
          incoming().verificationStatus == existing().verificationStatus &&
-         incoming().verified == existing().verified)
+         incoming().verified == existing().verified &&
+         incoming().get("isApproved", false) == existing().get("isApproved", false) &&
+         incoming().get("rating", 0) == existing().get("rating", 0) &&
+         incoming().get("reviewCount", 0) == existing().get("reviewCount", 0) &&
+         incoming().get("reviewsCount", 0) == existing().get("reviewsCount", 0) &&
+         incoming().get("createdAt", "") == existing().get("createdAt", "") &&
+         (incoming().isOnline == false || (
+           existing().verificationStatus == "approved" && existing().verified == true
+         )))
       );
 
       allow delete: if isAdmin();
     }
 
-    // 3. Bookings Collection (Ownership & Strict State Machine)
+    // 5. Bookings Collection (Participant-Scoped & Strict State Machine)
     match /bookings/{bookingId} {
-      allow get: if isSignedIn() && (
-        isAdmin() ||
-        resource.data.touristId == request.auth.uid ||
-        resource.data.guideId == request.auth.uid
-      );
-
-      allow list: if isSignedIn() && (
+      allow get, list: if isSignedIn() && (
         isAdmin() ||
         resource.data.touristId == request.auth.uid ||
         resource.data.guideId == request.auth.uid
@@ -180,7 +237,8 @@ service cloud.firestore {
                     incoming().id == bookingId &&
                     (isAdmin() || (
                       incoming().touristId == request.auth.uid &&
-                      incoming().status == "pending"
+                      incoming().status == "pending" &&
+                      isApprovedGuide(incoming().guideId)
                     ));
 
       allow update: if isSignedIn() &&
@@ -191,19 +249,21 @@ service cloud.firestore {
                     incoming().createdAt == existing().createdAt && (
         isAdmin() ||
 
-        // Guide Accept: pending -> confirmed
+        // Guide Accept: pending -> confirmed (Requires admin-approved guide)
         (existing().guideId == request.auth.uid &&
+         isApprovedGuide(request.auth.uid) &&
          existing().status == "pending" &&
          incoming().status == "confirmed" &&
          incoming().guideId == existing().guideId &&
          incoming().diff(existing()).affectedKeys().hasOnly(["status", "acceptedAt", "confirmedAt", "updatedAt"])) ||
 
-        // Guide Decline on Instant -> Automatic Fallback Dispatch to Next Candidate
+        // Guide Decline on Instant -> Automatic Fallback Dispatch to Next Approved Candidate
         (existing().guideId == request.auth.uid &&
          existing().status == "pending" &&
          existing().bookingType == "instant" &&
          incoming().status == "pending" &&
          incoming().guideId != existing().guideId &&
+         isApprovedGuide(incoming().guideId) &&
          incoming().diff(existing()).affectedKeys().hasOnly([
            "guideId", "guideName", "hourlyRate", "price", "platformFee", "total",
            "declinedGuideIds", "candidateGuideIds", "reassignedAt", "updatedAt"
@@ -217,6 +277,7 @@ service cloud.firestore {
 
         // Guide Sequential Operational Transitions (no skipping)
         (existing().guideId == request.auth.uid &&
+         isApprovedGuide(request.auth.uid) &&
          incoming().guideId == existing().guideId &&
          incoming().diff(existing()).affectedKeys().hasOnly(["status", "startedAt", "completedAt", "updatedAt"]) && (
            (existing().status == "accepted" && incoming().status == "confirmed") ||
@@ -231,6 +292,7 @@ service cloud.firestore {
          existing().bookingType == "instant" &&
          existing().status in ["rejected", "expired"] &&
          incoming().status == "pending" &&
+         isApprovedGuide(incoming().guideId) &&
          incoming().diff(existing()).affectedKeys().hasOnly([
            "guideId", "guideName", "date", "startTime", "endTime", "startMs", "endMs",
            "hourlyRate", "price", "platformFee", "total", "status",
@@ -259,9 +321,9 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
-    // 4. Non-PII Guide Busy Slots Collection (Double-Booking Guard)
+    // 6. Non-PII Guide Busy Slots Collection (Double-Booking Conflict Checks)
     match /guideBusySlots/{slotId} {
-      allow get, list: if true;
+      allow get, list: if isSignedIn();
 
       allow create: if isSignedIn() &&
                     isValidId(slotId) &&
@@ -280,58 +342,95 @@ service cloud.firestore {
       );
     }
 
-    // 5. Reviews Collection
-    match /reviews/{reviewId} {
-      allow get, list: if true;
-      allow create: if isSignedIn() &&
-                    isValidId(reviewId) &&
-                    incoming().id == reviewId &&
-                    incoming().rating is number &&
-                    incoming().rating >= 1 && incoming().rating <= 5 &&
-                    (!("comment" in incoming()) || (incoming().comment is string && incoming().comment.size() <= 1000)) &&
-                    (incoming().touristId == request.auth.uid || isAdmin());
-      allow update, delete: if isAdmin();
-    }
-
-    // 6. Audit Logs Collection
-    match /auditLogs/{logId} {
-      allow read: if isAdmin();
-      allow create: if isSignedIn();
-      allow update, delete: if false;
-    }
-
-    // 7. Notifications Collection
-    match /notifications/{notificationId} {
-      allow read: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
-      allow create: if isSignedIn();
-      allow update, delete: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
-    }
-
-    // 8. Payments Collection
+    // 7. Payments & Escrow Collection
     match /payments/{paymentId} {
-      allow read: if isSignedIn() && (
+      allow get, list: if isSignedIn() && (
         isAdmin() ||
         resource.data.touristId == request.auth.uid ||
         resource.data.guideId == request.auth.uid
       );
+
       allow create: if isSignedIn() &&
-                    isValidId(paymentId) &&
-                    (isAdmin() || incoming().touristId == request.auth.uid || incoming().guideId == request.auth.uid);
+                    isValidId(paymentId) && (
+                      isAdmin() ||
+                      (paymentId == "PAY-" + incoming().bookingId &&
+                       incoming().paymentId == paymentId &&
+                       incoming().status == "held_in_escrow" &&
+                       incoming().amount is number && incoming().amount >= 0 &&
+                       exists(/databases/$(database)/documents/bookings/$(incoming().bookingId)) &&
+                       get(/databases/$(database)/documents/bookings/$(incoming().bookingId)).data.touristId == incoming().touristId &&
+                       get(/databases/$(database)/documents/bookings/$(incoming().bookingId)).data.guideId == incoming().guideId &&
+                       (request.auth.uid == incoming().guideId || request.auth.uid == incoming().touristId))
+                    );
+
       allow update: if isSignedIn() && (
         isAdmin() ||
-        resource.data.touristId == request.auth.uid ||
-        resource.data.guideId == request.auth.uid
+        (incoming().diff(existing()).affectedKeys().hasOnly(["status", "updatedAt"]) &&
+         exists(/databases/$(database)/documents/bookings/$(existing().bookingId)) && (
+           (incoming().status == "released_to_guide" &&
+            existing().guideId == request.auth.uid &&
+            get(/databases/$(database)/documents/bookings/$(existing().bookingId)).data.status == "completed") ||
+           (incoming().status == "refunded" &&
+            (existing().touristId == request.auth.uid || existing().guideId == request.auth.uid) &&
+            get(/databases/$(database)/documents/bookings/$(existing().bookingId)).data.status in ["cancelled", "refunded"])
+         ))
       );
+
       allow delete: if isAdmin();
     }
 
-    // 9. Booking-Scoped Messages Collection
+    // 8. Guide Payouts Collection
+    match /payouts/{payoutId} {
+      allow get, list: if isSignedIn() && (
+        isAdmin() ||
+        resource.data.guideId == request.auth.uid
+      );
+
+      allow create: if isSignedIn() &&
+                    isValidId(payoutId) && (
+                      isAdmin() ||
+                      (incoming().id == payoutId &&
+                       incoming().payoutId == payoutId &&
+                       incoming().guideId == request.auth.uid &&
+                       incoming().status == "pending" &&
+                       incoming().amount is number && incoming().amount > 0 &&
+                       isApprovedGuide(request.auth.uid))
+                    );
+
+      allow update, delete: if isAdmin();
+    }
+
+    // 9. Reviews Collection (1 review per completed booking enforced)
+    match /reviews/{reviewId} {
+      allow get, list: if isSignedIn();
+
+      allow create: if isSignedIn() &&
+                    isValidId(reviewId) && (
+                      isAdmin() ||
+                      (reviewId == "REV-" + incoming().bookingId &&
+                       !exists(/databases/$(database)/documents/reviews/$(reviewId)) &&
+                       incoming().id == reviewId &&
+                       incoming().touristId == request.auth.uid &&
+                       incoming().rating is number &&
+                       incoming().rating >= 1 && incoming().rating <= 5 &&
+                       (!("comment" in incoming()) || (incoming().comment is string && incoming().comment.size() <= 1000)) &&
+                       exists(/databases/$(database)/documents/bookings/$(incoming().bookingId)) &&
+                       get(/databases/$(database)/documents/bookings/$(incoming().bookingId)).data.touristId == request.auth.uid &&
+                       get(/databases/$(database)/documents/bookings/$(incoming().bookingId)).data.guideId == incoming().guideId &&
+                       get(/databases/$(database)/documents/bookings/$(incoming().bookingId)).data.status == "completed")
+                    );
+
+      allow update, delete: if isAdmin();
+    }
+
+    // 10. Booking-Scoped Messages Collection
     match /messages/{messageId} {
       allow get, list: if isSignedIn() && (
         isAdmin() ||
         resource.data.touristId == request.auth.uid ||
         resource.data.guideId == request.auth.uid
       );
+
       allow create: if isSignedIn() &&
                     isValidId(messageId) &&
                     isValidMessage(incoming(), messageId) &&
@@ -342,10 +441,74 @@ service cloud.firestore {
                       get(/databases/$(database)/documents/bookings/$(incoming().bookingId)).data.touristId == incoming().touristId &&
                       get(/databases/$(database)/documents/bookings/$(incoming().bookingId)).data.guideId == incoming().guideId
                     ));
+
       allow update, delete: if isAdmin();
     }
 
-    // 10. Platform Settings Collection
+    // 11. Notifications Collection (Scoped to recipientId/userId)
+    match /notifications/{notificationId} {
+      allow get, list: if isSignedIn() && (
+        isAdmin() ||
+        resource.data.recipientId == request.auth.uid ||
+        resource.data.userId == request.auth.uid
+      );
+
+      allow create: if isSignedIn() &&
+                    isValidId(notificationId) && (
+                      isAdmin() ||
+                      (incoming().senderId == request.auth.uid &&
+                       incoming().read == false &&
+                       incoming().recipientId is string &&
+                       incoming().title is string &&
+                       incoming().body is string)
+                    );
+
+      allow update: if isSignedIn() && (
+        isAdmin() ||
+        ((resource.data.recipientId == request.auth.uid || resource.data.userId == request.auth.uid) &&
+         incoming().diff(existing()).affectedKeys().hasOnly(["read", "readAt"]))
+      );
+
+      allow delete: if isSignedIn() && (
+        isAdmin() ||
+        resource.data.recipientId == request.auth.uid ||
+        resource.data.userId == request.auth.uid
+      );
+    }
+
+    // 12. Disputes Collection
+    match /disputes/{disputeId} {
+      allow get, list: if isSignedIn() && (
+        isAdmin() ||
+        resource.data.touristId == request.auth.uid ||
+        resource.data.guideId == request.auth.uid
+      );
+
+      allow create: if isSignedIn() &&
+                    isValidId(disputeId) && (
+                      isAdmin() ||
+                      (incoming().id == disputeId &&
+                       incoming().disputeId == disputeId &&
+                       incoming().openedBy == request.auth.uid &&
+                       incoming().status == "open" &&
+                       isBookingParticipant(incoming().bookingId) &&
+                       incoming().touristId == get(/databases/$(database)/documents/bookings/$(incoming().bookingId)).data.touristId &&
+                       incoming().guideId == get(/databases/$(database)/documents/bookings/$(incoming().bookingId)).data.guideId)
+                    );
+
+      allow update, delete: if isAdmin();
+    }
+
+    // 13. Audit Logs Collection (Append-Only for signed-in actors, Admin read-only)
+    match /auditLogs/{logId} {
+      allow read: if isAdmin();
+      allow create: if isSignedIn() &&
+                    isValidId(logId) &&
+                    (isAdmin() || incoming().actorId == request.auth.uid);
+      allow update, delete: if false;
+    }
+
+    // 14. Platform Settings Collection
     match /settings/{settingId} {
       allow read: if isSignedIn();
       allow write: if isAdmin();

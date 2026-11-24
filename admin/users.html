@@ -90,9 +90,10 @@
 
   <script type="module" src="../js/nav.js"></script>
   <script type="module">
-    import { enforceRouteProtection, logout, onAuthReady } from '../js/auth.js';
+    import { doc, updateDoc, addDoc, collection } from 'firebase/firestore';
+    import { enforceRouteProtection, getCurrentUser, logout, onAuthReady } from '../js/auth.js';
     import { db, COLLECTIONS } from '../js/firebase.js';
-    import { applyTranslations, setupLanguageToggle, t, getLocalizedRole, escapeHtml } from '../js/utils.js';
+    import { applyTranslations, setupLanguageToggle, showToast, t, getLocalizedRole, escapeHtml } from '../js/utils.js';
 
     enforceRouteProtection({ allowedRoles: ['admin'] });
     applyTranslations();
@@ -100,6 +101,48 @@
     document.getElementById('sidebarLogoutBtn')?.addEventListener('click', logout);
 
     let users = [];
+
+    function renderStatusBadge(st) {
+      if (st === 'suspended') {
+        return `<span class="status-label status-danger">${escapeHtml(t('admin.suspendedUserStatus'))}</span>`;
+      }
+      if (st === 'deletion_requested') {
+        return `<span class="status-label status-danger">${escapeHtml(t('admin.deletionRequestedStatus'))}</span>`;
+      }
+      if (st === 'pending') {
+        return `<span class="status-label status-warning">${escapeHtml(t('guide.pendingVerificationBadge'))}</span>`;
+      }
+      return `<span class="status-label status-success">${escapeHtml(t('admin.activeUserStatus'))}</span>`;
+    }
+
+    async function toggleUserStatus(targetUid, nextStatus) {
+      const admin = getCurrentUser();
+      const nowIso = new Date().toISOString();
+      await updateDoc(doc(db, COLLECTIONS.USERS, targetUid), {
+        status: nextStatus,
+        updatedAt: nowIso
+      });
+      const targetUser = users.find(u => (u.uid || u.id) === targetUid);
+      if (targetUser?.role === 'guide' && nextStatus === 'suspended') {
+        try {
+          await updateDoc(doc(db, COLLECTIONS.GUIDES, targetUid), {
+            isOnline: false,
+            updatedAt: nowIso
+          });
+        } catch (e) {
+          console.warn('Guide suspend sync notice:', e.message);
+        }
+      }
+      await addDoc(collection(db, COLLECTIONS.AUDIT_LOGS), {
+        action: `ADMIN_USER_${nextStatus.toUpperCase()}`,
+        actorId: admin?.uid || null,
+        targetId: targetUid,
+        timestamp: nowIso
+      });
+      showToast(t('admin.userStatusUpdatedToast'), 'success');
+      users = await db.getCollection(COLLECTIONS.USERS);
+      renderUsers();
+    }
 
     function renderUsers() {
       document.getElementById('usersTableWrap').innerHTML = `
@@ -113,23 +156,43 @@
                 <th>${escapeHtml(t('admin.roleCol'))}</th>
                 <th>${escapeHtml(t('admin.countryCol'))}</th>
                 <th>${escapeHtml(t('admin.statusCol'))}</th>
+                <th>${escapeHtml(t('admin.actionCol'))}</th>
               </tr>
             </thead>
             <tbody>
-              ${users.map(u => `
-                <tr>
-                  <td class="tabular-nums">${escapeHtml((u.uid || u.id || '').slice(0, 10))}</td>
-                  <td><strong>${escapeHtml(`${u.firstName || ''} ${u.lastName || ''}`.trim() || u.email)}</strong></td>
-                  <td>${escapeHtml(u.email || '')}</td>
-                  <td><span class="status-label status-info">${escapeHtml(getLocalizedRole(u.role))}</span></td>
-                  <td>${escapeHtml(u.country || '')}</td>
-                  <td>${escapeHtml(u.status === 'pending' ? t('guide.pendingVerificationBadge') : t('admin.activeUserStatus'))}</td>
-                </tr>
-              `).join('')}
+              ${users.map(u => {
+                const uid = u.uid || u.id || '';
+                const isSuspended = u.status === 'suspended' || u.status === 'deletion_requested';
+                const canToggle = u.role !== 'admin';
+                return `
+                  <tr>
+                    <td class="tabular-nums">${escapeHtml(uid.slice(0, 10))}</td>
+                    <td><strong>${escapeHtml(`${u.firstName || ''} ${u.lastName || ''}`.trim() || u.email)}</strong></td>
+                    <td>${escapeHtml(u.email || '')}</td>
+                    <td><span class="status-label status-info">${escapeHtml(getLocalizedRole(u.role))}</span></td>
+                    <td>${escapeHtml(u.country || '')}</td>
+                    <td>${renderStatusBadge(u.status || 'active')}</td>
+                    <td>
+                      ${canToggle ? (
+                        isSuspended
+                          ? `<button type="button" class="btn btn-primary btn-sm" data-reactivate="${escapeHtml(uid)}">${escapeHtml(t('admin.reactivateUserBtn'))}</button>`
+                          : `<button type="button" class="btn btn-outline btn-sm" data-suspend="${escapeHtml(uid)}">${escapeHtml(t('admin.suspendUserBtn'))}</button>`
+                      ) : '—'}
+                    </td>
+                  </tr>
+                `;
+              }).join('')}
             </tbody>
           </table>
         </div>
       `;
+
+      document.querySelectorAll('[data-suspend]').forEach(btn => {
+        btn.addEventListener('click', () => toggleUserStatus(btn.dataset.suspend, 'suspended'));
+      });
+      document.querySelectorAll('[data-reactivate]').forEach(btn => {
+        btn.addEventListener('click', () => toggleUserStatus(btn.dataset.reactivate, 'active'));
+      });
     }
 
     onAuthReady(async (user) => {

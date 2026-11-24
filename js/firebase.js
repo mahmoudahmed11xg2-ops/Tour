@@ -4,35 +4,65 @@
  */
 
 import { initializeApp } from 'firebase/app';
+import { getAnalytics, isSupported as isAnalyticsSupported } from 'firebase/analytics';
 import { getAuth } from 'firebase/auth';
-import { 
-  getFirestore, 
-  doc, 
-  getDoc, 
-  setDoc, 
-  updateDoc, 
-  addDoc, 
-  collection, 
-  getDocs, 
-  query, 
-  where, 
-  orderBy,
+import {
+  getFirestore,
+  doc,
+  getDoc,
+  updateDoc,
+  addDoc,
+  collection,
+  getDocs,
   getDocFromServer,
   deleteDoc
 } from 'firebase/firestore';
-import firebaseConfig from '../firebase-applet-config.json';
+import { firebaseConfig, isFirebaseConfigured } from '../firebase-config.js';
+
+export { isFirebaseConfigured };
 
 // Initialize Firebase App
-const app = initializeApp(firebaseConfig);
+export const app = initializeApp(firebaseConfig);
 
-// Initialize Auth & Firestore with specific firestoreDatabaseId
+// Initialize Auth & Firestore (uses default database unless a named databaseId is explicitly configured)
 export const auth = getAuth(app);
-export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
+export const db = firebaseConfig.firestoreDatabaseId
+  ? getFirestore(app, firebaseConfig.firestoreDatabaseId)
+  : getFirestore(app);
+
+// Initialize Analytics safely when supported
+export let analytics = null;
+if (typeof window !== 'undefined' && firebaseConfig.measurementId) {
+  isAnalyticsSupported()
+    .then((supported) => {
+      if (supported) analytics = getAnalytics(app);
+    })
+    .catch(() => {});
+}
+
+// Canonical 14 Production Firestore Collections
+export const COLLECTIONS = {
+  USERS: 'users',
+  GUIDES: 'guides',
+  TOURISTS: 'tourists',
+  BOOKINGS: 'bookings',
+  GUIDE_BUSY_SLOTS: 'guideBusySlots',
+  PAYMENTS: 'payments',
+  PAYOUTS: 'payouts',
+  REVIEWS: 'reviews',
+  MESSAGES: 'messages',
+  NOTIFICATIONS: 'notifications',
+  DISPUTES: 'disputes',
+  AUDIT_LOGS: 'auditLogs',
+  ADMINS: 'admins',
+  SETTINGS: 'settings'
+};
 
 /**
- * Firestore Helper Abstractions for robust collection and document operations
+ * Firestore Helper Abstractions for collection and document operations
  */
 export async function getCollectionDocs(collName) {
+  if (!isFirebaseConfigured()) return [];
   try {
     const snap = await getDocs(collection(db, collName));
     const list = [];
@@ -45,6 +75,7 @@ export async function getCollectionDocs(collName) {
 }
 
 export async function getDocument(collName, docId) {
+  if (!isFirebaseConfigured() || !docId) return null;
   try {
     const snap = await getDoc(doc(db, collName, docId));
     if (snap.exists()) {
@@ -58,6 +89,7 @@ export async function getDocument(collName, docId) {
 }
 
 export async function addDocument(collName, data) {
+  if (!isFirebaseConfigured()) return null;
   try {
     const docRef = await addDoc(collection(db, collName), data);
     return { id: docRef.id, ...data };
@@ -68,6 +100,7 @@ export async function addDocument(collName, data) {
 }
 
 export async function updateDocument(collName, docId, updates) {
+  if (!isFirebaseConfigured()) return false;
   try {
     await updateDoc(doc(db, collName, docId), {
       ...updates,
@@ -81,6 +114,7 @@ export async function updateDocument(collName, docId, updates) {
 }
 
 export async function deleteDocument(collName, docId) {
+  if (!isFirebaseConfigured()) return false;
   try {
     await deleteDoc(doc(db, collName, docId));
     return true;
@@ -90,35 +124,12 @@ export async function deleteDocument(collName, docId) {
   }
 }
 
-// Bind methods to db instance
+// Bind convenience helpers to db instance
 db.getCollection = getCollectionDocs;
 db.getDocument = getDocument;
 db.addDocument = addDocument;
 db.updateDocument = updateDocument;
 db.deleteDocument = deleteDocument;
-
-// Collection Names Constants
-export const COLLECTIONS = {
-  USERS: 'users',
-  GUIDES: 'guides',
-  TOURISTS: 'tourists',
-  COMPANIES: 'companies',
-  SERVICES: 'services',
-  TOURS: 'tours',
-  LOCATIONS: 'locations',
-  AVAILABILITY: 'availability',
-  GUIDE_BUSY_SLOTS: 'guideBusySlots',
-  BOOKINGS: 'bookings',
-  PAYMENTS: 'payments',
-  PAYOUTS: 'payouts',
-  REVIEWS: 'reviews',
-  MESSAGES: 'messages',
-  NOTIFICATIONS: 'notifications',
-  DISPUTES: 'disputes',
-  AUDIT_LOGS: 'auditLogs',
-  SETTINGS: 'settings',
-  ADMINS: 'admins',
-};
 
 /**
  * Standard Firestore Error Handler for Diagnostics
@@ -140,15 +151,16 @@ export function handleFirestoreError(error, operationType, path) {
     path
   };
   console.error('Firestore Error:', JSON.stringify(errInfo));
-  throw new Error(error.message || 'Database operation failed');
+  throw new Error(error?.message || 'Database operation failed');
 }
 
 /**
- * Validate Connection to Firestore on startup
+ * Validate Connection to Firestore on startup (only when configured)
  */
 export async function validateFirestoreConnection() {
+  if (!isFirebaseConfigured()) return;
   try {
-    await getDocFromServer(doc(db, 'users', 'health_check'));
+    await getDocFromServer(doc(db, COLLECTIONS.SETTINGS, 'platform'));
   } catch (error) {
     if (error instanceof Error && error.message.includes('the client is offline')) {
       console.warn('Firestore is running in offline mode. Please check connection.');
@@ -156,5 +168,4 @@ export async function validateFirestoreConnection() {
   }
 }
 
-// Auto-run connection check
 validateFirestoreConnection();

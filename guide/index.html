@@ -213,11 +213,15 @@
         banner.style.display = 'none';
       }
 
+      const isApproved = guideDoc.verificationStatus === 'approved' && guideDoc.verified === true;
       const toggle = document.getElementById('onlineToggleInput');
-      toggle.checked = Boolean(guideDoc.isOnline);
-      document.getElementById('onlineStateTitle').textContent = guideDoc.isOnline
-        ? t('guide.onlineStateTitle')
-        : t('guide.offlineStateTitle');
+      toggle.disabled = !isApproved;
+      toggle.checked = isApproved && Boolean(guideDoc.isOnline);
+      document.getElementById('onlineStateTitle').textContent = !isApproved
+        ? t('guide.approvalRequiredBannerAction')
+        : guideDoc.isOnline
+          ? t('guide.onlineStateTitle')
+          : t('guide.offlineStateTitle');
     }
 
     function nextActionLabel(status) {
@@ -248,6 +252,7 @@
           </div>
         `;
       } else {
+        const isApproved = guideDoc?.verificationStatus === 'approved' && guideDoc?.verified === true;
         reqContainer.innerHTML = pending.map(b => `
           <article class="request-item">
             <div style="display:flex; justify-content:space-between; gap:8px;">
@@ -263,7 +268,7 @@
             </div>
             <div class="form-hint tabular-nums">${escapeHtml(formatBookingDateTime(b.date, b.startTime, b.endTime))} &middot; ${formatCurrency(b.price || 0)}</div>
             <div class="request-actions">
-              <button type="button" class="btn btn-primary btn-sm" data-accept-id="${escapeHtml(b.id)}">${escapeHtml(t('guide.acceptTour'))}</button>
+              <button type="button" class="btn btn-primary btn-sm" data-accept-id="${escapeHtml(b.id)}" ${isApproved ? '' : 'disabled'}>${escapeHtml(t('guide.acceptTour'))}</button>
               <button type="button" class="btn btn-outline btn-sm" data-decline-id="${escapeHtml(b.id)}">${escapeHtml(t('guide.decline'))}</button>
             </div>
           </article>
@@ -335,10 +340,15 @@
 
     document.getElementById('onlineToggleInput').addEventListener('change', async (e) => {
       if (!currentUid) return;
-      const state = await updateGuideOnlineStatus(currentUid, e.target.checked);
-      if (guideDoc) guideDoc.isOnline = state;
-      updateVerificationAndOnline();
-      showToast(state ? t('toasts.guideOnline') : t('toasts.guideOffline'), 'info');
+      try {
+        const state = await updateGuideOnlineStatus(currentUid, e.target.checked);
+        if (guideDoc) guideDoc.isOnline = state;
+        updateVerificationAndOnline();
+        showToast(state ? t('toasts.guideOnline') : t('toasts.guideOffline'), 'info');
+      } catch (err) {
+        e.target.checked = false;
+        showToast(err.message || t('toasts.guideApprovalRequiredOnline'), 'error');
+      }
     });
 
     onAuthReady(async (user) => {

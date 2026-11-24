@@ -260,14 +260,13 @@
               <div class="guide-info">
                 <div class="guide-name-row">
                   <h3 class="guide-name">${escapeHtml(guide.name)}</h3>
-                  <span class="guide-rating">&#9733; ${Number(guide.rating || 4.8).toFixed(1)}</span>
+                  <span class="guide-rating">&#9733; ${Number(guide.rating || 0).toFixed(1)}</span>
                 </div>
                 <div class="meta-inline">
                   <span>${city}</span>
                   <span class="meta-sep">&middot;</span>
-                  <span class="tabular-nums">${Number(guide.experienceYears || 3)} ${escapeHtml(t('search.yearsExp'))}</span>
-                  <span class="meta-sep">&middot;</span>
-                  <span class="tabular-nums">${Number(distanceKm || 3).toFixed(1)} ${escapeHtml(t('search.kmAway'))}</span>
+                  <span class="tabular-nums">${Number(guide.experienceYears || 0)} ${escapeHtml(t('search.yearsExp'))}</span>
+                  ${Number.isFinite(distanceKm) ? `<span class="meta-sep">&middot;</span><span class="tabular-nums">${Number(distanceKm).toFixed(1)} ${escapeHtml(t('search.kmAway'))}</span>` : ''}
                 </div>
                 <div class="meta-inline" style="margin-top:2px;">
                   <span>${escapeHtml(t('search.verifiedBadge'))}</span>

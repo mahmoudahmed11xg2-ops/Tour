@@ -75,6 +75,7 @@
         <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:20px;">
           <a href="./bookings.html" class="btn btn-primary" data-i18n="touristProfile.viewMyBookings">View Bookings</a>
           <button type="button" id="tpLogoutBtn" class="btn btn-outline" data-i18n="touristProfile.logOut">Log out</button>
+          <button type="button" id="tpDeleteAccountBtn" class="btn btn-danger" data-i18n="auth.requestAccountDeletionBtn">Request Account Deletion</button>
         </div>
       </div>
     </section>
@@ -181,12 +182,15 @@
   </nav>
 
   <script type="module">
-    import { enforceRouteProtection, getCurrentUser, logout, onAuthReady } from '../js/auth.js';
+    import { enforceRouteProtection, getCurrentUser, logout, requestAccountDeletion, onAuthReady } from '../js/auth.js';
     import { getGuideById, getGuideReviews } from '../js/guides.js';
     import { checkGuideAvailability, WEEKDAY_KEYS, DEFAULT_WEEKLY_AVAILABILITY } from '../js/availability.js';
     import {
       applyTranslations,
       setupLanguageToggle,
+      showToast,
+      confirmModal,
+      appUrl,
       t,
       getUrlParam,
       getTodayISODate,
@@ -227,12 +231,12 @@
       document.getElementById('touristBottomNav').style.display = 'none';
       document.getElementById('mobileBookingBar').style.display = 'flex';
 
-      document.getElementById('gpAvatar').src = resolveAvatar(guide.avatar, guide.name);
+      document.getElementById('gpAvatar').src = resolveAvatar(guide.avatar || guide.photoURL, guide.name);
       document.getElementById('gpName').textContent = guide.name;
-      document.getElementById('gpRating').textContent = `★ ${Number(guide.rating || 4.8).toFixed(1)} (${guide.reviewsCount || 0})`;
+      document.getElementById('gpRating').textContent = `★ ${Number(guide.rating || 0).toFixed(1)} (${guide.reviewCount ?? guide.reviewsCount ?? 0})`;
       document.getElementById('gpCity').textContent = guide.city || t('auth.defaultCountry');
       document.getElementById('gpLanguages').textContent = Array.isArray(guide.languages) ? guide.languages.join(', ') : '';
-      document.getElementById('gpAbout').textContent = guide.about || '';
+      document.getElementById('gpAbout').textContent = guide.about || guide.bio || '';
 
       renderSchedule(guide);
 
@@ -288,6 +292,21 @@
         document.getElementById('tpCountry').textContent = profile?.country || t('auth.defaultCountry');
         document.getElementById('tpLang').textContent = profile?.preferredLanguage || t('languages.english');
         document.getElementById('tpLogoutBtn').addEventListener('click', logout);
+        document.getElementById('tpDeleteAccountBtn').addEventListener('click', async () => {
+          const ok = await confirmModal({
+            title: t('auth.deleteAccountConfirmTitle'),
+            message: t('auth.deleteAccountConfirmBody'),
+            danger: true
+          });
+          if (!ok) return;
+          try {
+            await requestAccountDeletion();
+            showToast(t('auth.deleteAccountSubmittedToast'), 'info');
+            setTimeout(() => { window.location.href = appUrl('login.html'); }, 350);
+          } catch (err) {
+            showToast(err.message || t('toasts.genericError'), 'error');
+          }
+        });
       }
     });
 

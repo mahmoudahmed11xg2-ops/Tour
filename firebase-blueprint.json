@@ -2,7 +2,7 @@
   "entities": {
     "User": {
       "title": "User",
-      "description": "User profile document storing basic account and role data.",
+      "description": "Core authenticated user profile with account status and role.",
       "type": "object",
       "properties": {
         "uid": { "type": "string", "maxLength": 128 },
@@ -12,49 +12,74 @@
         "phone": { "type": "string", "maxLength": 30 },
         "country": { "type": "string", "maxLength": 80 },
         "role": { "type": "string", "enum": ["tourist", "guide", "admin"] },
-        "status": { "type": "string", "enum": ["active", "suspended", "pending"] },
+        "status": { "type": "string", "enum": ["active", "pending", "suspended", "deletion_requested"] },
         "preferredLanguage": { "type": "string", "maxLength": 50 },
+        "photoURL": { "type": "string", "maxLength": 500 },
+        "deletionRequestedAt": { "type": "string", "format": "date-time" },
         "createdAt": { "type": "string", "format": "date-time" },
         "updatedAt": { "type": "string", "format": "date-time" }
       },
-      "required": ["uid", "email", "role"]
+      "required": ["uid", "email", "role", "status"]
+    },
+    "Tourist": {
+      "title": "Tourist",
+      "description": "Tourist preferences and destination profile synchronized with /users/{uid}.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "maxLength": 128 },
+        "userId": { "type": "string", "maxLength": 128 },
+        "travelPreferences": { "type": "array" },
+        "preferredLanguages": { "type": "array" },
+        "favoriteDestinations": { "type": "array" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "userId"]
     },
     "Guide": {
       "title": "Guide",
-      "description": "Tour guide marketplace profile document with verification, schedule, and rates.",
+      "description": "Tour guide marketplace profile with admin approval gating, schedule, and hourly rates.",
       "type": "object",
       "properties": {
         "id": { "type": "string", "maxLength": 128 },
+        "uid": { "type": "string", "maxLength": 128 },
+        "userId": { "type": "string", "maxLength": 128 },
+        "firstName": { "type": "string", "maxLength": 100 },
+        "lastName": { "type": "string", "maxLength": 100 },
         "name": { "type": "string", "maxLength": 150 },
         "email": { "type": "string", "format": "email", "maxLength": 150 },
         "phone": { "type": "string", "maxLength": 30 },
         "country": { "type": "string", "maxLength": 80 },
-        "verified": { "type": "boolean" },
-        "verificationStatus": { "type": "string", "enum": ["pending", "under_review", "approved", "rejected", "suspended"] },
-        "verificationNotes": { "type": "string", "maxLength": 500 },
-        "rating": { "type": "number" },
-        "reviewsCount": { "type": "number" },
-        "responseRate": { "type": "number" },
+        "photoURL": { "type": "string", "maxLength": 500 },
+        "avatar": { "type": "string", "maxLength": 500 },
+        "bio": { "type": "string", "maxLength": 2000 },
+        "about": { "type": "string", "maxLength": 2000 },
         "languages": { "type": "array" },
-        "experienceYears": { "type": "number" },
-        "distanceKm": { "type": "number" },
+        "specialties": { "type": "array" },
+        "cities": { "type": "array" },
         "city": { "type": "string", "maxLength": 80 },
         "serviceAreas": { "type": "array" },
         "currentLocationName": { "type": "string", "maxLength": 150 },
-        "isOnline": { "type": "boolean" },
-        "instantAvailable": { "type": "boolean" },
         "hourlyRate": { "type": "number" },
         "currency": { "type": "string", "maxLength": 10 },
-        "avatar": { "type": "string", "maxLength": 500 },
-        "specialties": { "type": "array" },
-        "about": { "type": "string", "maxLength": 2000 },
+        "experienceYears": { "type": "number" },
+        "verificationStatus": { "type": "string", "enum": ["pending", "under_review", "approved", "rejected", "suspended"] },
+        "verified": { "type": "boolean" },
+        "isApproved": { "type": "boolean" },
+        "verifiedAt": { "type": "string", "format": "date-time" },
+        "verificationNotes": { "type": "string", "maxLength": 500 },
+        "isOnline": { "type": "boolean" },
+        "instantAvailable": { "type": "boolean" },
+        "rating": { "type": "number" },
+        "reviewCount": { "type": "number" },
+        "reviewsCount": { "type": "number" },
         "weeklyAvailability": { "type": "object" },
         "blockedDates": { "type": "array" },
         "packages": { "type": "array" },
         "createdAt": { "type": "string", "format": "date-time" },
         "updatedAt": { "type": "string", "format": "date-time" }
       },
-      "required": ["id", "name", "email", "verificationStatus"]
+      "required": ["id", "name", "email", "verificationStatus", "verified"]
     },
     "Booking": {
       "title": "Booking",
@@ -105,8 +130,10 @@
         "candidateGuideIds": { "type": "array" },
         "declinedGuideIds": { "type": "array" },
         "cancelReason": { "type": "string", "maxLength": 500 },
+        "cancelledBy": { "type": "string", "maxLength": 128 },
         "rejectionReason": { "type": "string", "maxLength": 200 },
         "disputeReason": { "type": "string", "maxLength": 500 },
+        "disputedBy": { "type": "string", "maxLength": 128 },
         "reviewed": { "type": "boolean" },
         "reviewRating": { "type": "number" },
         "createdAt": { "type": "string", "format": "date-time" },
@@ -116,7 +143,7 @@
     },
     "GuideBusySlot": {
       "title": "GuideBusySlot",
-      "description": "Non-PII time-window reservation used for public double-booking prevention.",
+      "description": "Non-PII time-window reservation used for double-booking prevention.",
       "type": "object",
       "properties": {
         "bookingId": { "type": "string", "maxLength": 64 },
@@ -133,22 +160,6 @@
       },
       "required": ["bookingId", "guideId", "createdByUid", "date", "startTime", "endTime", "startMs", "endMs", "status"]
     },
-    "Review": {
-      "title": "Review",
-      "description": "Tourist review and rating for completed tour.",
-      "type": "object",
-      "properties": {
-        "id": { "type": "string", "maxLength": 64 },
-        "bookingId": { "type": "string", "maxLength": 64 },
-        "guideId": { "type": "string", "maxLength": 128 },
-        "touristId": { "type": "string", "maxLength": 128 },
-        "touristName": { "type": "string", "maxLength": 150 },
-        "rating": { "type": "number" },
-        "comment": { "type": "string", "maxLength": 1000 },
-        "createdAt": { "type": "string", "format": "date-time" }
-      },
-      "required": ["id", "bookingId", "guideId", "touristId", "rating"]
-    },
     "Payment": {
       "title": "Payment",
       "description": "Escrow payment record tied to a confirmed booking.",
@@ -164,31 +175,52 @@
         "guideNet": { "type": "number" },
         "currency": { "type": "string", "maxLength": 10 },
         "method": { "type": "string", "maxLength": 30 },
-        "status": { "type": "string", "maxLength": 40 },
+        "status": { "type": "string", "enum": ["held_in_escrow", "released_to_guide", "refunded"] },
         "gateway": { "type": "string", "maxLength": 40 },
         "createdAt": { "type": "string", "format": "date-time" },
         "updatedAt": { "type": "string", "format": "date-time" }
       },
       "required": ["paymentId", "bookingId", "touristId", "guideId", "amount", "status"]
     },
-    "AuditLog": {
-      "title": "AuditLog",
-      "description": "Security and administrative audit event.",
+    "Payout": {
+      "title": "Payout",
+      "description": "Guide withdrawal / payout request processed by platform administration.",
       "type": "object",
       "properties": {
         "id": { "type": "string", "maxLength": 64 },
-        "action": { "type": "string", "maxLength": 100 },
-        "userId": { "type": "string", "maxLength": 128 },
-        "targetId": { "type": "string", "maxLength": 128 },
-        "timestamp": { "type": "string", "format": "date-time" },
-        "details": { "type": "string", "maxLength": 500 },
-        "notes": { "type": "string", "maxLength": 500 }
+        "payoutId": { "type": "string", "maxLength": 64 },
+        "guideId": { "type": "string", "maxLength": 128 },
+        "guideName": { "type": "string", "maxLength": 150 },
+        "amount": { "type": "number" },
+        "currency": { "type": "string", "maxLength": 10 },
+        "method": { "type": "string", "maxLength": 40 },
+        "status": { "type": "string", "enum": ["pending", "paid", "rejected"] },
+        "processedBy": { "type": "string", "maxLength": 128 },
+        "notes": { "type": "string", "maxLength": 500 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
       },
-      "required": ["action", "timestamp"]
+      "required": ["id", "payoutId", "guideId", "amount", "status"]
+    },
+    "Review": {
+      "title": "Review",
+      "description": "Tourist review and rating for completed tour (one per booking).",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 64 },
+        "bookingId": { "type": "string", "maxLength": 64 },
+        "guideId": { "type": "string", "maxLength": 128 },
+        "touristId": { "type": "string", "maxLength": 128 },
+        "touristName": { "type": "string", "maxLength": 150 },
+        "rating": { "type": "number" },
+        "comment": { "type": "string", "maxLength": 1000 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "bookingId", "guideId", "touristId", "rating"]
     },
     "Message": {
       "title": "Message",
-      "description": "Real-time chat message between tourist and assigned guide for a booking.",
+      "description": "Booking-scoped chat message between tourist and assigned guide.",
       "type": "object",
       "properties": {
         "id": { "type": "string", "maxLength": 64 },
@@ -202,6 +234,71 @@
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["id", "bookingId", "touristId", "guideId", "senderId", "text", "createdAt"]
+    },
+    "Notification": {
+      "title": "Notification",
+      "description": "Recipient-scoped in-app notification for bookings, messages, and approvals.",
+      "type": "object",
+      "properties": {
+        "recipientId": { "type": "string", "maxLength": 128 },
+        "userId": { "type": "string", "maxLength": 128 },
+        "senderId": { "type": "string", "maxLength": 128 },
+        "title": { "type": "string", "maxLength": 150 },
+        "body": { "type": "string", "maxLength": 500 },
+        "link": { "type": "string", "maxLength": 300 },
+        "type": { "type": "string", "maxLength": 50 },
+        "bookingId": { "type": "string", "maxLength": 64 },
+        "read": { "type": "boolean" },
+        "readAt": { "type": "string", "format": "date-time" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["recipientId", "title", "body", "read", "createdAt"]
+    },
+    "Dispute": {
+      "title": "Dispute",
+      "description": "Booking dispute opened by tourist or guide and resolved by administration.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 64 },
+        "disputeId": { "type": "string", "maxLength": 64 },
+        "bookingId": { "type": "string", "maxLength": 64 },
+        "touristId": { "type": "string", "maxLength": 128 },
+        "guideId": { "type": "string", "maxLength": 128 },
+        "openedBy": { "type": "string", "maxLength": 128 },
+        "reason": { "type": "string", "maxLength": 500 },
+        "status": { "type": "string", "enum": ["open", "resolved_refund", "resolved_release", "dismissed"] },
+        "resolvedBy": { "type": "string", "maxLength": 128 },
+        "resolutionNotes": { "type": "string", "maxLength": 500 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "disputeId", "bookingId", "touristId", "guideId", "openedBy", "status"]
+    },
+    "AuditLog": {
+      "title": "AuditLog",
+      "description": "Append-only security, booking, payout, and administrative audit event.",
+      "type": "object",
+      "properties": {
+        "action": { "type": "string", "maxLength": 100 },
+        "actorId": { "type": "string", "maxLength": 128 },
+        "userId": { "type": "string", "maxLength": 128 },
+        "bookingId": { "type": "string", "maxLength": 64 },
+        "targetId": { "type": "string", "maxLength": 128 },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "notes": { "type": "string", "maxLength": 500 }
+      },
+      "required": ["action", "actorId", "timestamp"]
+    },
+    "Admin": {
+      "title": "Admin",
+      "description": "Server-managed registry of administrator UIDs granting elevated Firestore privileges.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "maxLength": 128 },
+        "role": { "type": "string", "enum": ["admin"] },
+        "assignedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "role"]
     },
     "PlatformSettings": {
       "title": "PlatformSettings",
@@ -220,35 +317,55 @@
   "firestore": {
     "/users/{userId}": {
       "schema": { "$ref": "#/entities/User" },
-      "description": "User profile collection."
+      "description": "Core user profile and status collection."
+    },
+    "/tourists/{touristId}": {
+      "schema": { "$ref": "#/entities/Tourist" },
+      "description": "Tourist travel preference profiles."
     },
     "/guides/{guideId}": {
       "schema": { "$ref": "#/entities/Guide" },
-      "description": "Public tour guide marketplace profiles."
+      "description": "Tour guide marketplace profiles with verification gate."
     },
     "/bookings/{bookingId}": {
       "schema": { "$ref": "#/entities/Booking" },
       "description": "Marketplace bookings and real-time lifecycle state."
     },
-    "/guideBusySlots/{bookingId}": {
+    "/guideBusySlots/{slotId}": {
       "schema": { "$ref": "#/entities/GuideBusySlot" },
       "description": "Non-PII busy time slots for double-booking conflict checks."
     },
-    "/reviews/{reviewId}": {
-      "schema": { "$ref": "#/entities/Review" },
-      "description": "Guide reviews by tourists."
-    },
     "/payments/{paymentId}": {
       "schema": { "$ref": "#/entities/Payment" },
-      "description": "Booking escrow payments and commissions."
+      "description": "Booking escrow payments and platform commissions."
     },
-    "/auditLogs/{logId}": {
-      "schema": { "$ref": "#/entities/AuditLog" },
-      "description": "Administrative audit trail."
+    "/payouts/{payoutId}": {
+      "schema": { "$ref": "#/entities/Payout" },
+      "description": "Guide payout withdrawal requests."
+    },
+    "/reviews/{reviewId}": {
+      "schema": { "$ref": "#/entities/Review" },
+      "description": "Verified guide reviews by tourists."
     },
     "/messages/{messageId}": {
       "schema": { "$ref": "#/entities/Message" },
       "description": "Booking-scoped chat messages between tourist and guide."
+    },
+    "/notifications/{notificationId}": {
+      "schema": { "$ref": "#/entities/Notification" },
+      "description": "Recipient-scoped operational and chat notifications."
+    },
+    "/disputes/{disputeId}": {
+      "schema": { "$ref": "#/entities/Dispute" },
+      "description": "Dispute records associated with bookings."
+    },
+    "/auditLogs/{logId}": {
+      "schema": { "$ref": "#/entities/AuditLog" },
+      "description": "Append-only operational and administrative audit trail."
+    },
+    "/admins/{adminId}": {
+      "schema": { "$ref": "#/entities/Admin" },
+      "description": "Privileged admin UID registry managed exclusively via Firebase Console / Admin SDK."
     },
     "/settings/{settingId}": {
       "schema": { "$ref": "#/entities/PlatformSettings" },

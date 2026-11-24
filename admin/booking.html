@@ -164,6 +164,15 @@
           </aside>
         </div>
 
+        <section id="abDisputeCard" class="card" style="display:none; margin-bottom:20px;">
+          <div class="card-header">
+            <h2 class="card-title" data-i18n="admin.disputesSectionTitle">Disputes</h2>
+            <span id="abDisputeStatus" class="status-label status-danger"></span>
+          </div>
+          <p id="abDisputeReason" class="modal-copy" style="margin-bottom:12px;"></p>
+          <button type="button" id="resolveDisputeBtn" class="btn btn-primary btn-sm" data-i18n="admin.resolveDisputeBtn">Mark Resolved</button>
+        </section>
+
         <section class="card">
           <h2 class="card-title" style="margin-bottom: 12px;" data-i18n="admin.auditLogsTitle">Booking Audit Trail</h2>
           <div id="abAuditWrap"></div>
@@ -181,7 +190,7 @@
   <script type="module">
     import { enforceRouteProtection, getCurrentUser, logout, onAuthReady } from '../js/auth.js';
     import { db, COLLECTIONS } from '../js/firebase.js';
-    import { getBookingById, adminUpdateBookingStatus } from '../js/booking.js';
+    import { getBookingById, adminUpdateBookingStatus, resolveDispute } from '../js/booking.js';
     import {
       applyTranslations,
       setupLanguageToggle,
@@ -204,6 +213,7 @@
     const bookingId = getUrlParam('id');
     let bookingData = null;
     let paymentData = null;
+    let disputeData = null;
     let bookingLogs = [];
 
     function localizedEscrowLabel(payStatus) {
@@ -242,6 +252,16 @@
       document.getElementById('abTotal').textContent = formatCurrency(b.total || 0, b.currency || 'USD');
       document.getElementById('abPaymentStatus').textContent = localizedEscrowLabel(paymentData?.status);
 
+      const disputeCard = document.getElementById('abDisputeCard');
+      if (disputeData) {
+        disputeCard.style.display = 'block';
+        document.getElementById('abDisputeStatus').textContent = disputeData.status || 'open';
+        document.getElementById('abDisputeReason').textContent = disputeData.reason || '';
+        document.getElementById('resolveDisputeBtn').style.display = disputeData.status === 'resolved' ? 'none' : 'inline-flex';
+      } else {
+        disputeCard.style.display = 'none';
+      }
+
       const auditWrap = document.getElementById('abAuditWrap');
       if (!bookingLogs.length) {
         auditWrap.innerHTML = `<p class="form-hint">${escapeHtml(t('admin.noBookingAuditLogs'))}</p>`;
@@ -278,8 +298,13 @@
       }
       bookingData = await getBookingById(bookingId);
       if (bookingData) {
-        paymentData = await db.getDocument(COLLECTIONS.PAYMENTS, `PAY-${bookingId}`);
-        const allLogs = await db.getCollection(COLLECTIONS.AUDIT_LOGS);
+        const [payDoc, dispDoc, allLogs] = await Promise.all([
+          db.getDocument(COLLECTIONS.PAYMENTS, `PAY-${bookingId}`),
+          db.getDocument(COLLECTIONS.DISPUTES, `DSP-${bookingId}`),
+          db.getCollection(COLLECTIONS.AUDIT_LOGS)
+        ]);
+        paymentData = payDoc;
+        disputeData = dispDoc;
         bookingLogs = allLogs
           .filter(l => l.bookingId === bookingId || l.targetId === bookingId)
           .sort((a, b) => (b.timestamp || '').localeCompare(a.timestamp || ''));
@@ -300,6 +325,14 @@
       showToast(t('admin.statusChangedToast'), 'success');
       await loadAll();
     }
+
+    document.getElementById('resolveDisputeBtn').addEventListener('click', async () => {
+      if (!disputeData) return;
+      const user = getCurrentUser();
+      await resolveDispute(disputeData.id, 'resolved', user?.uid);
+      showToast(t('admin.disputeResolvedToast'), 'success');
+      await loadAll();
+    });
 
     document.getElementById('actConfirmBtn').addEventListener('click', () => handleStatusAction('confirmed', false));
     document.getElementById('actCancelBtn').addEventListener('click', () => handleStatusAction('cancelled', true));

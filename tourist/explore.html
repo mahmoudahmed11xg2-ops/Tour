@@ -257,12 +257,12 @@
               <div class="guide-info">
                 <div class="guide-name-row">
                   <h3 class="guide-name">${escapeHtml(guide.name)}</h3>
-                  <span class="guide-rating">&#9733; ${Number(guide.rating || 4.8).toFixed(1)}</span>
+                  <span class="guide-rating">&#9733; ${Number(guide.rating || 0).toFixed(1)}</span>
                 </div>
                 <div class="meta-inline">
                   <span>${escapeHtml(guide.city || 'Egypt')}</span>
                   <span class="meta-sep">&middot;</span>
-                  <span class="tabular-nums">${Number(guide.experienceYears || 3)} ${escapeHtml(t('search.yearsExp'))}</span>
+                  <span class="tabular-nums">${Number(guide.experienceYears || 0)} ${escapeHtml(t('search.yearsExp'))}</span>
                   <span class="meta-sep">&middot;</span>
                   <span>${availability.available ? escapeHtml(t('explore.availableSlot')) : escapeHtml(t('explore.unavailableSlot'))}</span>
                 </div>

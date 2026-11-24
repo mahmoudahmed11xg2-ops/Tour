@@ -90,15 +90,20 @@
         <p class="form-hint" data-i18n="admin.paymentsPolicyDesc">Payments are recorded upfront upon guide confirmation. Upon completion, 15% platform fee is retained and 85% settles to the guide.</p>
       </section>
 
-      <div id="paymentsTableWrap"></div>
+      <div id="paymentsTableWrap" style="margin-bottom:20px;"></div>
+
+      <section class="card">
+        <h2 class="card-title" style="margin-bottom:14px;" data-i18n="admin.payoutsSectionTitle">Guide Payout Requests</h2>
+        <div id="payoutsTableWrap"></div>
+      </section>
     </main>
   </div>
 
   <script type="module" src="../js/nav.js"></script>
   <script type="module">
-    import { enforceRouteProtection, logout, onAuthReady } from '../js/auth.js';
-    import { getPaymentsForUser } from '../js/payments.js';
-    import { applyTranslations, setupLanguageToggle, t, formatCurrency, escapeHtml } from '../js/utils.js';
+    import { enforceRouteProtection, getCurrentUser, logout, onAuthReady } from '../js/auth.js';
+    import { getPaymentsForUser, getAllPayouts, updatePayoutStatus } from '../js/payments.js';
+    import { applyTranslations, setupLanguageToggle, showToast, t, formatCurrency, escapeHtml } from '../js/utils.js';
 
     enforceRouteProtection({ allowedRoles: ['admin'] });
     applyTranslations();
@@ -106,6 +111,7 @@
     document.getElementById('sidebarLogoutBtn')?.addEventListener('click', logout);
 
     let payments = [];
+    let payouts = [];
 
     function localizedEscrowLabel(st) {
       if (st === 'held_in_escrow') return t('booking.escrowHeld');
@@ -143,11 +149,62 @@
           </table>
         </div>
       `;
+
+      const payoutsWrap = document.getElementById('payoutsTableWrap');
+      if (!payouts.length) {
+        payoutsWrap.innerHTML = `<p class="form-hint">${escapeHtml(t('guide.noPayoutsYet'))}</p>`;
+        return;
+      }
+
+      payoutsWrap.innerHTML = `
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>${escapeHtml(t('admin.paymentIdCol'))}</th>
+                <th>${escapeHtml(t('admin.guideCol'))}</th>
+                <th>${escapeHtml(t('admin.totalCol'))}</th>
+                <th>${escapeHtml(t('admin.statusCol'))}</th>
+                <th>${escapeHtml(t('admin.actionCol'))}</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${payouts.map(po => `
+                <tr>
+                  <td class="tabular-nums">${escapeHtml(po.id)}</td>
+                  <td>${escapeHtml(po.guideName || po.guideId || '')}</td>
+                  <td class="tabular-nums">${formatCurrency(po.amount || 0, po.currency || 'USD')}</td>
+                  <td><span class="status-label ${po.status === 'paid' ? 'status-success' : 'status-warning'}">${escapeHtml(po.status || 'pending')}</span></td>
+                  <td>
+                    ${po.status !== 'paid'
+                      ? `<button type="button" class="btn btn-primary btn-sm" data-mark-paid="${escapeHtml(po.id)}">${escapeHtml(t('admin.markPayoutPaidBtn'))}</button>`
+                      : '—'}
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+
+      payoutsWrap.querySelectorAll('[data-mark-paid]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          btn.disabled = true;
+          const admin = getCurrentUser();
+          await updatePayoutStatus(btn.dataset.markPaid, 'paid', admin?.uid);
+          showToast(t('admin.payoutStatusUpdatedToast'), 'success');
+          payouts = await getAllPayouts();
+          renderPayments();
+        });
+      });
     }
 
     onAuthReady(async (user) => {
       if (!user) return;
-      payments = await getPaymentsForUser(user.uid, 'admin');
+      [payments, payouts] = await Promise.all([
+        getPaymentsForUser(user.uid, 'admin'),
+        getAllPayouts()
+      ]);
       renderPayments();
     });
 

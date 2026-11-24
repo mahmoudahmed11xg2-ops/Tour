@@ -103,9 +103,14 @@
       </div>
     </section>
 
-    <section class="card">
+    <section class="card" style="margin-bottom:18px;">
       <h2 class="card-title" style="margin-bottom:14px;" data-i18n="guide.completedToursBreakdown">Completed Tours Ledger</h2>
       <div id="ledgerContainer"></div>
+    </section>
+
+    <section class="card">
+      <h2 class="card-title" style="margin-bottom:14px;" data-i18n="guide.payoutsHistoryTitle">Payout Requests</h2>
+      <div id="payoutsContainer"></div>
     </section>
   </main>
 
@@ -134,8 +139,9 @@
 
   <script type="module" src="../js/nav.js"></script>
   <script type="module">
-    import { enforceRouteProtection, onAuthReady } from '../js/auth.js';
+    import { enforceRouteProtection, getCurrentUser, onAuthReady } from '../js/auth.js';
     import { getBookingsForGuide } from '../js/booking.js';
+    import { getPayoutsForGuide, requestPayout } from '../js/payments.js';
     import { applyTranslations, setupLanguageToggle, showToast, t, formatCurrency, escapeHtml } from '../js/utils.js';
 
     enforceRouteProtection({ allowedRoles: ['guide'] });
@@ -143,13 +149,20 @@
     setupLanguageToggle();
 
     let completedTours = [];
+    let payouts = [];
+    let currentUid = null;
+    let availableBalance = 0;
 
     function renderLedger() {
       const net = completedTours.reduce((s, b) => s + Number(b.price || 0), 0);
       const fees = completedTours.reduce((s, b) => s + Number(b.platformFee || 0), 0);
       const gross = completedTours.reduce((s, b) => s + Number(b.total || 0), 0);
+      const requestedOrPaid = payouts
+        .filter(p => p.status !== 'rejected' && p.status !== 'cancelled')
+        .reduce((s, p) => s + Number(p.amount || 0), 0);
+      availableBalance = Math.max(0, Math.round((net - requestedOrPaid) * 100) / 100);
 
-      document.getElementById('kpiAvailablePayout').textContent = formatCurrency(Math.round(net * 100) / 100);
+      document.getElementById('kpiAvailablePayout').textContent = formatCurrency(availableBalance);
       document.getElementById('kpiGross').textContent = formatCurrency(Math.round(gross * 100) / 100);
       document.getElementById('kpiFees').textContent = formatCurrency(Math.round(fees * 100) / 100);
       document.getElementById('kpiCompletedCount').textContent = String(completedTours.length);
@@ -157,47 +170,104 @@
       const container = document.getElementById('ledgerContainer');
       if (!completedTours.length) {
         container.innerHTML = `<p class="form-hint">${escapeHtml(t('guide.noCompletedToursYet'))}</p>`;
-        return;
+      } else {
+        container.innerHTML = `
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>${escapeHtml(t('admin.bookingIdCol'))}</th>
+                  <th>${escapeHtml(t('admin.touristCol'))}</th>
+                  <th>${escapeHtml(t('admin.dateTimeCol'))}</th>
+                  <th>${escapeHtml(t('guide.grossLabel'))}</th>
+                  <th>${escapeHtml(t('guide.feeLabel'))}</th>
+                  <th>${escapeHtml(t('guide.estimatedEarnings'))}</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${completedTours.map(b => `
+                  <tr>
+                    <td class="tabular-nums">#${escapeHtml(b.id)}</td>
+                    <td>${escapeHtml(b.touristName || '')}</td>
+                    <td class="tabular-nums">${escapeHtml(b.date || '')}</td>
+                    <td class="tabular-nums">${formatCurrency(b.total || 0, b.currency || 'USD')}</td>
+                    <td class="tabular-nums">${formatCurrency(b.platformFee || 0, b.currency || 'USD')}</td>
+                    <td class="tabular-nums"><strong>${formatCurrency(b.price || 0, b.currency || 'USD')}</strong></td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        `;
       }
 
-      container.innerHTML = `
-        <div class="table-responsive">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>${escapeHtml(t('admin.bookingIdCol'))}</th>
-                <th>${escapeHtml(t('admin.touristCol'))}</th>
-                <th>${escapeHtml(t('admin.dateTimeCol'))}</th>
-                <th>${escapeHtml(t('guide.grossLabel'))}</th>
-                <th>${escapeHtml(t('guide.feeLabel'))}</th>
-                <th>${escapeHtml(t('guide.estimatedEarnings'))}</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${completedTours.map(b => `
+      const payoutsWrap = document.getElementById('payoutsContainer');
+      if (!payouts.length) {
+        payoutsWrap.innerHTML = `<p class="form-hint">${escapeHtml(t('guide.noPayoutsYet'))}</p>`;
+      } else {
+        payoutsWrap.innerHTML = `
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
                 <tr>
-                  <td class="tabular-nums">#${escapeHtml(b.id)}</td>
-                  <td>${escapeHtml(b.touristName || '')}</td>
-                  <td class="tabular-nums">${escapeHtml(b.date || '')}</td>
-                  <td class="tabular-nums">${formatCurrency(b.total || 0, b.currency || 'USD')}</td>
-                  <td class="tabular-nums">${formatCurrency(b.platformFee || 0, b.currency || 'USD')}</td>
-                  <td class="tabular-nums"><strong>${formatCurrency(b.price || 0, b.currency || 'USD')}</strong></td>
+                  <th>${escapeHtml(t('admin.paymentIdCol'))}</th>
+                  <th>${escapeHtml(t('admin.totalCol'))}</th>
+                  <th>${escapeHtml(t('admin.statusCol'))}</th>
+                  <th>${escapeHtml(t('admin.timestampCol'))}</th>
                 </tr>
-              `).join('')}
-            </tbody>
-          </table>
-        </div>
-      `;
+              </thead>
+              <tbody>
+                ${payouts.map(p => `
+                  <tr>
+                    <td class="tabular-nums">${escapeHtml(p.id)}</td>
+                    <td class="tabular-nums"><strong>${formatCurrency(p.amount || 0, p.currency || 'USD')}</strong></td>
+                    <td><span class="status-label ${p.status === 'paid' ? 'status-success' : 'status-warning'}">${escapeHtml(p.status || 'pending')}</span></td>
+                    <td class="tabular-nums">${escapeHtml(p.createdAt ? new Date(p.createdAt).toLocaleDateString() : '')}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        `;
+      }
     }
 
-    document.getElementById('requestPayoutBtn').addEventListener('click', () => {
-      showToast(t('toasts.payoutRequested'), 'success');
+    document.getElementById('requestPayoutBtn').addEventListener('click', async () => {
+      if (!currentUid) return;
+      if (availableBalance <= 0) {
+        showToast(t('guide.errNoAvailablePayout'), 'info');
+        return;
+      }
+      const btn = document.getElementById('requestPayoutBtn');
+      btn.disabled = true;
+      try {
+        const user = getCurrentUser();
+        const guideName = `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || user?.email || '';
+        await requestPayout({
+          guideId: currentUid,
+          guideName,
+          amount: availableBalance,
+          currency: 'USD'
+        });
+        payouts = await getPayoutsForGuide(currentUid);
+        renderLedger();
+        showToast(t('toasts.payoutRequested'), 'success');
+      } catch (err) {
+        showToast(err.message || t('toasts.genericError'), 'error');
+      } finally {
+        btn.disabled = false;
+      }
     });
 
     onAuthReady(async (user) => {
       if (!user) return;
-      const all = await getBookingsForGuide(user.uid);
+      currentUid = user.uid;
+      const [all, pList] = await Promise.all([
+        getBookingsForGuide(user.uid),
+        getPayoutsForGuide(user.uid)
+      ]);
       completedTours = all.filter(b => b.status === 'completed');
+      payouts = pList;
       renderLedger();
     });
 
